@@ -1,5 +1,5 @@
 import type { TimelineGroup, TimelineItem, TimelinePayload, TimelineStatus } from "../lib/types";
-import { statusAt } from "../lib/types";
+import { packIntoLanes, statusAt } from "../lib/types";
 
 const NS = "http://www.w3.org/2000/svg";
 const DAY = 86_400_000;
@@ -196,6 +196,12 @@ function zoomAt(factor: number, anchor = (domainStart + domainEnd) / 2): void {
 }
 
 function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: number): void {
+  const setPreviewTransform = (transform?: string) => {
+    document.querySelectorAll<SVGGElement>(".plot-layer").forEach((layer) => {
+      if (transform) layer.setAttribute("transform", transform);
+      else layer.removeAttribute("transform");
+    });
+  };
   let dragX: number | undefined;
   let dragDomainStart = 0;
   let moved = false;
@@ -238,6 +244,9 @@ function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: 
         const span = (pinchStartDomain[1] - pinchStartDomain[0]) * (pinchDistance / distance);
         pendingDomain = [center - span / 2, center + span / 2];
         moved = true;
+        const scale = distance / pinchDistance;
+        const centerX = chartLeft + chartWidth / 2;
+        setPreviewTransform(`translate(${centerX} 0) scale(${scale} 1) translate(${-centerX} 0)`);
       }
       return;
     }
@@ -247,6 +256,7 @@ function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: 
     const span = domainEnd - domainStart;
     const nextStart = dragDomainStart - (delta / chartWidth) * span;
     pendingDomain = [nextStart, nextStart + span];
+    setPreviewTransform(`translate(${delta} 0)`);
   });
 
   const finish = (event: PointerEvent) => {
@@ -257,6 +267,8 @@ function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: 
       applyDomain(...pendingDomain);
       pendingDomain = undefined;
       render();
+    } else {
+      setPreviewTransform();
     }
     if (moved) {
       chart.addEventListener("click", (click) => click.stopPropagation(), { capture: true, once: true });
@@ -276,7 +288,12 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
   const rowHeight = 42;
   const rows: Array<{ label: string; type: string; items: TimelineItem[] }> = [];
   if (versions.length) rows.push({ label: "版本", type: "版本轨道", items: versions });
-  for (const event of events) rows.push({ label: event.name, type: event.typeName, items: [event] });
+  const banners = events.filter((event) => event.typeId === "banner");
+  const otherEvents = events.filter((event) => event.typeId !== "banner");
+  packIntoLanes(banners).forEach((items, index) => {
+    rows.push({ label: index === 0 ? "卡池" : `卡池 ${index + 1}`, type: "卡池轨道", items });
+  });
+  for (const event of otherEvents) rows.push({ label: event.name, type: event.typeName, items: [event] });
   const height = axisHeight + rows.length * rowHeight + 10;
   const labelOverlay = html("div", "chart-label-overlay");
   labelOverlay.style.width = `${chartLeft}px`;
@@ -303,7 +320,9 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
 
   const span = domainEnd - domainStart;
   const x = (timestamp: number) => chartLeft + ((timestamp - domainStart) / span) * plotWidth;
-  const clipped = svg("g", { "clip-path": `url(#${clipId})` });
+  const plotViewport = svg("g", { "clip-path": `url(#${clipId})` });
+  const clipped = svg("g", { class: "plot-layer" });
+  plotViewport.append(clipped);
   const step = tickStep(span);
   const firstTick = Math.floor(domainStart / step) * step;
   for (let tick = firstTick; tick <= domainEnd + step; tick += step) {
@@ -350,6 +369,9 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
       if (item.end !== undefined) {
         const startX = x(item.start);
         const endX = x(item.end);
+        const visibleStartX = Math.max(chartLeft, startX);
+        const visibleEndX = Math.min(chartLeft + plotWidth, endX);
+        const visibleWidth = Math.max(0, visibleEndX - visibleStartX);
         const groupNode = svg("g", { class: `item-shape item-${status}` });
         const rect = svg("rect", {
           class: item.kind === "version" ? "version-bar" : "event-bar",
@@ -360,9 +382,13 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
           rx: 5,
         });
         groupNode.append(rect);
-        if (endX - startX > 42) {
-          const text = svg("text", { class: "bar-label", x: startX + 7, y: centerY + 4 });
-          setText(text, item.name);
+        if (visibleWidth > 42) {
+          const maxCharacters = Math.max(3, Math.floor((visibleWidth - 14) / 11));
+          const fittedName = item.name.length > maxCharacters
+            ? `${item.name.slice(0, maxCharacters - 1)}…`
+            : item.name;
+          const text = svg("text", { class: "bar-label", x: visibleStartX + 7, y: centerY + 4 });
+          setText(text, fittedName);
           groupNode.append(text);
         }
         bindItemInteraction(groupNode, group, item);
@@ -385,7 +411,7 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
     setText(label, "现在");
     clipped.append(label);
   }
-  chart.append(clipped);
+  chart.append(plotViewport);
   container.append(chart);
   installNavigation(chart, chartLeft, plotWidth);
 }

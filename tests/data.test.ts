@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { DataValidationError, loadTimelineData, parseBeijingTimestamp } from "../src/lib/data.ts";
-import { statusAt } from "../src/lib/types.ts";
+import { packIntoLanes, statusAt } from "../src/lib/types.ts";
 
 const temporaryDirectories: string[] = [];
 
@@ -51,6 +51,26 @@ describe("状态边界", () => {
   it("单点事件到达开始时间后直接结束", () => {
     expect(statusAt({ start: 1000 }, 999)).toBe("upcoming");
     expect(statusAt({ start: 1000 }, 1000)).toBe("ended");
+  });
+});
+
+describe("轨道自动合并", () => {
+  it("将互不重叠的上下半卡池放在同一行", () => {
+    const lanes = packIntoLanes([
+      { start: 1000, end: 2000 },
+      { start: 2000, end: 3000 },
+    ]);
+    expect(lanes).toHaveLength(1);
+    expect(lanes[0]).toHaveLength(2);
+  });
+
+  it("为与普通卡池重叠的长期特殊卡池保留独立行", () => {
+    const regularUpper = { start: 1000, end: 2000 };
+    const regularLower = { start: 2000, end: 3000 };
+    const special = { start: 1200, end: 2800 };
+    const lanes = packIntoLanes([regularUpper, special, regularLower]);
+    expect(lanes).toHaveLength(2);
+    expect(lanes.flat()).toEqual(expect.arrayContaining([regularUpper, regularLower, special]));
   });
 });
 
