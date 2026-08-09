@@ -6,9 +6,10 @@ versions:
     name: "3.5 遗音扶剑，荡梦而歌"
     start: "2026-07-10T11:00:00+08:00"
     end: "2026-08-20T04:00:00+08:00"
-    note: 版本结束时间为依据8/20维护推算
+    note: 3.6「蜃云灯影，凡尘剑心」定档 8/20 更新；04:00 按一贯维护窗口推算
     sources:
-      - "https://wutheringwaves.kurogames.com/zh-tw/main/news/detail/4974"
+      - "https://mc.kurogames.com/main/news/detail/5004"
+      - "https://mc.kurogames.com/main/news/detail/5110"
 
 events:
   - id: preview-3-5
@@ -17,26 +18,26 @@ events:
     start: "2026-06-26T19:00:00+08:00"
     related: ["3.5"]
     sources:
-      - "https://www.facebook.com/WutheringWaves.ZH/posts/937230196005321"
+      - "https://www.taptap.cn/application/226727"
   - id: preview-3-6
-    name: 3.6 前瞻通讯
+    name: "3.6 前瞻通讯（蜃云灯影，凡尘剑心）"
     type: preview
     start: "2026-08-07T19:00:00+08:00"
     sources:
-      - "https://forum.gamer.com.tw/C.php?bsn=74934&snA=5258"
+      - "https://www.taptap.cn/application/226727"
   - id: banner-3-5-1
-    name: "3.5 第一期卡池（秧秧·玄翎/陆·赫斯/琳奈）"
+    name: "3.5 第一期卡池「牵翎祈万声」（秧秧·玄翎）"
     type: banner
     start: "2026-07-10T11:00:00+08:00"
     end: "2026-07-30T09:59:00+08:00"
     related: ["3.5"]
     sources:
-      - "https://forum.gamer.com.tw/G2.php?bsn=74934&sn=333"
+      - "https://mc.kurogames.com/main/news/detail/5004"
   - id: banner-3-5-2
-    name: "3.5 第二期卡池（穗穗/爱弥斯）"
+    name: "3.5 第二期卡池「斟雨祝荷风」（穗穗）"
     type: banner
     start: "2026-07-30T10:00:00+08:00"
     end: "2026-08-19T11:59:00+08:00"
     related: ["3.5"]
     sources:
-      - "https://forum.gamer.com.tw/G2.php?bsn=74934&sn=333"
+      - "https://www.taptap.cn/application/226727"
