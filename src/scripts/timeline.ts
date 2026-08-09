@@ -379,7 +379,7 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
         const visibleWidth = Math.max(0, visibleEndX - visibleStartX);
         const groupNode = svg("g", { class: `item-shape item-${status}` });
         const rect = svg("rect", {
-          class: item.kind === "version" ? "version-bar" : "event-bar",
+          class: item.kind === "version" ? "version-bar" : `event-bar event-bar--${item.typeId}`,
           x: startX,
           y: centerY - 10,
           width: Math.max(2, endX - startX),
