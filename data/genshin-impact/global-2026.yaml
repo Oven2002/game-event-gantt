@@ -1,0 +1,10 @@
+game: genshin-impact
+region: global
+
+events:
+  - id: global-preview-5-1
+    name: Version 5.1 Special Program
+    type: preview
+    start: "2026-10-01T20:00:00+08:00"
+    sources:
+      - "https://example.com/notices/global-preview-5-1"

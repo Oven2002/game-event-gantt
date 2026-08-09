@@ -1,0 +1,7 @@
+id: genshin-impact
+name: 原神
+regions:
+  - id: cn
+    name: 国服
+  - id: global
+    name: 国际服

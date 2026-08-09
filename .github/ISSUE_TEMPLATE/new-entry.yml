@@ -1,0 +1,71 @@
+name: 新增或修正时间表条目
+description: 提交可核验的版本或活动时间
+title: "[数据] "
+labels: ["data"]
+body:
+  - type: input
+    id: game
+    attributes:
+      label: 游戏
+    validations:
+      required: true
+  - type: input
+    id: region
+    attributes:
+      label: 服务器
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: 条目名称
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 条目类别
+      options: ["版本", "区间活动", "单点事件"]
+    validations:
+      required: true
+  - type: input
+    id: type
+    attributes:
+      label: 活动类型
+      description: 版本可填写“版本”；活动请填写活动、卡池、前瞻直播、维护等。
+    validations:
+      required: true
+  - type: input
+    id: start
+    attributes:
+      label: 开始时间（北京时间）
+      placeholder: "2026-08-28 06:00"
+    validations:
+      required: true
+  - type: input
+    id: end
+    attributes:
+      label: 结束时间（北京时间，可选）
+      description: 版本和区间活动必填；单点事件留空。
+  - type: textarea
+    id: sources
+    attributes:
+      label: 数据来源
+      description: 每行一个公开 HTTP(S) 链接。
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: 官方详情页（可选）
+  - type: textarea
+    id: note
+    attributes:
+      label: 补充说明
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交确认
+      options:
+        - label: 我已将时间换算为北京时间，并确认来源可公开访问。
+          required: true

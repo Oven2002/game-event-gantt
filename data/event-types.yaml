@@ -1,0 +1,9 @@
+types:
+  - id: event
+    name: 活动
+  - id: banner
+    name: 卡池
+  - id: preview
+    name: 前瞻直播
+  - id: maintenance
+    name: 维护

@@ -1,0 +1,106 @@
+---
+import "../styles/global.css";
+import { loadTimelineData } from "../lib/data";
+
+const payload = loadTimelineData();
+const games = [...new Map(payload.groups.map((group) => [group.game.id, group.game])).values()];
+const regions = [...new Map(payload.groups.map((group) => [group.region.id, group.region])).values()];
+const serialized = JSON.stringify(payload).replaceAll("<", "\\u003c");
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="二游版本与活动时间表，使用北京时间展示版本、活动与直播日程。" />
+    <title>二游版本活动时间表</title>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__eyebrow">COMMUNITY TIMELINE</div>
+      <h1>二游版本活动时间表</h1>
+      <p>把版本、卡池、活动和前瞻放到同一条北京时间轴上。</p>
+      <div class="hero__legend" aria-label="图例">
+        <span><i class="legend-swatch legend-swatch--version"></i>版本</span>
+        <span><i class="legend-swatch legend-swatch--event"></i>区间活动</span>
+        <span><i class="legend-point"></i>单点事件</span>
+        <span><i class="legend-now"></i>现在</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="toolbar" aria-label="时间表控制栏">
+        <div class="filters">
+          <details class="filter-menu">
+            <summary>游戏 <span data-filter-count="game"></span></summary>
+            <fieldset data-filter="game">
+              <legend class="sr-only">筛选游戏</legend>
+              {games.map((game) => (
+                <label><input type="checkbox" value={game.id} checked /> {game.name}</label>
+              ))}
+            </fieldset>
+          </details>
+
+          <details class="filter-menu">
+            <summary>服务器 <span data-filter-count="region"></span></summary>
+            <fieldset data-filter="region">
+              <legend class="sr-only">筛选服务器</legend>
+              {regions.map((region) => (
+                <label><input type="checkbox" value={region.id} checked /> {region.name}</label>
+              ))}
+            </fieldset>
+          </details>
+
+          <details class="filter-menu">
+            <summary>活动类型 <span data-filter-count="type"></span></summary>
+            <fieldset data-filter="type">
+              <legend class="sr-only">筛选活动类型</legend>
+              {payload.eventTypes.map((type) => (
+                <label><input type="checkbox" value={type.id} checked /> {type.name}</label>
+              ))}
+            </fieldset>
+          </details>
+
+          <details class="filter-menu">
+            <summary>状态 <span data-filter-count="status"></span></summary>
+            <fieldset data-filter="status">
+              <legend class="sr-only">筛选状态</legend>
+              <label><input type="checkbox" value="ongoing" checked /> 进行中</label>
+              <label><input type="checkbox" value="upcoming" checked /> 即将开始</label>
+              <label><input type="checkbox" value="ended" /> 已结束</label>
+            </fieldset>
+          </details>
+        </div>
+
+        <div class="time-controls" aria-label="时间轴控制">
+          <button type="button" data-action="zoom-out" aria-label="缩小时间轴">−</button>
+          <button type="button" data-action="zoom-in" aria-label="放大时间轴">＋</button>
+          <button type="button" data-action="today">今天</button>
+          <button type="button" data-action="all">显示全部</button>
+        </div>
+      </section>
+
+      <div class="timezone-note"><span></span>所有日期与时间均为北京时间（UTC+8）</div>
+      <section id="timeline" class="timeline" aria-label="游戏版本与活动甘特图"></section>
+      <section id="empty-state" class="empty-state" hidden>
+        <strong>没有符合条件的条目</strong>
+        <p>调整游戏、服务器、类型或状态筛选后再试。</p>
+      </section>
+    </main>
+
+    <dialog id="detail-dialog" class="detail-dialog" aria-labelledby="detail-title">
+      <button class="detail-dialog__close" type="button" data-close-detail aria-label="关闭详情">×</button>
+      <div id="detail-content"></div>
+    </dialog>
+
+    <footer>
+      <p>数据由社区维护 · 时间仅供参考，请以游戏官方公告为准</p>
+    </footer>
+
+    <script id="timeline-data" type="application/json" set:html={serialized} is:inline></script>
+    <script>
+      import "../scripts/timeline";
+    </script>
+  </body>
+</html>
