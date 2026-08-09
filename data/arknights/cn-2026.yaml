@@ -1,0 +1,46 @@
+game: arknights
+region: cn
+
+events:
+  - id: summer-carnival-2026-p1
+    name: "夏日嘉年华 Part.1 · 直到大地变成一颗酸橙"
+    type: event
+    start: "2026-08-01T12:00:00+08:00"
+    end: "2026-08-29T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: banner-tracks-and-wind
+    name: "限定寻访【车辙与风的归所】（予愿安洁莉娜）"
+    type: banner
+    start: "2026-08-01T12:00:00+08:00"
+    end: "2026-08-15T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: summer-carnival-2026-p2
+    name: "夏日嘉年华 Part.2 · 奇象巡展（关卡）"
+    type: event
+    start: "2026-08-08T16:00:00+08:00"
+    end: "2026-09-04T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: qixiang-exchange
+    name: "奇象巡展 兑换处"
+    type: event
+    start: "2026-08-08T16:00:00+08:00"
+    end: "2026-09-07T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: banner-union-action
+    name: "联合行动 特选干员定向寻访"
+    type: banner
+    start: "2026-08-18T16:00:00+08:00"
+    end: "2026-09-01T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: banner-zhongjian
+    name: "中坚甄选"
+    type: banner
+    start: "2026-08-20T04:00:00+08:00"
+    end: "2026-09-03T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
