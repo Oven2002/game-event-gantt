@@ -8,6 +8,7 @@ const payload = loadTimelineData();
 const games = [...new Map(payload.groups.map((group) => [group.game.id, group.game])).values()];
 const regions = [...new Map(payload.groups.map((group) => [group.region.id, group.region])).values()];
 const serialized = JSON.stringify(payload).replaceAll("<", "\\u003c");
+const faviconUrl = `${import.meta.env.BASE_URL}favicon.png`;
 ---
 
 <!doctype html>
@@ -16,13 +17,15 @@ const serialized = JSON.stringify(payload).replaceAll("<", "\\u003c");
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content="二游版本与活动时间表，使用北京时间展示版本、活动与直播日程。" />
+    <link rel="icon" type="image/png" href={faviconUrl} />
+    <link rel="apple-touch-icon" href={faviconUrl} />
     <title>二游版本活动时间表</title>
   </head>
   <body>
     <header class="topbar">
       <nav class="topbar__inner" aria-label="主导航">
         <a class="topbar__brand" href={import.meta.env.BASE_URL}>
-          <span class="topbar__mark" aria-hidden="true">时</span>
+          <img class="topbar__mark" src={faviconUrl} width="32" height="32" alt="" />
           <span>二游时间表</span>
         </a>
         <div class="topbar__links">
