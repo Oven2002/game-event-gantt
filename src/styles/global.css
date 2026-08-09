@@ -50,7 +50,7 @@ main { max-width: 1480px; margin: 0 auto; padding: 0 32px 48px; }
 
 .timezone-note { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; margin: 16px 4px 10px; }
 .timezone-note span { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
-.timeline { display: grid; min-width: 0; gap: 14px; }
+.timeline { display: grid; min-width: 0; gap: 14px; overflow-anchor: none; }
 .timeline-group { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
 .timeline-group[open] .group-chevron { transform: rotate(90deg); }
 .group-heading { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px 18px; border: 0; border-bottom: 1px solid transparent; background: #131e2f; text-align: left; cursor: pointer; }

@@ -28,6 +28,7 @@ let domainStart = now - 45 * DAY;
 let domainEnd = now + 45 * DAY;
 const collapsed = new Set<string>();
 let resizeTimer: number | undefined;
+let restoreScrollFrame: number | undefined;
 
 function html<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -390,6 +391,12 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
 }
 
 function render(): void {
+  const pageScroll = { x: window.scrollX, y: window.scrollY };
+  const chartScroll = new Map<string, number>();
+  timeline.querySelectorAll<HTMLElement>(".chart-scroll[data-group-key]").forEach((container) => {
+    const groupKey = container.dataset.groupKey;
+    if (groupKey) chartScroll.set(groupKey, container.scrollLeft);
+  });
   const groups = filteredGroups();
   timeline.replaceChildren();
   emptyState.hidden = groups.length > 0;
@@ -411,6 +418,7 @@ function render(): void {
     heading.append(chevron, title, region, count);
     const chartFrame = html("div", "chart-frame");
     const chartContainer = html("div", "chart-scroll");
+    chartContainer.dataset.groupKey = entry.group.key;
     chartFrame.append(chartContainer);
     if (collapsed.has(entry.group.key)) chartFrame.hidden = true;
     heading.addEventListener("click", () => {
@@ -421,9 +429,17 @@ function render(): void {
     });
     section.append(heading, chartFrame);
     timeline.append(section);
-    if (!collapsed.has(entry.group.key)) drawChart(chartContainer, entry);
+    if (!collapsed.has(entry.group.key)) {
+      drawChart(chartContainer, entry);
+      chartContainer.scrollLeft = chartScroll.get(entry.group.key) ?? 0;
+    }
   }
   updateFilterCounts();
+  window.cancelAnimationFrame(restoreScrollFrame ?? 0);
+  window.scrollTo(pageScroll.x, pageScroll.y);
+  restoreScrollFrame = window.requestAnimationFrame(() => {
+    window.scrollTo(pageScroll.x, pageScroll.y);
+  });
 }
 
 document.querySelectorAll<HTMLInputElement>("[data-filter] input").forEach((input) => {
