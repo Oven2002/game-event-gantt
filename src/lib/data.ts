@@ -21,6 +21,7 @@ const namedMachineIdSchema = z.object({
 const metaSchema = z.object({
   id: z.string().regex(machineId),
   name: z.string().trim().min(1),
+  priority: z.number().int().optional(),
   regions: z.array(namedMachineIdSchema).min(1),
 }).strict();
 
@@ -45,6 +46,7 @@ const versionSchema = z.object({
 const eventSchema = z.object({
   ...commonItemFields,
   type: z.string().regex(machineId),
+  priority: z.number().int().optional(),
   end: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00").optional(),
   related: z.array(z.string().regex(entryId)).optional(),
 }).strict();
@@ -158,6 +160,7 @@ function normalizeItem(
     url: raw.url,
     sources: raw.sources,
     note: raw.note,
+    priority: kind === "event" ? (raw as ParsedEvent).priority : undefined,
     sourceFile,
   };
 }
@@ -214,7 +217,7 @@ export function loadTimelineData(dataRoot = path.resolve(process.cwd(), "data"))
       const groupKey = `${meta.id}/${raw.region}`;
       const group = groups.get(groupKey) ?? {
         key: groupKey,
-        game: { id: meta.id, name: meta.name },
+        game: { id: meta.id, name: meta.name, priority: meta.priority },
         region: { id: raw.region, name: regionName },
         versions: [],
         events: [],
@@ -264,7 +267,9 @@ export function loadTimelineData(dataRoot = path.resolve(process.cwd(), "data"))
   if (issues.length) throw new DataValidationError(issues);
 
   const sortedGroups = [...groups.values()].sort((a, b) =>
-    a.game.name.localeCompare(b.game.name, "zh-CN") || a.region.name.localeCompare(b.region.name, "zh-CN")
+    (b.game.priority ?? 0) - (a.game.priority ?? 0)
+    || a.game.name.localeCompare(b.game.name, "zh-CN")
+    || a.region.name.localeCompare(b.region.name, "zh-CN")
   );
   const allItems = sortedGroups.flatMap((group) => [...group.versions, ...group.events]);
   const min = Math.min(...allItems.map((item) => item.start));

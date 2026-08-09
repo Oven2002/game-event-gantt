@@ -19,6 +19,7 @@ data/
 ```yaml
 id: genshin-impact
 name: 原神
+priority: 10
 regions:
   - id: cn
     name: 国服
@@ -57,6 +58,7 @@ events:
   - id: anniversary-2026
     name: 周年庆
     type: event
+    priority: 20
     start: "2026-09-15T10:00:00+08:00"
     end: "2026-10-25T18:00:00+08:00"
     related: ["5.0"]
@@ -78,6 +80,9 @@ events:
 
 - 版本必填：`id`、`name`、`start`、`end`、`sources`。
 - 活动必填：`id`、`name`、`type`、`start`、`sources`。
+- 游戏 `meta.yaml` 和活动均可填写整数 `priority`，数值越大显示越靠上。
+- 未填写的游戏和普通活动按 `0` 排序；正数排在默认项之前，负数排在默认项之后。
+- 版本轨道始终排第一；卡池轨道默认优先级为 `900`，活动只有显式设置更高优先级时才会排到卡池之前。
 - 活动省略 `end` 时表示单点事件；需要显示“进行中”时必须提供 `end`。
 - `related` 填写同一游戏、服务器下的版本 ID，只是展示标签。
 - `url` 是面向用户的官方详情页；`sources` 是核实时间的公开来源，至少一项。

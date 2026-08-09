@@ -18,12 +18,13 @@ export interface TimelineItem {
   url?: string;
   sources: string[];
   note?: string;
+  priority?: number;
   sourceFile: string;
 }
 
 export interface TimelineGroup {
   key: string;
-  game: NamedId;
+  game: NamedId & { priority?: number };
   region: NamedId;
   versions: TimelineItem[];
   events: TimelineItem[];

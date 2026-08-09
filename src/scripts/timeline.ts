@@ -291,14 +291,29 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
   const plotWidth = width - chartLeft - right;
   const axisHeight = 38;
   const rowHeight = 42;
-  const rows: Array<{ label: string; type: string; items: TimelineItem[] }> = [];
-  if (versions.length) rows.push({ label: "版本", type: "版本轨道", items: versions });
+  const rows: Array<{ label: string; type: string; items: TimelineItem[]; priority: number; kindOrder: number; start: number }> = [];
+  if (versions.length) rows.push({ label: "版本", type: "版本轨道", items: versions, priority: Number.POSITIVE_INFINITY, kindOrder: 0, start: versions[0].start });
   const banners = events.filter((event) => event.typeId === "banner");
   const otherEvents = events.filter((event) => event.typeId !== "banner");
   packIntoLanes(banners).forEach((items, index) => {
-    rows.push({ label: index === 0 ? "卡池" : `卡池 ${index + 1}`, type: "卡池轨道", items });
+    rows.push({
+      label: index === 0 ? "卡池" : `卡池 ${index + 1}`,
+      type: "卡池轨道",
+      items,
+      priority: Math.max(...items.map((item) => item.priority ?? 900)),
+      kindOrder: 1,
+      start: Math.min(...items.map((item) => item.start)),
+    });
   });
-  for (const event of otherEvents) rows.push({ label: event.name, type: event.typeName, items: [event] });
+  for (const event of otherEvents) {
+    rows.push({ label: event.name, type: event.typeName, items: [event], priority: event.priority ?? 0, kindOrder: 2, start: event.start });
+  }
+  rows.sort((a, b) =>
+    b.priority - a.priority
+    || a.kindOrder - b.kindOrder
+    || a.start - b.start
+    || a.items[0].id.localeCompare(b.items[0].id)
+  );
   const height = axisHeight + rows.length * rowHeight + 10;
   const labelOverlay = html("div", "chart-label-overlay");
   labelOverlay.style.width = `${chartLeft}px`;

@@ -100,4 +100,18 @@ describe("跨文件业务校验", () => {
     const root = fixture(`versions:\n  - id: v1\n    name: V1\n    start: "2026-08-01T00:00:00+08:00"\n    end: "2026-09-01T00:00:00+08:00"\n    sources: []\n`);
     expect(() => loadTimelineData(root)).toThrow(/至少提供一个来源链接/);
   });
+
+  it("按游戏优先级排序并保留活动优先级", () => {
+    const root = fixture(version, `events:\n  - id: featured-event\n    name: 重点活动\n    type: event\n    priority: 25\n    start: "2026-08-20T20:00:00+08:00"\n    sources: ["https://example.com/featured"]\n`);
+    const pinnedDirectory = path.join(root, "pinned-game");
+    fs.mkdirSync(pinnedDirectory);
+    fs.writeFileSync(path.join(pinnedDirectory, "meta.yaml"), `id: pinned-game\nname: 置顶游戏\npriority: 10\nregions:\n  - id: cn\n    name: 国服\n`);
+    fs.writeFileSync(path.join(pinnedDirectory, "cn.yaml"), `game: pinned-game\nregion: cn\nversions:\n  - id: v1\n    name: V1\n    start: "2026-08-01T00:00:00+08:00"\n    end: "2026-09-01T00:00:00+08:00"\n    sources: ["https://example.com/v1"]\n`);
+
+    const payload = loadTimelineData(root);
+    expect(payload.groups[0].game.id).toBe("pinned-game");
+    const defaultGroup = payload.groups.find((group) => group.game.id === "demo-game");
+    expect(defaultGroup?.game.priority).toBeUndefined();
+    expect(defaultGroup?.events[0].priority).toBe(25);
+  });
 });
