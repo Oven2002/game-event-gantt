@@ -1,6 +1,8 @@
 ---
 import "../styles/global.css";
+import { Image } from "astro:assets";
 import { loadTimelineData } from "../lib/data";
+import heroImage from "../assets/timeline-hero.png";
 
 const payload = loadTimelineData();
 const games = [...new Map(payload.groups.map((group) => [group.game.id, group.game])).values()];
@@ -17,17 +19,43 @@ const serialized = JSON.stringify(payload).replaceAll("<", "\\u003c");
     <title>二游版本活动时间表</title>
   </head>
   <body>
-    <header class="hero">
-      <div class="hero__eyebrow">COMMUNITY TIMELINE</div>
-      <h1>二游版本活动时间表</h1>
-      <p>把版本、卡池、活动和前瞻放到同一条北京时间轴上。</p>
-      <div class="hero__legend" aria-label="图例">
-        <span><i class="legend-swatch legend-swatch--version"></i>版本</span>
-        <span><i class="legend-swatch legend-swatch--event"></i>区间活动</span>
-        <span><i class="legend-point"></i>单点事件</span>
-        <span><i class="legend-now"></i>现在</span>
-      </div>
+    <header class="topbar">
+      <nav class="topbar__inner" aria-label="主导航">
+        <a class="topbar__brand" href={import.meta.env.BASE_URL}>
+          <span class="topbar__mark" aria-hidden="true">时</span>
+          <span>二游时间表</span>
+        </a>
+        <div class="topbar__links">
+          <a href="https://github.com/Oven2002/game-event-gantt/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">贡献数据</a>
+          <a href="https://github.com/Oven2002/game-event-gantt" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
+      </nav>
     </header>
+
+    <section class="hero" aria-labelledby="page-title">
+      <Image
+        class="hero__art"
+        src={heroImage}
+        alt=""
+        widths={[640, 960, 1280, 1600]}
+        sizes="(max-width: 760px) 100vw, 1480px"
+        format="webp"
+        quality={80}
+        loading="eager"
+        fetchpriority="high"
+      />
+      <div class="hero__content">
+        <div class="hero__eyebrow">COMMUNITY TIMELINE</div>
+        <h1 id="page-title">二游版本活动时间表</h1>
+        <p>把版本、卡池、活动和前瞻放到同一条北京时间轴上。</p>
+        <div class="hero__legend" aria-label="图例">
+          <span><i class="legend-swatch legend-swatch--version"></i>版本</span>
+          <span><i class="legend-swatch legend-swatch--event"></i>区间活动</span>
+          <span><i class="legend-point"></i>单点事件</span>
+          <span><i class="legend-now"></i>现在</span>
+        </div>
+      </div>
+    </section>
 
     <main>
       <section class="toolbar" aria-label="时间表控制栏">
