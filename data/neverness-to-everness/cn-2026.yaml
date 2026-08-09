@@ -1,0 +1,66 @@
+game: neverness-to-everness
+region: cn
+
+versions:
+  - id: "1.2"
+    name: "1.2 九百九十九夜"
+    start: "2026-07-02T11:00:00+08:00"
+    end: "2026-08-13T05:59:00+08:00"
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260701/262943.html"
+
+events:
+  - id: preview-1-3
+    name: "1.3 雾中朔望星回 前瞻特别节目"
+    type: preview
+    start: "2026-08-08T19:30:00+08:00"
+    sources:
+      - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
+  - id: banner-1-2-zhenhong
+    name: "「破晓前」限定棋盘·真红"
+    type: banner
+    start: "2026-07-02T11:00:00+08:00"
+    end: "2026-07-23T05:59:00+08:00"
+    related: ["1.2"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260701/262943.html"
+  - id: banner-1-2-yiluoyi
+    name: "「生命线」限定棋盘·伊洛伊"
+    type: banner
+    start: "2026-07-23T11:00:00+08:00"
+    end: "2026-08-13T05:59:00+08:00"
+    related: ["1.2"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260722/263234.html"
+  - id: event-999-nights
+    name: "「九百九十九夜」限时活动"
+    type: event
+    start: "2026-07-02T11:00:00+08:00"
+    end: "2026-08-13T05:59:00+08:00"
+    related: ["1.2"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260701/262943.html"
+  - id: event-summer-gift
+    name: "「夏日特别赠礼」S级常驻角色自选"
+    type: event
+    start: "2026-07-02T11:00:00+08:00"
+    end: "2026-08-13T05:59:00+08:00"
+    related: ["1.2"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260701/262943.html"
+  - id: event-huiying
+    name: "「徊影憧憧」限时活动"
+    type: event
+    start: "2026-07-10T10:00:00+08:00"
+    end: "2026-08-13T05:59:00+08:00"
+    related: ["1.2"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260701/262943.html"
+  - id: event-auction
+    name: "「即刻落槌」拍卖玩法"
+    type: event
+    start: "2026-07-23T11:00:00+08:00"
+    end: "2026-08-13T05:59:00+08:00"
+    related: ["1.2"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260722/263234.html"

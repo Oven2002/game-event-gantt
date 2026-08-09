@@ -1,0 +1,45 @@
+game: zenless-zone-zero
+region: cn
+
+versions:
+  - id: "3.1"
+    name: "3.1 漫长的告别（两周年版本）"
+    start: "2026-07-29T11:00:00+08:00"
+    end: "2026-09-09T06:00:00+08:00"
+    note: 国服维护 07/29 06:00 开始、约11:00开服；版本共42天
+    sources:
+      - "https://zenless.hoyoverse.com/m/zh-cn/news/165414"
+
+events:
+  - id: preview-3-1
+    name: 3.1 前瞻特别节目
+    type: preview
+    start: "2026-07-17T19:30:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165248"
+  - id: banner-3-1-first
+    name: "上半卡池「复乐园」蕾米埃尔 + 爱芮复刻"
+    type: banner
+    start: "2026-07-29T11:00:00+08:00"
+    end: "2026-08-19T11:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "http://news.17173.com/content/07292026/125228400.shtml"
+  - id: banner-3-1-leimiel
+    name: "「复乐园」蕾米埃尔池（整版本）"
+    type: banner
+    start: "2026-07-29T11:00:00+08:00"
+    end: "2026-09-08T14:59:00+08:00"
+    note: 周年版本特殊结构，蕾米埃尔池延续整个版本（含音擎「空羽复归之诗」）
+    related: ["3.1"]
+    sources:
+      - "http://news.17173.com/content/07292026/125228400.shtml"
+  - id: banner-3-1-second
+    name: "下半卡池「直到天空沉落」希格莉德"
+    type: banner
+    start: "2026-08-19T12:00:00+08:00"
+    end: "2026-09-09T05:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://m.ali213.net/news/gl2608/1796463.html"

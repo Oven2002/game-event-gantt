@@ -1,0 +1,63 @@
+game: arknights-endfield
+region: cn
+
+versions:
+  - id: "1.4"
+    name: "1.4 武陵决战篇·向渊行"
+    start: "2026-07-16T12:00:00+08:00"
+    end: "2026-08-20T11:59:00+08:00"
+    note: 半周年核心章节版本；结束时间为预估（下版本维护前，官方未公布）
+    sources:
+      - "https://endfield.hypergryph.com/news/9335"
+
+events:
+  - id: preview-1-4
+    name: "「相伴庆典」&「向渊行」版本前瞻特别节目"
+    type: preview
+    start: "2026-07-10T19:30:00+08:00"
+    related: ["1.4"]
+    sources:
+      - "https://live.bilibili.com/1921300321"
+  - id: banner-jue
+    name: "「临渊望北」特许寻访（诀）"
+    type: banner
+    start: "2026-07-16T12:00:00+08:00"
+    end: "2026-08-09T11:59:00+08:00"
+    related: ["1.4"]
+    sources:
+      - "https://endfield.hypergryph.com/news/9335"
+  - id: season-echoes-recall
+    name: "战争回响·追忆赛季"
+    type: event
+    start: "2026-07-16T12:00:00+08:00"
+    end: "2026-08-09T11:59:00+08:00"
+    related: ["1.4"]
+    sources:
+      - "https://www.taptap.cn/moment/834562807025372878"
+  - id: season-echoes-delirium
+    name: "战争回响·谵妄赛季"
+    type: event
+    start: "2026-08-09T12:00:00+08:00"
+    end: "2026-09-17T11:59:00+08:00"
+    note: 结束时间为预估（下版本维护前，官方未公布）
+    related: ["1.4"]
+    sources:
+      - "https://www.taptap.cn/moment/834562807025372878"
+  - id: banner-liruo
+    name: "「晨星于此闪耀」特许寻访（梨诺）"
+    type: banner
+    start: "2026-08-09T12:00:00+08:00"
+    end: "2026-09-17T11:59:00+08:00"
+    note: 结束时间为预估（下版本维护前，官方未公布）
+    related: ["1.4"]
+    sources:
+      - "https://endfield.hypergryph.com/news/1165"
+  - id: banner-yaoye
+    name: "「明曜申领」限时特卖（曜夜的首演）"
+    type: banner
+    start: "2026-08-09T12:00:00+08:00"
+    end: "2026-09-17T11:59:00+08:00"
+    note: 结束时间为预估（下版本维护前，官方未公布）
+    related: ["1.4"]
+    sources:
+      - "https://endfield.hypergryph.com/news/7216"

@@ -1,0 +1,5 @@
+id: azur-lane
+name: 碧蓝航线
+regions:
+  - id: cn
+    name: 国服
