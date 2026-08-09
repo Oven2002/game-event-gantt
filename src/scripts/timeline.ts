@@ -220,7 +220,6 @@ function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: 
 
   chart.addEventListener("pointerdown", (event) => {
     pointers.set(event.pointerId, event.clientX);
-    chart.setPointerCapture(event.pointerId);
     if (pointers.size === 1) {
       dragX = event.clientX;
       dragDomainStart = domainStart;
@@ -240,6 +239,9 @@ function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: 
       const values = [...pointers.values()];
       const distance = Math.abs(values[1] - values[0]);
       if (pinchDistance > 10 && distance > 10) {
+        for (const pointerId of pointers.keys()) {
+          if (!chart.hasPointerCapture(pointerId)) chart.setPointerCapture(pointerId);
+        }
         const center = (pinchStartDomain[0] + pinchStartDomain[1]) / 2;
         const span = (pinchStartDomain[1] - pinchStartDomain[0]) * (pinchDistance / distance);
         pendingDomain = [center - span / 2, center + span / 2];
@@ -252,7 +254,10 @@ function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: 
     }
     if (dragX === undefined) return;
     const delta = event.clientX - dragX;
-    if (Math.abs(delta) > 3) moved = true;
+    if (Math.abs(delta) > 3) {
+      moved = true;
+      if (!chart.hasPointerCapture(event.pointerId)) chart.setPointerCapture(event.pointerId);
+    }
     const span = domainEnd - domainStart;
     const nextStart = dragDomainStart - (delta / chartWidth) * span;
     pendingDomain = [nextStart, nextStart + span];
