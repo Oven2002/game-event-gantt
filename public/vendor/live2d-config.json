@@ -1,0 +1,35 @@
+{
+  "message": {
+    "default": [
+      "站点提示：可以拖动时间轴查看更远的日程。",
+      "点击时间条，就能查看精确到分钟的详情。",
+      "筛选和游戏展开状态会自动保存在这台设备上。"
+    ],
+    "console": "站点提示：调试时也要记得核对北京时间哦。",
+    "copy": "站点提示：已复制选中的内容。",
+    "visibilitychange": "欢迎回来，时间表已经准备好了。",
+    "changeSuccess": "模型已切换。",
+    "changeFail": "当前没有其他外观。",
+    "photo": "已保存截图。",
+    "goodbye": "需要时再从右下角把 Shizuku 叫回来吧。",
+    "hitokoto": "来自 $1 的一句话。",
+    "welcome": "欢迎来到 $1，Shizuku 会陪你一起查看日程。",
+    "referrer": "欢迎从 $1 来到本站。",
+    "hoverBody": "你好，这里是站点看板娘 Shizuku。",
+    "tapBody": [
+      "站点提示：当前有 {{ongoingBanners}} 个卡池正在进行。",
+      "站点提示：重要的是现在和未来，默认视窗已经向未来倾斜。"
+    ]
+  },
+  "time": [],
+  "mouseover": [],
+  "click": [],
+  "seasons": [],
+  "models": [
+    {
+      "name": "Shizuku",
+      "paths": ["__MODEL_PATH__"],
+      "message": "Shizuku 已就位。"
+    }
+  ]
+}

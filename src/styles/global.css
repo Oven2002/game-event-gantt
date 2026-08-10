@@ -167,6 +167,7 @@ main { max-width: 1480px; margin: 0 auto; padding: 0 32px 48px; }
 
 footer { padding: 32px 20px 48px; border-top: 1px solid var(--line); background: linear-gradient(135deg,#fff,#f8f3ff 55%,#fff0f7); color: var(--muted); text-align: center; font-size: 12px; }
 footer p { margin: 18px 0 0; }
+.live2d-notice { max-width: 900px; margin-right: auto; margin-left: auto; color: #8a8297; font-size: 10px; line-height: 1.6; }
 .thanks { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; }
 .thanks > span { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .thanks ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
