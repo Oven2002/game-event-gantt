@@ -3,29 +3,36 @@ region: cn
 
 versions:
   - id: luna-6
-    name: 月之六
+    name: 月之六 空月之歌·旋舞
     start: "2026-04-08T06:00:00+08:00"
     end: "2026-05-19T18:00:00+08:00"
+    note: end 为版本切换惯例（官方仅写「版本结束前」）
     sources:
-      - "https://genshin.hoyoverse.com/zh-tw/news/detail/164213"
+      - "https://ys.mihoyo.com/main/news/detail/163422"
+      - "https://ys.mihoyo.com/main/news/detail/163470"
   - id: luna-7
-    name: 月之七
+    name: 月之七 空月之歌·行律
     start: "2026-05-20T06:00:00+08:00"
     end: "2026-06-30T18:00:00+08:00"
+    note: end 为版本切换惯例（官方仅写「版本结束前」）
     sources:
-      - "https://ys.mihoyo.com/main/m/news/detail/164216"
+      - "https://ys.mihoyo.com/main/news/detail/164216"
+      - "https://ys.mihoyo.com/main/news/detail/164263"
   - id: luna-8
-    name: 月之八
+    name: 月之八 空月之歌·谐谑
     start: "2026-07-01T06:00:00+08:00"
     end: "2026-08-11T18:00:00+08:00"
+    note: end 为版本切换惯例；末期满卡池官方止于 08-11 14:59
     sources:
-      - "https://genshin.hoyoverse.com/zh-tw/news/detail/165001"
+      - "https://ys.mihoyo.com/main/news/detail/165028"
+      - "https://ys.mihoyo.com/main/news/detail/165097"
   - id: "7.0"
     name: "7.0 无神怜爱的雪国"
     start: "2026-08-12T06:00:00+08:00"
     end: "2026-09-23T18:00:00+08:00"
-    note: 当前版本，结束时间为预估（官方未公布）
+    note: 预估结束时间（官方未公布，7.0 更新说明未发布）
     sources:
+      - "https://ys.mihoyo.com/main/news/detail/165422"
       - "https://ys.mihoyo.com/main/news/detail/165475"
 
 events:
@@ -35,48 +42,51 @@ events:
     start: "2026-03-27T20:00:00+08:00"
     related: ["luna-6"]
     sources:
-      - "https://www.facebook.com/Genshinimpact.tw/posts/1477916067679311"
+      - "https://ys.mihoyo.com/main/news/detail/163278"
   - id: preview-luna-7
     name: 月之七 前瞻直播
     type: preview
-    start: "2026-05-13T20:00:00+08:00"
+    start: "2026-05-08T20:00:00+08:00"
     related: ["luna-7"]
     sources:
-      - "https://ys.mihoyo.com/main/news/detail/164216"
+      - "https://ys.mihoyo.com/main/news/detail/163860"
   - id: preview-luna-8
     name: 月之八 前瞻直播
     type: preview
     start: "2026-06-18T20:00:00+08:00"
     related: ["luna-8"]
     sources:
-      - "https://www.facebook.com/Genshinimpact.tw/posts/1552480430222874"
+      - "https://ys.mihoyo.com/main/news/detail/164767"
   - id: preview-7-0
     name: 7.0 前瞻直播
     type: preview
     start: "2026-07-31T20:00:00+08:00"
     related: ["7.0"]
     sources:
-      - "https://ys.mihoyo.com/main/news/detail/165475"
+      - "https://ys.mihoyo.com/main/news/detail/165422"
   - id: banner-7-0-upper
-    name: "7.0 上半卡池"
+    name: "7.0 上半卡池（奥黛塔+阿蕾奇诺 含阿罗夏）"
     type: banner
     start: "2026-08-12T06:00:00+08:00"
     end: "2026-09-01T17:59:00+08:00"
+    note: 精确起止官方未公布，end 09-01 为社区估算
     related: ["7.0"]
     sources:
-      - "https://forum.gamer.com.tw/C.php?bsn=36730&snA=46297"
+      - "https://ys.mihoyo.com/main/news/detail/165472"
   - id: banner-7-0-lower
-    name: "7.0 下半卡池"
+    name: "7.0 下半卡池（伊涅芙+菲林斯）"
     type: banner
     start: "2026-09-02T18:00:00+08:00"
     end: "2026-09-22T17:59:00+08:00"
+    note: 精确起止官方未公布，为社区估算
     related: ["7.0"]
     sources:
-      - "https://forum.gamer.com.tw/C.php?bsn=36730&snA=46297"
+      - "https://ys.mihoyo.com/main/news/detail/165472"
   - id: lantern-rite-2026
-    name: 海灯节
+    name: 海灯节 奔霄颂玉轮
     type: event
     start: "2026-01-30T10:00:00+08:00"
-    end: "2026-02-24T04:00:00+08:00"
+    end: "2026-02-23T03:59:00+08:00"
     sources:
-      - "https://www.bilibili.com/opus/1106019379432128548"
+      - "https://ys.mihoyo.com/main/news/detail/162404"
+      - "https://ys.mihoyo.com/main/news/detail/162387"
