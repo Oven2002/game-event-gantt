@@ -380,11 +380,40 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
   const chart = svg("svg", { class: "gantt-svg", viewBox: `0 0 ${width} ${height}`, height });
   chart.setAttribute("aria-label", `${group.game.name}${group.region.name}时间轴`);
   const clipId = `clip-${group.game.id}-${group.region.id}`;
+  const gradientPrefix = `gradient-${group.key.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+  const gradientIds = {
+    version: `${gradientPrefix}-version`,
+    event: `${gradientPrefix}-event`,
+    banner: `${gradientPrefix}-banner`,
+    maintenance: `${gradientPrefix}-maintenance`,
+    preview: `${gradientPrefix}-preview`,
+  };
   const defs = svg("defs");
   const clip = svg("clipPath", { id: clipId });
   clip.append(svg("rect", { x: chartLeft, y: 0, width: plotWidth, height }));
   defs.append(clip);
+  const addGradient = (id: string, start: string, end: string) => {
+    const gradient = svg("linearGradient", { id, x1: "0%", x2: "100%", y1: "0%", y2: "0%" });
+    gradient.append(
+      svg("stop", { offset: "0%", "stop-color": start }),
+      svg("stop", { offset: "100%", "stop-color": end }),
+    );
+    defs.append(gradient);
+  };
+  addGradient(gradientIds.version, "#5f72ef", "#9b8cff");
+  addGradient(gradientIds.event, "#8b5cf6", "#d17ee8");
+  addGradient(gradientIds.banner, "#ff5da2", "#ff9acb");
+  addGradient(gradientIds.maintenance, "#1fb9b4", "#6ee7dc");
+  addGradient(gradientIds.preview, "#ff9f43", "#ffd166");
   chart.append(defs);
+
+  const gradientForItem = (item: TimelineItem): string => {
+    if (item.kind === "version") return gradientIds.version;
+    if (item.typeId === "banner") return gradientIds.banner;
+    if (item.typeId === "maintenance") return gradientIds.maintenance;
+    if (item.typeId === "preview") return gradientIds.preview;
+    return gradientIds.event;
+  };
 
   const span = domainEnd - domainStart;
   const x = (timestamp: number) => chartLeft + ((timestamp - domainStart) / span) * plotWidth;
@@ -421,7 +450,7 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
         const points = onLeft
           ? `${markerX - 7},${centerY} ${markerX + 3},${centerY - 7} ${markerX + 3},${centerY + 7}`
           : `${markerX + 7},${centerY} ${markerX - 3},${centerY - 7} ${markerX - 3},${centerY + 7}`;
-        groupNode.append(svg("polygon", { class: "offscreen-marker", points }));
+        groupNode.append(svg("polygon", { class: "offscreen-marker", points, style: `fill:url(#${gradientForItem(item)})` }));
         const date = svg("text", {
           class: "offscreen-label",
           x: onLeft ? markerX + 8 : markerX - 8,
@@ -447,7 +476,8 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
           y: centerY - 10,
           width: Math.max(2, endX - startX),
           height: 20,
-          rx: 5,
+          rx: 10,
+          style: `fill:url(#${gradientForItem(item)})`,
         });
         groupNode.append(rect);
         if (visibleWidth > 42) {
@@ -465,7 +495,7 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
         const pointX = x(item.start);
         const groupNode = svg("g", { class: `item-shape item-${status}` });
         groupNode.append(svg("line", { class: "point-stem", x1: pointX, x2: pointX, y1: centerY - 15, y2: centerY + 15 }));
-        groupNode.append(svg("polygon", { class: "point-marker", points: `${pointX},${centerY - 7} ${pointX + 7},${centerY} ${pointX},${centerY + 7} ${pointX - 7},${centerY}` }));
+        groupNode.append(svg("polygon", { class: "point-marker", points: `${pointX},${centerY - 7} ${pointX + 7},${centerY} ${pointX},${centerY + 7} ${pointX - 7},${centerY}`, style: `fill:url(#${gradientForItem(item)})` }));
         bindItemInteraction(groupNode, group, item);
         clipped.append(groupNode);
       }
