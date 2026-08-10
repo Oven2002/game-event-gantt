@@ -26,7 +26,7 @@ events:
     note: 下半希格莉德时装官方明确 08/19 12:00 起，反推上半 08/19 11:59 止
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/m/zh-cn/news/165414"
+      - "https://zenless.hoyoverse.com/zh-cn/news/165363"
   - id: banner-3-1-leimiel
     name: "「复乐园」蕾米埃尔池（整版本）"
     type: banner
@@ -35,7 +35,7 @@ events:
     note: 周年版本特殊结构，蕾米埃尔池延续整个版本（含音擎「空羽复归之诗」）
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/m/zh-cn/news/165414"
+      - "https://zenless.hoyoverse.com/zh-cn/news/165363"
   - id: banner-3-1-second
     name: "下半卡池「直到天空沉落」希格莉德"
     type: banner
@@ -44,4 +44,132 @@ events:
     note: 希格莉德时装官方原文 08/19 12:00 起、09/09 05:59 止，佐证卡池同时间
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/m/zh-cn/news/165414"
+      - "https://zenless.hoyoverse.com/zh-cn/news/165363"
+  - id: event-zhounian
+    name: "玛瑟尔周年馈礼"
+    type: event
+    start: "2026-07-29T06:00:00+08:00"
+    end: "2026-09-09T06:00:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+  - id: event-faetong
+    name: "法厄同年度大揭秘"
+    type: event
+    start: "2026-07-29T06:00:00+08:00"
+    end: "2026-09-09T06:00:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+  - id: event-qianneng
+    name: "潜能预演·狩猎游戏"
+    type: event
+    start: "2026-07-29T06:00:00+08:00"
+    end: "2026-09-09T06:00:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+  - id: event-dianying
+    name: "点映返礼（充值返礼）"
+    type: event
+    start: "2026-07-29T06:00:00+08:00"
+    end: "2026-09-09T06:00:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165366"
+  - id: event-yunduan
+    name: "云端礼赠（签到/加密母带×10）"
+    type: event
+    start: "2026-07-29T06:00:00+08:00"
+    end: "2026-09-08T03:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+  - id: event-langhua
+    name: "恰浪花逐夏而至（露西时装）"
+    type: event
+    start: "2026-07-29T06:00:00+08:00"
+    end: "2026-09-07T03:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165394"
+  - id: event-kacha
+    name: "「咔嚓！焦点对决！」"
+    type: event
+    start: "2026-08-07T10:00:00+08:00"
+    end: "2026-08-24T03:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165513"
+  - id: event-guigui
+    name: "回归丽都 羽落重逢"
+    type: event
+    start: "2026-07-17T20:30:00+08:00"
+    end: "2026-09-09T05:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+  - id: event-shenxun
+    name: "深度巡防-三倍赏金"
+    type: event
+    start: "2026-08-12T04:00:00+08:00"
+    end: "2026-08-17T03:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165611"
+  - id: event-enne
+    name: "「嗯呢」大派送！"
+    type: event
+    start: "2026-08-19T10:00:00+08:00"
+    end: "2026-09-08T03:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+  - id: event-kazi
+    name: "咔滋酥脆出餐计划"
+    type: event
+    start: "2026-08-19T10:00:00+08:00"
+    end: "2026-09-07T03:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+  - id: event-jixian
+    name: "极危通缉与悠游假期"
+    type: event
+    start: "2026-08-24T10:00:00+08:00"
+    end: "2026-09-07T03:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+  - id: event-youcha
+    name: "叮咚！见习邮差派件中"
+    type: event
+    start: "2026-08-28T10:00:00+08:00"
+    end: "2026-09-14T03:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+  - id: event-shizhan
+    name: "实战特训-三倍悬赏"
+    type: event
+    start: "2026-09-02T04:00:00+08:00"
+    end: "2026-09-07T03:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+  - id: event-migong
+    name: "迷宫诡域：贝果计划（常驻玩法开启）"
+    type: event
+    start: "2026-08-05T10:00:00+08:00"
+    note: 常驻玩法，官方仅给开启时刻
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+  - id: event-ducheng
+    name: "3.1「丽都城募」"
+    type: event
+    start: "2026-07-29T06:00:00+08:00"
+    end: "2026-09-07T03:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165388"

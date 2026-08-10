@@ -6,17 +6,16 @@ versions:
     name: "4.4 鸣笛于归寂之时"
     start: "2026-07-15T06:00:00+08:00"
     end: "2026-08-26T06:00:00+08:00"
-    note: 版本持续时间为官方更新说明原文；end 即 4.5 维护开始时刻
+    note: 版本持续时间为官方更新说明原文；end 即 4.5 维护开始
     sources:
       - "https://sr.mihoyo.com/news/165187"
       - "https://sr.mihoyo.com/news/165210"
 
 events:
   - id: preview-4-4
-    name: "4.4 前瞻特别节目「鸣笛于归寂之时」"
+    name: 4.4 前瞻特别节目
     type: preview
     start: "2026-07-03T19:30:00+08:00"
-    end: "2026-07-03T20:26:00+08:00"
     related: ["4.4"]
     sources:
       - "https://www.miyoushe.com/sr/article/76412990"
@@ -29,15 +28,15 @@ events:
     related: ["4.4"]
     sources:
       - "https://sr.mihoyo.com/news/165208"
-  - id: banner-4-4-first
-    name: "4.4 上半卡池：火花/丹恒·腾荒/长夜月返场"
+  - id: banner-4-4-upper
+    name: "4.4 上半返场：火花/丹恒·腾荒/长夜月"
     type: banner
     start: "2026-07-15T11:00:00+08:00"
     end: "2026-08-05T11:59:00+08:00"
     related: ["4.4"]
     sources:
       - "https://sr.mihoyo.com/news/165208"
-  - id: banner-4-4-second
+  - id: banner-4-4-lower
     name: "4.4 下半卡池：刻律德菈/那刻夏/砂金返场"
     type: banner
     start: "2026-08-05T12:00:00+08:00"
@@ -45,3 +44,54 @@ events:
     related: ["4.4"]
     sources:
       - "https://sr.mihoyo.com/news/165506"
+  - id: banner-fate
+    name: "Fate[UBW] 联动跃迁：远坂凛/吉尔伽美什"
+    type: banner
+    start: "2026-07-24T12:00:00+08:00"
+    end: "2026-08-25T15:00:00+08:00"
+    note: "开始时刻官方确认 12:00；结束按版本跃迁统一 08/25 15:00 推算"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165117"
+  - id: event-fantan
+    name: "「反贪『砖』家」主题活动"
+    type: event
+    start: "2026-07-15T06:00:00+08:00"
+    end: "2026-08-26T03:59:00+08:00"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165210"
+  - id: event-fate-main
+    name: "「命运/银河铁道之夜」Fate 联动主题活动"
+    type: event
+    start: "2026-07-24T12:00:00+08:00"
+    end: "2026-08-26T03:59:00+08:00"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165210"
+  - id: event-mingyun
+    name: "「命运赠礼」累计消耗送联动光锥"
+    type: event
+    start: "2026-07-24T12:00:00+08:00"
+    end: "2026-08-26T06:00:00+08:00"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165210"
+  - id: event-xunxing
+    name: "「巡星之礼」7日签到"
+    type: event
+    start: "2026-07-15T06:00:00+08:00"
+    end: "2026-08-26T03:59:00+08:00"
+    note: "起止按全版本惯例推算"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165210"
+  - id: event-yixiang
+    name: "「异相仲裁·尘世卷中」高难挑战"
+    type: event
+    start: "2026-07-15T06:00:00+08:00"
+    end: "2026-08-26T03:59:00+08:00"
+    note: "起止按版本周期推算"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165210"
