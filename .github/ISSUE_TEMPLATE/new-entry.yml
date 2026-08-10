@@ -3,6 +3,13 @@ description: 提交可核验的版本或活动时间
 title: "[数据] "
 labels: ["data"]
 body:
+  - type: dropdown
+    id: change_type
+    attributes:
+      label: 变更类型
+      options: ["新增条目", "修正已有条目"]
+    validations:
+      required: true
   - type: input
     id: game
     attributes:
@@ -13,8 +20,14 @@ body:
     id: region
     attributes:
       label: 服务器
+      placeholder: "国服"
     validations:
       required: true
+  - type: input
+    id: entry_id
+    attributes:
+      label: 已有条目 ID（修正时填写）
+      description: 可在 YAML 中查看 id；新增条目或不知道时可以留空。
   - type: input
     id: name
     attributes:
@@ -32,7 +45,7 @@ body:
     id: type
     attributes:
       label: 活动类型
-      description: 版本可填写“版本”；活动请填写活动、卡池、前瞻直播、维护等。
+      description: 版本填写“版本”；活动填写活动、卡池、前瞻直播、维护等。
     validations:
       required: true
   - type: input
@@ -47,25 +60,48 @@ body:
     attributes:
       label: 结束时间（北京时间，可选）
       description: 版本和区间活动必填；单点事件留空。
+  - type: input
+    id: related
+    attributes:
+      label: 关联版本（可选）
+      description: 填写同一游戏、服务器的版本 ID。
+  - type: textarea
+    id: current_value
+    attributes:
+      label: 当前值（修正时填写）
+      description: 说明现有数据哪里不正确。
+  - type: textarea
+    id: expected_value
+    attributes:
+      label: 期望值或修改说明
+    validations:
+      required: true
   - type: textarea
     id: sources
     attributes:
       label: 数据来源
-      description: 每行一个公开 HTTP(S) 链接。
+      description: 每行一个公开 HTTP(S) 链接，优先官方来源。
     validations:
       required: true
   - type: input
     id: url
     attributes:
-      label: 官方详情页（可选）
+      label: 用户详情页（可选）
   - type: textarea
     id: note
     attributes:
-      label: 补充说明
+      label: 备注或预估依据
+      description: 如果包含预估时间，请写明预估字段、依据和待确认信息。
+  - type: checkboxes
+    id: estimate
+    attributes:
+      label: 预估数据
+      options:
+        - label: 本条目包含预估时间，且已在备注中说明依据。
   - type: checkboxes
     id: checks
     attributes:
       label: 提交确认
       options:
-        - label: 我已将时间换算为北京时间，并确认来源可公开访问。
+        - label: 我已确认来源可公开访问，并按北京时间填写。
           required: true
