@@ -6,7 +6,7 @@ versions:
     name: "3.1 漫长的告别（两周年版本）"
     start: "2026-07-29T11:00:00+08:00"
     end: "2026-09-09T06:00:00+08:00"
-    note: 国服维护 07/29 06:00 开始、约11:00开服；版本共42天
+    note: 国服维护 07/29 06:00 开始、约11:00开服；版本共42天，官方明确结束 09/09 06:00
     sources:
       - "https://zenless.hoyoverse.com/m/zh-cn/news/165414"
 
@@ -23,9 +23,10 @@ events:
     type: banner
     start: "2026-07-29T11:00:00+08:00"
     end: "2026-08-19T11:59:00+08:00"
+    note: 下半希格莉德时装官方明确 08/19 12:00 起，反推上半 08/19 11:59 止
     related: ["3.1"]
     sources:
-      - "http://news.17173.com/content/07292026/125228400.shtml"
+      - "https://zenless.hoyoverse.com/m/zh-cn/news/165414"
   - id: banner-3-1-leimiel
     name: "「复乐园」蕾米埃尔池（整版本）"
     type: banner
@@ -34,12 +35,13 @@ events:
     note: 周年版本特殊结构，蕾米埃尔池延续整个版本（含音擎「空羽复归之诗」）
     related: ["3.1"]
     sources:
-      - "http://news.17173.com/content/07292026/125228400.shtml"
+      - "https://zenless.hoyoverse.com/m/zh-cn/news/165414"
   - id: banner-3-1-second
     name: "下半卡池「直到天空沉落」希格莉德"
     type: banner
     start: "2026-08-19T12:00:00+08:00"
     end: "2026-09-09T05:59:00+08:00"
+    note: 希格莉德时装官方原文 08/19 12:00 起、09/09 05:59 止，佐证卡池同时间
     related: ["3.1"]
     sources:
-      - "https://m.ali213.net/news/gl2608/1796463.html"
+      - "https://zenless.hoyoverse.com/m/zh-cn/news/165414"
