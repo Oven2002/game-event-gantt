@@ -8,17 +8,6 @@ declare global {
 
 const assetUrl = (path: string) => new URL(path, new URL(import.meta.env.BASE_URL, window.location.origin)).href;
 
-function loadStyle(path: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = assetUrl(path);
-    link.onload = () => resolve();
-    link.onerror = () => reject(new Error(`无法加载样式：${path}`));
-    document.head.append(link);
-  });
-}
-
 function loadModule(path: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
@@ -77,7 +66,6 @@ async function initializeMascot(): Promise<void> {
   try {
     const [response] = await Promise.all([
       fetch(assetUrl("vendor/live2d-config.json")),
-      loadStyle("vendor/live2d-widget/dist/waifu.css").then(() => loadStyle("vendor/mascot.css")),
       loadModule("vendor/live2d-widget/dist/waifu-tips.js"),
     ]);
     if (!response.ok) throw new Error(`配置加载失败：${response.status}`);
