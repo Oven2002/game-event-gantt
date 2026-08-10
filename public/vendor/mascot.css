@@ -1,12 +1,17 @@
 #waifu {
   z-index: 18;
-  right: 14px;
+  right: 2px;
   left: auto;
+  transform: translateY(38px) scale(.82);
+  transform-origin: right bottom;
   filter: drop-shadow(0 14px 18px rgba(76, 48, 139, .2));
 }
 
+#waifu:hover { transform: translateY(32px) scale(.82); }
+
 #waifu-tips {
-  right: 14px;
+  right: 2px;
+  width: 230px;
   margin: -36px 8px;
   border: 1px solid rgba(162, 155, 254, .62);
   border-radius: 16px;
@@ -49,9 +54,9 @@
 #waifu-toggle:focus-visible, #waifu-tool span:focus-visible { outline: 3px solid #fd79a8; outline-offset: 3px; }
 
 @media (max-width: 760px) {
-  #waifu { right: 2px; transform: translateY(42px) scale(.78); transform-origin: right bottom; }
-  #waifu:hover { transform: translateY(38px) scale(.78); }
-  #waifu-tips { right: 0; width: 230px; font-size: 13px; }
+  #waifu { right: 0; transform: translateY(54px) scale(.68); }
+  #waifu:hover { transform: translateY(50px) scale(.68); }
+  #waifu-tips { right: 0; width: 210px; font-size: 13px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -10,6 +10,7 @@ import {
 } from "../src/lib/preferences.ts";
 import { domainAroundAnchor } from "../src/lib/timeline-domain.ts";
 import { packIntoLanes, statusAt } from "../src/lib/types.ts";
+import { parseEffectsPreferences } from "../src/lib/effects-preferences.ts";
 
 const temporaryDirectories: string[] = [];
 
@@ -114,6 +115,20 @@ describe("时间轴偏好", () => {
   it("未保存的新筛选项保留页面默认值", () => {
     expect(preferenceValue({ existing: false }, "new-game", true)).toBe(true);
     expect(preferenceValue({ existing: false }, "new-status", false)).toBe(false);
+  });
+});
+
+describe("页面特效偏好", () => {
+  it("首次访问采用系统动效默认值并显示看板娘", () => {
+    expect(parseEffectsPreferences(null, true)).toEqual({ sakuraEnabled: true, mascotVisible: true });
+    expect(parseEffectsPreferences(null, false)).toEqual({ sakuraEnabled: false, mascotVisible: true });
+  });
+
+  it("恢复合法字段并忽略损坏内容", () => {
+    expect(parseEffectsPreferences('{"sakuraEnabled":false,"mascotVisible":false}', true))
+      .toEqual({ sakuraEnabled: false, mascotVisible: false });
+    expect(parseEffectsPreferences("not-json", true))
+      .toEqual({ sakuraEnabled: true, mascotVisible: true });
   });
 });
 
