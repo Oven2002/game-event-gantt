@@ -3,12 +3,16 @@
   "private": true,
   "license": "MIT",
   "type": "module",
+  "workspaces": [
+    "vendor/live2d-widget"
+  ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "dev": "astro dev",
     "build": "npm run validate:data && astro check && astro build",
+    "build:live2d": "node scripts/build-live2d.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "validate:data": "node --experimental-strip-types scripts/validate-data.ts",

@@ -17,13 +17,17 @@ function findCubismDir() {
 }
 
 const cubismDir = findCubismDir();
+const isLoggerModule = (id) => id.replaceAll('\\', '/').endsWith('/build/logger.js');
 
 export default {
   input: 'build/waifu-tips.js',
   output: {
     dir: 'dist/',
     format: 'esm',
+    entryFileNames: '[name].js',
     chunkFileNames: 'chunk/[name].js',
+    minifyInternalExports: false,
+    manualChunks: (id) => isLoggerModule(id) ? 'logger' : undefined,
     sourcemap: true,
     banner: `/*!
  * Live2D Widget

@@ -12,6 +12,34 @@ import { domainAroundAnchor } from "../src/lib/timeline-domain.ts";
 import { packIntoLanes, statusAt } from "../src/lib/types.ts";
 import { parseEffectsPreferences } from "../src/lib/effects-preferences.ts";
 import { resolveAssetUrl } from "../src/lib/asset-url.ts";
+import {
+  DAY,
+  beijingDayKey,
+  beijingDayStart,
+  formatTimelineTick,
+  isBeijingWeekend,
+} from "../src/lib/calendar.ts";
+
+describe("Beijing calendar ticks", () => {
+  it("switches date and weekend status at Beijing midnight", () => {
+    const fridayBeforeMidnight = Date.parse("2026-08-07T15:59:00Z");
+    const saturdayMidnight = Date.parse("2026-08-07T16:00:00Z");
+
+    expect(isBeijingWeekend(fridayBeforeMidnight)).toBe(false);
+    expect(isBeijingWeekend(saturdayMidnight)).toBe(true);
+    expect(beijingDayStart(saturdayMidnight)).toBe(saturdayMidnight);
+    expect(beijingDayKey(saturdayMidnight)).not.toBe(beijingDayKey(saturdayMidnight - 1));
+    expect(beijingDayKey(saturdayMidnight)).toBe(beijingDayKey(saturdayMidnight + DAY - 1));
+  });
+
+  it("uses weekday and time labels at appropriate zoom levels", () => {
+    const saturdayMidnight = Date.parse("2026-08-07T16:00:00Z");
+
+    expect(formatTimelineTick(saturdayMidnight, 28 * DAY)).toEqual({ primary: "8/8", secondary: "周六" });
+    expect(formatTimelineTick(saturdayMidnight, 2 * DAY)).toEqual({ primary: "周六", secondary: "00:00" });
+    expect(formatTimelineTick(saturdayMidnight, 180 * DAY).secondary).toBeUndefined();
+  });
+});
 
 const temporaryDirectories: string[] = [];
 
@@ -150,6 +178,21 @@ describe("Live2D 看板娘资源", () => {
     ["mao", "mao_pro.model3.json", 7],
     ["hibiki", "hibiki.model3.json", 5],
   ] as const;
+
+  it("Live2D runtime uses a stable logger chunk without circular entry imports", () => {
+    const dist = path.join(process.cwd(), "public/vendor/live2d-widget/dist");
+    const entry = fs.readFileSync(path.join(dist, "waifu-tips.js"), "utf8");
+    const cubism2 = fs.readFileSync(path.join(dist, "chunk/index.js"), "utf8");
+    const cubism5 = fs.readFileSync(path.join(dist, "chunk/index2.js"), "utf8");
+    const logger = fs.readFileSync(path.join(dist, "chunk/logger.js"), "utf8");
+
+    expect(entry).toContain("./chunk/logger.js");
+    expect(cubism2).toContain("./logger.js");
+    expect(cubism5).toContain("./logger.js");
+    expect(cubism2).not.toContain("../waifu-tips.js");
+    expect(cubism5).not.toContain("../waifu-tips.js");
+    expect(logger).toMatch(/export\{[^}]*\bas logger\b[^}]*\}/);
+  });
 
   it("默认使用 Mao 并提供 Hibiki 切换", () => {
     const config = JSON.parse(fs.readFileSync(path.join(process.cwd(), "public/vendor/live2d-config.json"), "utf8"));

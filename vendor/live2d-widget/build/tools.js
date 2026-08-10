@@ -76,8 +76,8 @@ class ToolsManager {
             quit: {
                 icon: fa_xmark,
                 callback: () => {
-                    var _b;
-                    const showToggleAfterQuit = (_b = this.config.showToggleAfterQuit) !== null && _b !== void 0 ? _b : true;
+                    var _a;
+                    const showToggleAfterQuit = (_a = this.config.showToggleAfterQuit) !== null && _a !== void 0 ? _a : true;
                     if (showToggleAfterQuit) {
                         localStorage.setItem('waifu-display', Date.now().toString());
                     }
@@ -92,14 +92,14 @@ class ToolsManager {
                         return;
                     waifu.classList.remove('waifu-active');
                     setTimeout(() => {
-                        var _b;
+                        var _a;
                         waifu.classList.add('waifu-hidden');
                         if (showToggleAfterQuit) {
                             const waifuToggle = document.getElementById('waifu-toggle');
                             waifuToggle === null || waifuToggle === void 0 ? void 0 : waifuToggle.classList.add('waifu-toggle-active');
                         }
                         else {
-                            (_b = document.getElementById('waifu-toggle')) === null || _b === void 0 ? void 0 : _b.remove();
+                            (_a = document.getElementById('waifu-toggle')) === null || _a === void 0 ? void 0 : _a.remove();
                         }
                     }, 3000);
                 }
@@ -107,7 +107,7 @@ class ToolsManager {
         };
     }
     registerTools() {
-        var _b;
+        var _a;
         if (!Array.isArray(this.config.tools)) {
             this.config.tools = Object.keys(this.tools);
         }
@@ -117,8 +117,8 @@ class ToolsManager {
                 const element = document.createElement('span');
                 element.id = `waifu-tool-${toolName}`;
                 element.innerHTML = icon;
-                (_b = document
-                    .getElementById('waifu-tool')) === null || _b === void 0 ? void 0 : _b.insertAdjacentElement('beforeend', element);
+                (_a = document
+                    .getElementById('waifu-tool')) === null || _a === void 0 ? void 0 : _a.insertAdjacentElement('beforeend', element);
                 element.addEventListener('click', callback);
             }
         }

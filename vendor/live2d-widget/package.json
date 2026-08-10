@@ -16,6 +16,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc && rollup -c rollup.config.js",
+    "build:runtime": "tsc -p tsconfig.runtime.json && rollup -c rollup.runtime.config.js",
     "build-dev": "rollup -c rollup.config.js -w",
     "eslint": "eslint src/",
     "prepublishOnly": "npm run build"

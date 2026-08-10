@@ -165,9 +165,9 @@ class ModelManager {
     configureCubism5InputHandlers() {
         const delegate = this.cubism5model;
         delegate.onMouseMove = (event) => {
-            var _a, _b, _c;
-            const live2dManager = (_b = (_a = delegate.subdelegates.at(0)) === null || _a === void 0 ? void 0 : _a.getLive2DManager()) !== null && _b !== void 0 ? _b : undefined;
-            const model = (_c = live2dManager === null || live2dManager === void 0 ? void 0 : live2dManager._models) === null || _c === void 0 ? void 0 : _c.at(0);
+            var _a, _b;
+            const live2dManager = (_a = delegate.subdelegates.at(0)) === null || _a === void 0 ? void 0 : _a.getLive2DManager();
+            const model = (_b = live2dManager === null || live2dManager === void 0 ? void 0 : live2dManager._models) === null || _b === void 0 ? void 0 : _b.at(0);
             if (!model || model._state !== 22)
                 return;
             const { x, y } = delegate.transformOffset(event);
@@ -177,13 +177,13 @@ class ModelManager {
             }
         };
         delegate.onMouseEnd = () => {
-            var _a, _b, _c;
-            (_c = (_b = (_a = delegate.subdelegates.at(0)) === null || _a === void 0 ? void 0 : _a.getLive2DManager()) === null || _b === void 0 ? void 0 : _b.onDrag) === null || _c === void 0 ? void 0 : _c.call(_b, 0, 0);
+            var _a, _b;
+            (_b = (_a = delegate.subdelegates.at(0)) === null || _a === void 0 ? void 0 : _a.getLive2DManager()) === null || _b === void 0 ? void 0 : _b.onDrag(0, 0);
         };
         delegate.onTap = (event) => {
-            var _a, _b, _c;
-            const live2dManager = (_b = (_a = delegate.subdelegates.at(0)) === null || _a === void 0 ? void 0 : _a.getLive2DManager()) !== null && _b !== void 0 ? _b : undefined;
-            const model = (_c = live2dManager === null || live2dManager === void 0 ? void 0 : live2dManager._models) === null || _c === void 0 ? void 0 : _c.at(0);
+            var _a, _b;
+            const live2dManager = (_a = delegate.subdelegates.at(0)) === null || _a === void 0 ? void 0 : _a.getLive2DManager();
+            const model = (_b = live2dManager === null || live2dManager === void 0 ? void 0 : live2dManager._models) === null || _b === void 0 ? void 0 : _b.at(0);
             if (!model || model._state !== 22)
                 return;
             const { x, y } = delegate.transformOffset(event);

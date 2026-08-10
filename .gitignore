@@ -1,5 +1,7 @@
 node_modules/
 dist/
+!/public/vendor/live2d-widget/dist/
+!/public/vendor/live2d-widget/dist/**
 .astro/
 .DS_Store
 *.log

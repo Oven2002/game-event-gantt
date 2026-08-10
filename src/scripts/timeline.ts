@@ -8,10 +8,17 @@ import {
   preferenceValue,
   type FilterName,
 } from "../lib/preferences";
+import {
+  DAY,
+  MINUTE,
+  beijingDayKey,
+  beijingDayStart,
+  formatBeijingDate,
+  formatTimelineTick,
+  isBeijingWeekend,
+} from "../lib/calendar";
 
 const NS = "http://www.w3.org/2000/svg";
-const DAY = 86_400_000;
-const MINUTE = 60_000;
 const INITIAL_SPAN = 28 * DAY;
 const NOW_POSITION = 0.25;
 const PREFERENCES_KEY = "game-event-gantt.preferences.v1";
@@ -106,28 +113,6 @@ function updateFilterCounts(): void {
   }
 }
 
-function formatDate(timestamp: number, includeYear = true): string {
-  return new Intl.DateTimeFormat("zh-CN", {
-    timeZone: "Asia/Shanghai",
-    year: includeYear ? "numeric" : undefined,
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).format(timestamp);
-}
-
-function formatTick(timestamp: number, span: number): string {
-  if (span <= 2 * DAY) {
-    return new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(timestamp);
-  }
-  if (span <= 120 * DAY) {
-    return new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", month: "numeric", day: "numeric" }).format(timestamp);
-  }
-  return new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", year: "2-digit", month: "short" }).format(timestamp);
-}
-
 function tickStep(span: number): number {
   const candidates = [15 * MINUTE, 30 * MINUTE, 60 * MINUTE, 3 * 60 * MINUTE, 6 * 60 * MINUTE, 12 * 60 * MINUTE, DAY, 2 * DAY, 7 * DAY, 14 * DAY, 30 * DAY, 90 * DAY, 180 * DAY];
   return candidates.find((candidate) => span / candidate <= 10) ?? 365 * DAY;
@@ -152,7 +137,7 @@ function setText(node: Element, text: string): void {
 
 function addSvgTitle(node: SVGElement, item: TimelineItem): void {
   const title = svg("title");
-  title.textContent = `${item.name}：${formatDate(item.start)}${item.end ? ` — ${formatDate(item.end)}` : ""}`;
+  title.textContent = `${item.name}：${formatBeijingDate(item.start)}${item.end ? ` — ${formatBeijingDate(item.end)}` : ""}`;
   node.append(title);
 }
 
@@ -179,8 +164,8 @@ function showDetail(group: TimelineGroup, item: TimelineItem): void {
   const pill = html("span", `status-pill status-pill--${status}`);
   pill.textContent = STATUS_NAMES[status];
   addRow("状态", pill);
-  addRow("开始", formatDate(item.start));
-  if (item.end !== undefined) addRow("结束", formatDate(item.end));
+  addRow("开始", formatBeijingDate(item.start));
+  if (item.end !== undefined) addRow("结束", formatBeijingDate(item.end));
   if (item.related.length) {
     const names = new Map(group.versions.map((version) => [version.id, version.name]));
     addRow("关联版本", item.related.map((id) => names.get(id) ?? id).join("、"));
@@ -420,13 +405,45 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
   const plotViewport = svg("g", { "clip-path": `url(#${clipId})` });
   const clipped = svg("g", { class: "plot-layer" });
   plotViewport.append(clipped);
+
+  // Keep calendar context visible without adding any data fields. Beijing has
+  // no daylight-saving changes, so each local day is a fixed 24-hour interval.
+  for (let day = beijingDayStart(domainStart); day < domainEnd; day += DAY) {
+    if (!isBeijingWeekend(day + 12 * 60 * MINUTE)) continue;
+    const startX = Math.max(chartLeft, x(day));
+    const endX = Math.min(chartLeft + plotWidth, x(day + DAY));
+    if (endX > startX) {
+      clipped.append(svg("rect", {
+        class: "weekend-band",
+        x: startX,
+        y: 0,
+        width: endX - startX,
+        height,
+      }));
+    }
+  }
+
   const step = tickStep(span);
   const firstTick = Math.floor(domainStart / step) * step;
   for (let tick = firstTick; tick <= domainEnd + step; tick += step) {
     const tickX = x(tick);
     clipped.append(svg("line", { class: "grid-line", x1: tickX, x2: tickX, y1: 28, y2: height }));
-    const label = svg("text", { class: "axis-label", x: tickX + 4, y: 18 });
-    setText(label, formatTick(tick, span));
+    const tickLabel = formatTimelineTick(tick, span);
+    const today = beijingDayKey(tick) === beijingDayKey(now);
+    const weekend = Boolean(tickLabel.secondary) && isBeijingWeekend(tick);
+    const label = svg("text", {
+      class: `axis-label${today ? " axis-label--today" : ""}${weekend ? " axis-label--weekend" : ""}`,
+      x: tickX + 4,
+      y: tickLabel.secondary ? 14 : 18,
+    });
+    const primary = svg("tspan", { class: "axis-label-primary", x: tickX + 4, y: tickLabel.secondary ? 14 : 18 });
+    setText(primary, tickLabel.primary);
+    label.append(primary);
+    if (tickLabel.secondary) {
+      const secondary = svg("tspan", { class: "axis-label-secondary", x: tickX + 4, y: 29 });
+      setText(secondary, tickLabel.secondary);
+      label.append(secondary);
+    }
     clipped.append(label);
   }
 
@@ -457,7 +474,7 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
           y: centerY + 4,
           "text-anchor": onLeft ? "start" : "end",
         });
-        setText(date, formatDate(onLeft ? itemEnd : item.start, false));
+        setText(date, formatBeijingDate(onLeft ? itemEnd : item.start, false));
         groupNode.append(date);
         bindItemInteraction(groupNode, group, item);
         clipped.append(groupNode);
