@@ -8,17 +8,6 @@ declare global {
 
 const assetUrl = (path: string) => new URL(path, new URL(import.meta.env.BASE_URL, window.location.origin)).href;
 
-function loadModule(path: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.type = "module";
-    script.src = assetUrl(path);
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`无法加载脚本：${path}`));
-    document.head.append(script);
-  });
-}
-
 function ongoingBannerCount(): number {
   const data = document.querySelector<HTMLScriptElement>("#timeline-data")?.textContent;
   if (!data) return 0;
@@ -64,10 +53,7 @@ function makeAccessible(): void {
 
 async function initializeMascot(): Promise<void> {
   try {
-    const [response] = await Promise.all([
-      fetch(assetUrl("vendor/live2d-config.json")),
-      loadModule("vendor/live2d-widget/dist/waifu-tips.js"),
-    ]);
+    const response = await fetch(assetUrl("vendor/live2d-config.json"));
     if (!response.ok) throw new Error(`配置加载失败：${response.status}`);
     const config = await response.json() as Record<string, any>;
     const bannerCount = ongoingBannerCount();
