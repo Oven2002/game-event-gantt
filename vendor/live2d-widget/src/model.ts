@@ -6,7 +6,6 @@
 import { showMessage } from './message.js';
 import { loadExternalResource, randomOtherOption } from './utils.js';
 import type Cubism2Model from './cubism2/index.js';
-import type { AppDelegate as Cubism5Model } from './cubism5/index.js';
 import logger, { LogLevel } from './logger.js';
 
 interface ModelListCDN {
@@ -86,9 +85,10 @@ class ModelManager {
   private _modelTexturesId: number;
   private modelList: ModelListCDN | null = null;
   private cubism2model: Cubism2Model | undefined;
-  private cubism5model: Cubism5Model | undefined;
+  private cubism5model: any;
   private currentModelVersion: number;
   private loading: boolean;
+  private modelSwitchQueue: Promise<void>;
   private modelJSONCache: Record<string, any>;
   private models: ModelList[];
 
@@ -129,6 +129,7 @@ class ModelManager {
     this._modelTexturesId = modelTexturesId;
     this.currentModelVersion = 0;
     this.loading = false;
+    this.modelSwitchQueue = Promise.resolve();
     this.modelJSONCache = {};
     this.models = models;
   }
@@ -213,10 +214,30 @@ class ModelManager {
     return 2;
   }
 
-  async loadLive2D(modelSettingPath: string, modelSetting: object) {
+  async waitForCubism5ModelReady(timeoutMs = 30000): Promise<void> {
+    const live2dManager = this.cubism5model?.subdelegates.at(0)?.getLive2DManager();
+    const model = live2dManager?._models?.at(0);
+    if (!model) throw new Error('Cubism 5 model was not created.');
+    const startedAt = performance.now();
+    await new Promise<void>((resolve, reject) => {
+      const checkReady = () => {
+        // LoadStep.CompleteSetup in the bundled Cubism SDK.
+        if (model._state === 22) {
+          resolve();
+        } else if (performance.now() - startedAt >= timeoutMs) {
+          reject(new Error('Timed out while loading Cubism 5 model.'));
+        } else {
+          setTimeout(checkReady, 16);
+        }
+      };
+      checkReady();
+    });
+  }
+
+  async loadLive2D(modelSettingPath: string, modelSetting: object): Promise<boolean> {
     if (this.loading) {
       logger.warn('Still loading. Abort.');
-      return;
+      return false;
     }
     this.loading = true;
     try {
@@ -225,7 +246,7 @@ class ModelManager {
         if (!this.cubism2model) {
           if (!this.cubism2Path) {
             logger.error('No cubism2Path set, cannot load Cubism 2 Core.')
-            return;
+            return false;
           }
           await loadExternalResource(this.cubism2Path, 'js');
           const { default: Cubism2Model } = await import('./cubism2/index.js');
@@ -233,6 +254,7 @@ class ModelManager {
         }
         if (this.currentModelVersion === 3) {
           (this.cubism5model as any).release();
+          this.cubism5model = undefined;
           // Recycle WebGL resources
           this.resetCanvas();
         }
@@ -244,15 +266,17 @@ class ModelManager {
       } else {
         if (!this.cubism5Path) {
           logger.error('No cubism5Path set, cannot load Cubism 5 Core.')
-          return;
+          return false;
         }
-        await loadExternalResource(this.cubism5Path, 'js');
-        const { AppDelegate: Cubism5Model } = await import('./cubism5/index.js');
-        this.cubism5model = new (Cubism5Model as any)();
         if (this.currentModelVersion === 2) {
           this.cubism2model.destroy();
           // Recycle WebGL resources
           this.resetCanvas();
+        }
+        if (!this.cubism5model) {
+          await loadExternalResource(this.cubism5Path, 'js');
+          const { AppDelegate: Cubism5Model } = await import('./cubism5/index.js');
+          this.cubism5model = new (Cubism5Model as any)();
         }
         if (this.currentModelVersion === 2 || !this.cubism5model.subdelegates.at(0)) {
           this.cubism5model.initialize();
@@ -261,13 +285,17 @@ class ModelManager {
         } else {
           this.cubism5model.changeModel(modelSettingPath);
         }
+        await this.waitForCubism5ModelReady();
       }
       logger.info(`Model ${modelSettingPath} (Cubism version ${version}) loaded`);
       this.currentModelVersion = version;
+      return true;
     } catch (err) {
       console.error('loadLive2D failed', err);
+      return false;
+    } finally {
+      this.loading = false;
     }
-    this.loading = false;
   }
 
   async loadTextureCache(modelName: string): Promise<any[]> {
@@ -279,12 +307,16 @@ class ModelManager {
    * Load the specified model.
    * @param {string | string[]} message - Loading message.
    */
-  async loadModel(message: string | string[]) {
+  async loadModel(
+    message: string | string[],
+    modelId = this.modelId,
+    modelTexturesId = this.modelTexturesId
+  ): Promise<boolean> {
     let modelSettingPath, modelSetting;
     if (this.useCDN) {
-      let modelName = this.modelList.models[this.modelId];
+      let modelName = this.modelList.models[modelId];
       if (Array.isArray(modelName)) {
-        modelName = modelName[this.modelTexturesId];
+        modelName = modelName[modelTexturesId];
       }
       modelSettingPath = `${this.cdnPath}model/${modelName}/index.json`;
       modelSetting = await this.fetchWithCache(modelSettingPath);
@@ -293,17 +325,18 @@ class ModelManager {
         const textureCache = await this.loadTextureCache(modelName);
         // this.loadTextureCache may return an empty array
         if (textureCache.length > 0) {
-          let textures = textureCache[this.modelTexturesId];
+          let textures = textureCache[modelTexturesId];
           if (typeof textures === 'string') textures = [textures];
           modelSetting.textures = textures;
         }
       }
     } else {
-      modelSettingPath = this.models[this.modelId].paths[this.modelTexturesId];
+      modelSettingPath = this.models[modelId].paths[modelTexturesId];
       modelSetting = await this.fetchWithCache(modelSettingPath);
     }
-    await this.loadLive2D(modelSettingPath, modelSetting);
-    showMessage(message, 4000, 10);
+    const loaded = await this.loadLive2D(modelSettingPath, modelSetting);
+    if (loaded) showMessage(message, 4000, 10);
+    return loaded;
   }
 
   /**
@@ -348,15 +381,24 @@ class ModelManager {
   /**
    * Load the next character's model.
    */
-  async loadNextModel() {
-    this.modelTexturesId = 0;
-    if (this.useCDN) {
-      this.modelId = (this.modelId + 1) % this.modelList.models.length;
-      await this.loadModel(this.modelList.messages[this.modelId]);
-    } else {
-      this.modelId = (this.modelId + 1) % this.models.length;
-      await this.loadModel(this.models[this.modelId].message);
-    }
+  loadNextModel(): Promise<void> {
+    const switchModel = async () => {
+      const modelCount = this.useCDN ? this.modelList.models.length : this.models.length;
+      const nextModelId = (this.modelId + 1) % modelCount;
+      const message = this.useCDN
+        ? this.modelList.messages[nextModelId]
+        : this.models[nextModelId].message;
+      const loaded = await this.loadModel(message, nextModelId, 0);
+      if (loaded) {
+        this.modelTexturesId = 0;
+        this.modelId = nextModelId;
+      }
+    };
+    const queuedSwitch = this.modelSwitchQueue.then(switchModel);
+    this.modelSwitchQueue = queuedSwitch.catch((error) => {
+      logger.error('Failed to switch model.', error);
+    });
+    return queuedSwitch;
   }
 }
 

@@ -188,6 +188,18 @@ describe("Live2D 看板娘资源", () => {
       expect(Math.max(png.readUInt32BE(16), png.readUInt32BE(20))).toBeLessThanOrEqual(2048);
     }
   });
+
+  it("模型切换复用 Cubism 5 实例并串行执行", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "vendor/live2d-widget/src/model.ts"),
+      "utf8"
+    );
+    expect(source).toContain("if (!this.cubism5model)");
+    expect(source).toContain("await this.waitForCubism5ModelReady()");
+    expect(source).toContain("this.modelSwitchQueue.then(switchModel)");
+    expect(source.indexOf("const loaded = await this.loadModel(message, nextModelId, 0)"))
+      .toBeLessThan(source.indexOf("this.modelId = nextModelId"));
+  });
 });
 
 describe("轨道自动合并", () => {

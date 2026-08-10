@@ -28,6 +28,7 @@ declare class ModelManager {
     private cubism5model;
     private currentModelVersion;
     private loading;
+    private modelSwitchQueue;
     private modelJSONCache;
     private models;
     private constructor();
@@ -39,9 +40,10 @@ declare class ModelManager {
     resetCanvas(): void;
     fetchWithCache(url: string): Promise<any>;
     checkModelVersion(modelSetting: any): 2 | 3;
-    loadLive2D(modelSettingPath: string, modelSetting: object): Promise<void>;
+    waitForCubism5ModelReady(timeoutMs?: number): Promise<void>;
+    loadLive2D(modelSettingPath: string, modelSetting: object): Promise<boolean>;
     loadTextureCache(modelName: string): Promise<any[]>;
-    loadModel(message: string | string[]): Promise<void>;
+    loadModel(message: string | string[], modelId?: number, modelTexturesId?: number): Promise<boolean>;
     loadRandTexture(successMessage?: string | string[], failMessage?: string | string[]): Promise<void>;
     loadNextModel(): Promise<void>;
 }
