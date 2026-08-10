@@ -86,6 +86,7 @@ class ModelManager {
   private modelList: ModelListCDN | null = null;
   private cubism2model: Cubism2Model | undefined;
   private cubism5model: any;
+  private currentCubism5ModelPath: string | undefined;
   private currentModelVersion: number;
   private loading: boolean;
   private modelSwitchQueue: Promise<void>;
@@ -192,19 +193,18 @@ class ModelManager {
   }
 
   async fetchWithCache(url: string) {
-    let result;
     if (url in this.modelJSONCache) {
-      result = this.modelJSONCache[url];
-    } else {
-      try {
-        const response = await fetch(url);
-        result = await response.json();
-      } catch {
-        result = null;
-      }
-      this.modelJSONCache[url] = result;
+      return this.modelJSONCache[url];
     }
-    return result;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Request failed with status ${response.status}.`);
+      const result = await response.json();
+      this.modelJSONCache[url] = result;
+      return result;
+    } catch {
+      return null;
+    }
   }
 
   checkModelVersion(modelSetting: any) {
@@ -218,20 +218,69 @@ class ModelManager {
     const live2dManager = this.cubism5model?.subdelegates.at(0)?.getLive2DManager();
     const model = live2dManager?._models?.at(0);
     if (!model) throw new Error('Cubism 5 model was not created.');
-    const startedAt = performance.now();
     await new Promise<void>((resolve, reject) => {
+      let visibleElapsed = 0;
+      let visibleStartedAt = document.hidden ? null : performance.now();
+      let checkTimer: ReturnType<typeof setTimeout> | undefined;
+
+      const getVisibleElapsed = () => visibleElapsed + (
+        visibleStartedAt === null ? 0 : performance.now() - visibleStartedAt
+      );
+      const handleVisibilityChange = () => {
+        const now = performance.now();
+        if (document.hidden) {
+          if (visibleStartedAt !== null) visibleElapsed += now - visibleStartedAt;
+          visibleStartedAt = null;
+        } else if (visibleStartedAt === null) {
+          visibleStartedAt = now;
+        }
+      };
+      const cleanup = () => {
+        if (checkTimer !== undefined) clearTimeout(checkTimer);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
       const checkReady = () => {
         // LoadStep.CompleteSetup in the bundled Cubism SDK.
         if (model._state === 22) {
+          cleanup();
           resolve();
-        } else if (performance.now() - startedAt >= timeoutMs) {
+        } else if (getVisibleElapsed() >= timeoutMs) {
+          cleanup();
           reject(new Error('Timed out while loading Cubism 5 model.'));
         } else {
-          setTimeout(checkReady, 16);
+          checkTimer = setTimeout(checkReady, 16);
         }
       };
+      document.addEventListener('visibilitychange', handleVisibilityChange);
       checkReady();
     });
+  }
+
+  configureCubism5InputHandlers(): void {
+    const delegate = this.cubism5model;
+    delegate.onMouseMove = (event: MouseEvent) => {
+      const live2dManager = delegate.subdelegates.at(0)?.getLive2DManager();
+      const model = live2dManager?._models?.at(0);
+      if (!model || model._state !== 22) return;
+      const { x, y } = delegate.transformOffset(event);
+      live2dManager.onDrag(x, y);
+      if (model.hitTest('Body', x, y)) {
+        window.dispatchEvent(new Event('live2d:hoverbody'));
+      }
+    };
+    delegate.onMouseEnd = () => {
+      delegate.subdelegates.at(0)?.getLive2DManager()?.onDrag(0, 0);
+    };
+    delegate.onTap = (event: PointerEvent) => {
+      const live2dManager = delegate.subdelegates.at(0)?.getLive2DManager();
+      const model = live2dManager?._models?.at(0);
+      if (!model || model._state !== 22) return;
+      const { x, y } = delegate.transformOffset(event);
+      live2dManager.onTap(x, y);
+      if (model.hitTest('Body', x, y)) {
+        window.dispatchEvent(new Event('live2d:tapbody'));
+      }
+    };
   }
 
   async loadLive2D(modelSettingPath: string, modelSetting: object): Promise<boolean> {
@@ -240,6 +289,8 @@ class ModelManager {
       return false;
     }
     this.loading = true;
+    let changedCubism5Model = false;
+    const previousCubism5ModelPath = this.currentCubism5ModelPath;
     try {
       const version = this.checkModelVersion(modelSetting);
       if (version === 2) {
@@ -255,6 +306,7 @@ class ModelManager {
         if (this.currentModelVersion === 3) {
           (this.cubism5model as any).release();
           this.cubism5model = undefined;
+          this.currentCubism5ModelPath = undefined;
           // Recycle WebGL resources
           this.resetCanvas();
         }
@@ -277,20 +329,31 @@ class ModelManager {
           await loadExternalResource(this.cubism5Path, 'js');
           const { AppDelegate: Cubism5Model } = await import('./cubism5/index.js');
           this.cubism5model = new (Cubism5Model as any)();
+          this.configureCubism5InputHandlers();
         }
         if (this.currentModelVersion === 2 || !this.cubism5model.subdelegates.at(0)) {
           this.cubism5model.initialize();
           this.cubism5model.changeModel(modelSettingPath);
+          changedCubism5Model = true;
           this.cubism5model.run();
         } else {
           this.cubism5model.changeModel(modelSettingPath);
+          changedCubism5Model = true;
         }
         await this.waitForCubism5ModelReady();
+        this.currentCubism5ModelPath = modelSettingPath;
       }
       logger.info(`Model ${modelSettingPath} (Cubism version ${version}) loaded`);
       this.currentModelVersion = version;
       return true;
     } catch (err) {
+      if (changedCubism5Model && previousCubism5ModelPath && this.cubism5model) {
+        try {
+          this.cubism5model.changeModel(previousCubism5ModelPath);
+        } catch (rollbackError) {
+          logger.error('Failed to restore the previous Cubism 5 model.', rollbackError);
+        }
+      }
       console.error('loadLive2D failed', err);
       return false;
     } finally {

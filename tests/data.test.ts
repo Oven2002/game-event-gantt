@@ -196,9 +196,25 @@ describe("Live2D 看板娘资源", () => {
     );
     expect(source).toContain("if (!this.cubism5model)");
     expect(source).toContain("await this.waitForCubism5ModelReady()");
+    expect(source).toContain("document.addEventListener('visibilitychange', handleVisibilityChange)");
+    expect(source).toContain("getVisibleElapsed() >= timeoutMs");
+    expect(source).toContain("this.cubism5model.changeModel(previousCubism5ModelPath)");
+    expect(source).toContain("live2dManager.onTap(x, y)");
+    expect(source.match(/model\._state !== 22/g)).toHaveLength(2);
+    expect(source).not.toContain("this.modelJSONCache[url] = result;\n    } catch");
     expect(source).toContain("this.modelSwitchQueue.then(switchModel)");
     expect(source.indexOf("const loaded = await this.loadModel(message, nextModelId, 0)"))
       .toBeLessThan(source.indexOf("this.modelId = nextModelId"));
+  });
+
+  it("折叠或禁用看板娘时不会持续观察页面 DOM", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "src/scripts/mascot.ts"),
+      "utf8"
+    );
+    expect(source).toContain('localStorage.getItem("waifu-disabled") === "true"');
+    expect(source).toContain('toggle.addEventListener("click", resumeWhenOpened, { once: true })');
+    expect(source).toContain("stopObserving();");
   });
 });
 

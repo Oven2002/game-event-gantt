@@ -53,8 +53,12 @@
 #waifu-toggle.waifu-toggle-active:hover { margin-right: -18px; margin-left: 0; }
 #waifu-toggle:focus-visible, #waifu-tool span:focus-visible { outline: 3px solid #fd79a8; outline-offset: 3px; }
 
+@media (max-width: 900px), (max-height: 600px) {
+  #waifu { z-index: 18; }
+}
+
 @media (max-width: 760px) {
-  #waifu { z-index: 18; right: 0; transform: translateY(54px) scale(.68); }
+  #waifu { right: 0; transform: translateY(54px) scale(.68); }
   #waifu:hover { transform: translateY(50px) scale(.68); }
   #waifu-tips { right: 0; width: 210px; font-size: 13px; }
 }

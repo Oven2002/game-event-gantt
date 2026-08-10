@@ -97,21 +97,20 @@ class ModelManager {
         document.getElementById('waifu-canvas').innerHTML = '<canvas id="live2d" width="800" height="800"></canvas>';
     }
     async fetchWithCache(url) {
-        let result;
         if (url in this.modelJSONCache) {
-            result = this.modelJSONCache[url];
+            return this.modelJSONCache[url];
         }
-        else {
-            try {
-                const response = await fetch(url);
-                result = await response.json();
-            }
-            catch (_a) {
-                result = null;
-            }
+        try {
+            const response = await fetch(url);
+            if (!response.ok)
+                throw new Error(`Request failed with status ${response.status}.`);
+            const result = await response.json();
             this.modelJSONCache[url] = result;
+            return result;
         }
-        return result;
+        catch (_a) {
+            return null;
+        }
     }
     checkModelVersion(modelSetting) {
         if (modelSetting.Version === 3 || modelSetting.FileReferences) {
@@ -125,21 +124,74 @@ class ModelManager {
         const model = (_c = live2dManager === null || live2dManager === void 0 ? void 0 : live2dManager._models) === null || _c === void 0 ? void 0 : _c.at(0);
         if (!model)
             throw new Error('Cubism 5 model was not created.');
-        const startedAt = performance.now();
         await new Promise((resolve, reject) => {
+            let visibleElapsed = 0;
+            let visibleStartedAt = document.hidden ? null : performance.now();
+            let checkTimer;
+            const getVisibleElapsed = () => visibleElapsed + (visibleStartedAt === null ? 0 : performance.now() - visibleStartedAt);
+            const handleVisibilityChange = () => {
+                const now = performance.now();
+                if (document.hidden) {
+                    if (visibleStartedAt !== null)
+                        visibleElapsed += now - visibleStartedAt;
+                    visibleStartedAt = null;
+                }
+                else if (visibleStartedAt === null) {
+                    visibleStartedAt = now;
+                }
+            };
+            const cleanup = () => {
+                if (checkTimer !== undefined)
+                    clearTimeout(checkTimer);
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+            };
             const checkReady = () => {
                 if (model._state === 22) {
+                    cleanup();
                     resolve();
                 }
-                else if (performance.now() - startedAt >= timeoutMs) {
+                else if (getVisibleElapsed() >= timeoutMs) {
+                    cleanup();
                     reject(new Error('Timed out while loading Cubism 5 model.'));
                 }
                 else {
-                    setTimeout(checkReady, 16);
+                    checkTimer = setTimeout(checkReady, 16);
                 }
             };
+            document.addEventListener('visibilitychange', handleVisibilityChange);
             checkReady();
         });
+    }
+    configureCubism5InputHandlers() {
+        const delegate = this.cubism5model;
+        delegate.onMouseMove = (event) => {
+            var _a, _b, _c;
+            const live2dManager = (_b = (_a = delegate.subdelegates.at(0)) === null || _a === void 0 ? void 0 : _a.getLive2DManager()) !== null && _b !== void 0 ? _b : undefined;
+            const model = (_c = live2dManager === null || live2dManager === void 0 ? void 0 : live2dManager._models) === null || _c === void 0 ? void 0 : _c.at(0);
+            if (!model || model._state !== 22)
+                return;
+            const { x, y } = delegate.transformOffset(event);
+            live2dManager.onDrag(x, y);
+            if (model.hitTest('Body', x, y)) {
+                window.dispatchEvent(new Event('live2d:hoverbody'));
+            }
+        };
+        delegate.onMouseEnd = () => {
+            var _a, _b, _c;
+            (_c = (_b = (_a = delegate.subdelegates.at(0)) === null || _a === void 0 ? void 0 : _a.getLive2DManager()) === null || _b === void 0 ? void 0 : _b.onDrag) === null || _c === void 0 ? void 0 : _c.call(_b, 0, 0);
+        };
+        delegate.onTap = (event) => {
+            var _a, _b, _c;
+            const live2dManager = (_b = (_a = delegate.subdelegates.at(0)) === null || _a === void 0 ? void 0 : _a.getLive2DManager()) !== null && _b !== void 0 ? _b : undefined;
+            const model = (_c = live2dManager === null || live2dManager === void 0 ? void 0 : live2dManager._models) === null || _c === void 0 ? void 0 : _c.at(0);
+            if (!model || model._state !== 22)
+                return;
+            const { x, y } = delegate.transformOffset(event);
+            live2dManager.onTap(x, y);
+            if (model.hitTest('Body', x, y)) {
+                window.dispatchEvent(new Event('live2d:tapbody'));
+            }
+        };
     }
     async loadLive2D(modelSettingPath, modelSetting) {
         if (this.loading) {
@@ -147,6 +199,8 @@ class ModelManager {
             return false;
         }
         this.loading = true;
+        let changedCubism5Model = false;
+        const previousCubism5ModelPath = this.currentCubism5ModelPath;
         try {
             const version = this.checkModelVersion(modelSetting);
             if (version === 2) {
@@ -162,6 +216,7 @@ class ModelManager {
                 if (this.currentModelVersion === 3) {
                     this.cubism5model.release();
                     this.cubism5model = undefined;
+                    this.currentCubism5ModelPath = undefined;
                     this.resetCanvas();
                 }
                 if (this.currentModelVersion === 3 || !this.cubism2model.gl) {
@@ -184,22 +239,34 @@ class ModelManager {
                     await loadExternalResource(this.cubism5Path, 'js');
                     const { AppDelegate: Cubism5Model } = await import('./cubism5/index.js');
                     this.cubism5model = new Cubism5Model();
+                    this.configureCubism5InputHandlers();
                 }
                 if (this.currentModelVersion === 2 || !this.cubism5model.subdelegates.at(0)) {
                     this.cubism5model.initialize();
                     this.cubism5model.changeModel(modelSettingPath);
+                    changedCubism5Model = true;
                     this.cubism5model.run();
                 }
                 else {
                     this.cubism5model.changeModel(modelSettingPath);
+                    changedCubism5Model = true;
                 }
                 await this.waitForCubism5ModelReady();
+                this.currentCubism5ModelPath = modelSettingPath;
             }
             logger.info(`Model ${modelSettingPath} (Cubism version ${version}) loaded`);
             this.currentModelVersion = version;
             return true;
         }
         catch (err) {
+            if (changedCubism5Model && previousCubism5ModelPath && this.cubism5model) {
+                try {
+                    this.cubism5model.changeModel(previousCubism5ModelPath);
+                }
+                catch (rollbackError) {
+                    logger.error('Failed to restore the previous Cubism 5 model.', rollbackError);
+                }
+            }
             console.error('loadLive2D failed', err);
             return false;
         }

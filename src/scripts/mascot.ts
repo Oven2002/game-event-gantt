@@ -19,8 +19,38 @@ function ongoingBannerCount(): number {
   ).length, 0);
 }
 
-function makeAccessible(): void {
-  const observer = new MutationObserver(() => {
+function makeAccessible(): () => void {
+  if (localStorage.getItem("waifu-disabled") === "true") return () => {};
+
+  const labels: Record<string, string> = {
+    "switch-model": "切换看板娘",
+    info: "查看 Live2D 组件信息",
+    quit: "隐藏看板娘",
+  };
+  let observer: MutationObserver;
+  let observing = false;
+  let waitingToggle: HTMLElement | null = null;
+
+  const stopObserving = () => {
+    observer.disconnect();
+    observing = false;
+  };
+  const startObserving = () => {
+    if (observing) return;
+    observer.observe(document.body, { childList: true, subtree: true });
+    observing = true;
+  };
+  const resumeWhenOpened = () => {
+    waitingToggle = null;
+    startObserving();
+    enhanceControls();
+  };
+  const stop = () => {
+    stopObserving();
+    waitingToggle?.removeEventListener("click", resumeWhenOpened);
+    waitingToggle = null;
+  };
+  const enhanceControls = () => {
     const toggle = document.querySelector<HTMLElement>("#waifu-toggle");
     if (toggle && !toggle.hasAttribute("role")) {
       toggle.setAttribute("role", "button");
@@ -33,11 +63,6 @@ function makeAccessible(): void {
         }
       });
     }
-    const labels: Record<string, string> = {
-      "switch-model": "切换看板娘",
-      info: "查看 Live2D 组件信息",
-      quit: "隐藏看板娘",
-    };
     Object.entries(labels).forEach(([tool, label]) => {
       const element = document.querySelector<HTMLElement>(`#waifu-tool-${tool}`);
       if (!element || element.hasAttribute("role")) return;
@@ -51,12 +76,26 @@ function makeAccessible(): void {
         }
       });
     });
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
-  window.setTimeout(() => observer.disconnect(), 15_000);
+    const toolsReady = Object.keys(labels).every((tool) =>
+      document.querySelector(`#waifu-tool-${tool}[role="button"]`)
+    );
+    if (toggle?.getAttribute("role") === "button" && toolsReady) {
+      stop();
+    } else if (toggle?.hasAttribute("first-time") && waitingToggle !== toggle) {
+      stopObserving();
+      waitingToggle?.removeEventListener("click", resumeWhenOpened);
+      waitingToggle = toggle;
+      toggle.addEventListener("click", resumeWhenOpened, { once: true });
+    }
+  };
+  observer = new MutationObserver(enhanceControls);
+  startObserving();
+  enhanceControls();
+  return stop;
 }
 
 async function initializeMascot(): Promise<void> {
+  let stopAccessibilityObserver = () => {};
   try {
     const response = await fetch(assetUrl("vendor/live2d-config.json"));
     if (!response.ok) throw new Error(`配置加载失败：${response.status}`);
@@ -77,7 +116,7 @@ async function initializeMascot(): Promise<void> {
     const configBlob = new Blob([JSON.stringify(config)], { type: "application/json" });
     const configUrl = URL.createObjectURL(configBlob);
     if (typeof window.initWidget !== "function") throw new Error("Live2D 组件未正确初始化");
-    makeAccessible();
+    stopAccessibilityObserver = makeAccessible();
     window.initWidget({
       waifuPath: configUrl,
       cubism5Path: assetUrl("vendor/live2d-runtime/live2dcubismcore.min.js"),
@@ -93,6 +132,7 @@ async function initializeMascot(): Promise<void> {
       }
     }, { capture: true });
   } catch (error) {
+    stopAccessibilityObserver();
     console.warn("看板娘加载失败，时间表功能不受影响。", error);
     document.querySelector("#waifu")?.remove();
     document.querySelector("#waifu-toggle")?.remove();
