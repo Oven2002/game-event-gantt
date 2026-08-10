@@ -3,6 +3,12 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { DataValidationError, loadTimelineData, parseBeijingTimestamp } from "../src/lib/data.ts";
+import {
+  defaultExpandedGameIds,
+  parseTimelinePreferences,
+  preferenceValue,
+} from "../src/lib/preferences.ts";
+import { domainAroundAnchor } from "../src/lib/timeline-domain.ts";
 import { packIntoLanes, statusAt } from "../src/lib/types.ts";
 
 const temporaryDirectories: string[] = [];
@@ -51,6 +57,63 @@ describe("状态边界", () => {
   it("单点事件到达开始时间后直接结束", () => {
     expect(statusAt({ start: 1000 }, 999)).toBe("upcoming");
     expect(statusAt({ start: 1000 }, 1000)).toBe("ended");
+  });
+});
+
+describe("时间轴当前时间定位", () => {
+  it("默认显示当前时间前 7 天和后 21 天", () => {
+    const day = 86_400_000;
+    const now = Date.parse("2026-08-10T00:00:00Z");
+    const [start, end] = domainAroundAnchor(now, 28 * day, 0.25);
+
+    expect(start).toBe(now - 7 * day);
+    expect(end).toBe(now + 21 * day);
+  });
+
+  it("保留缩放跨度并将锚点放在 25%", () => {
+    const anchor = 10_000;
+    const span = 4_000;
+    const [start, end] = domainAroundAnchor(anchor, span, 0.25);
+
+    expect(end - start).toBe(span);
+    expect((anchor - start) / (end - start)).toBe(0.25);
+  });
+});
+
+describe("时间轴偏好", () => {
+  it("默认选择排序最前的三个不同游戏", () => {
+    const expanded = defaultExpandedGameIds([
+      { game: { id: "game-a" } },
+      { game: { id: "game-a" } },
+      { game: { id: "game-b" } },
+      { game: { id: "game-c" } },
+      { game: { id: "game-d" } },
+    ]);
+
+    expect([...expanded]).toEqual(["game-a", "game-b", "game-c"]);
+  });
+
+  it("解析已知筛选和分组状态并忽略错误类型", () => {
+    const preferences = parseTimelinePreferences(JSON.stringify({
+      filters: {
+        game: { genshin: false, invalid: "no" },
+        unknown: { value: true },
+      },
+      groupOpen: { "genshin/cn": true, broken: 1 },
+    }));
+
+    expect(preferences.filters.game).toEqual({ genshin: false });
+    expect(preferences.groupOpen).toEqual({ "genshin/cn": true });
+    expect(preferences.filters).not.toHaveProperty("unknown");
+  });
+
+  it.each(["not-json", "[]", '{"filters":42}'])("损坏偏好安全回退：%s", (raw) => {
+    expect(parseTimelinePreferences(raw)).toEqual({ filters: {}, groupOpen: {} });
+  });
+
+  it("未保存的新筛选项保留页面默认值", () => {
+    expect(preferenceValue({ existing: false }, "new-game", true)).toBe(true);
+    expect(preferenceValue({ existing: false }, "new-status", false)).toBe(false);
   });
 });
 

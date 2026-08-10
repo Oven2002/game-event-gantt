@@ -1,9 +1,20 @@
 import type { TimelineGroup, TimelineItem, TimelinePayload, TimelineStatus } from "../lib/types";
 import { packIntoLanes, statusAt } from "../lib/types";
+import { domainAroundAnchor } from "../lib/timeline-domain";
+import {
+  defaultExpandedGameIds,
+  FILTER_NAMES,
+  parseTimelinePreferences,
+  preferenceValue,
+  type FilterName,
+} from "../lib/preferences";
 
 const NS = "http://www.w3.org/2000/svg";
 const DAY = 86_400_000;
 const MINUTE = 60_000;
+const INITIAL_SPAN = 28 * DAY;
+const NOW_POSITION = 0.25;
+const PREFERENCES_KEY = "game-event-gantt.preferences.v1";
 const STATUS_NAMES: Record<TimelineStatus, string> = {
   upcoming: "即将开始",
   ongoing: "进行中",
@@ -23,12 +34,49 @@ const dialog = requiredElement<HTMLDialogElement>("#detail-dialog");
 const detailRoot = requiredElement<HTMLElement>("#detail-content");
 
 const payload = JSON.parse(payloadElement.textContent ?? "") as TimelinePayload;
+const preferences = loadPreferences();
+const defaultExpandedGames = defaultExpandedGameIds(payload.groups);
 let now = Date.now();
-let domainStart = now - 45 * DAY;
-let domainEnd = now + 45 * DAY;
-const collapsed = new Set<string>();
+let [domainStart, domainEnd] = domainAroundAnchor(now, INITIAL_SPAN, NOW_POSITION);
 let resizeTimer: number | undefined;
 let restoreScrollFrame: number | undefined;
+
+function loadPreferences() {
+  try {
+    return parseTimelinePreferences(window.localStorage.getItem(PREFERENCES_KEY));
+  } catch {
+    return parseTimelinePreferences(null);
+  }
+}
+
+function savePreferences(): void {
+  try {
+    window.localStorage.setItem(PREFERENCES_KEY, JSON.stringify(preferences));
+  } catch {
+    // localStorage can be disabled or unavailable; preferences remain optional.
+  }
+}
+
+function filterNameFor(input: HTMLInputElement): FilterName | undefined {
+  const value = input.closest<HTMLElement>("[data-filter]")?.dataset.filter;
+  return FILTER_NAMES.includes(value as FilterName) ? value as FilterName : undefined;
+}
+
+function restoreFilterPreferences(): void {
+  document.querySelectorAll<HTMLInputElement>("[data-filter] input").forEach((input) => {
+    const filterName = filterNameFor(input);
+    if (!filterName) return;
+    input.checked = preferenceValue(preferences.filters[filterName], input.value, input.checked);
+  });
+}
+
+function isGroupOpen(group: TimelineGroup): boolean {
+  return preferenceValue(
+    preferences.groupOpen,
+    group.key,
+    defaultExpandedGames.has(group.game.id),
+  );
+}
 
 function html<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -448,11 +496,12 @@ function render(): void {
   emptyState.hidden = groups.length > 0;
   timeline.hidden = groups.length === 0;
   for (const entry of groups) {
+    const groupOpen = isGroupOpen(entry.group);
     const section = html("section", "timeline-group");
-    if (!collapsed.has(entry.group.key)) section.setAttribute("open", "");
+    if (groupOpen) section.setAttribute("open", "");
     const heading = html("button", "group-heading");
     heading.type = "button";
-    heading.setAttribute("aria-expanded", String(!collapsed.has(entry.group.key)));
+    heading.setAttribute("aria-expanded", String(groupOpen));
     const chevron = html("span", "group-chevron");
     chevron.textContent = "›";
     const title = html("strong");
@@ -466,16 +515,15 @@ function render(): void {
     const chartContainer = html("div", "chart-scroll");
     chartContainer.dataset.groupKey = entry.group.key;
     chartFrame.append(chartContainer);
-    if (collapsed.has(entry.group.key)) chartFrame.hidden = true;
+    if (!groupOpen) chartFrame.hidden = true;
     heading.addEventListener("click", () => {
-      const isCollapsed = collapsed.has(entry.group.key);
-      if (isCollapsed) collapsed.delete(entry.group.key);
-      else collapsed.add(entry.group.key);
+      preferences.groupOpen[entry.group.key] = !groupOpen;
+      savePreferences();
       render();
     });
     section.append(heading, chartFrame);
     timeline.append(section);
-    if (!collapsed.has(entry.group.key)) {
+    if (groupOpen) {
       drawChart(chartContainer, entry);
       chartContainer.scrollLeft = chartScroll.get(entry.group.key) ?? 0;
     }
@@ -488,21 +536,25 @@ function render(): void {
   });
 }
 
+restoreFilterPreferences();
+
 document.querySelectorAll<HTMLInputElement>("[data-filter] input").forEach((input) => {
-  input.addEventListener("change", render);
+  input.addEventListener("change", () => {
+    const filterName = filterNameFor(input);
+    if (filterName) {
+      preferences.filters[filterName] ??= {};
+      preferences.filters[filterName]![input.value] = input.checked;
+      savePreferences();
+    }
+    render();
+  });
 });
 
 document.querySelector('[data-action="zoom-in"]')?.addEventListener("click", () => zoomAt(0.65));
 document.querySelector('[data-action="zoom-out"]')?.addEventListener("click", () => zoomAt(1.55));
 document.querySelector('[data-action="today"]')?.addEventListener("click", () => {
   const span = domainEnd - domainStart;
-  applyDomain(now - span / 2, now + span / 2);
-  render();
-});
-document.querySelector('[data-action="all"]')?.addEventListener("click", () => {
-  const rawSpan = Math.max(payload.bounds.end - payload.bounds.start, DAY);
-  const padding = Math.max(rawSpan * 0.04, DAY);
-  applyDomain(payload.bounds.start - padding, payload.bounds.end + padding);
+  applyDomain(...domainAroundAnchor(now, span, NOW_POSITION));
   render();
 });
 document.querySelector("[data-close-detail]")?.addEventListener("click", () => dialog.close());
