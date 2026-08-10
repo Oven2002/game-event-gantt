@@ -76,4 +76,4 @@ npm run build          # 数据校验 + 类型检查 + 生产构建
 
 代码基于 [MIT](./LICENSE) 许可。社区数据和时间仅供参考，请以游戏官方公告为准。
 
-站点同时包含采用其他许可证发布的第三方字体、Live2D 组件、Cubism Core 和 Shizuku 示例模型；它们不适用本站 MIT 许可。完整来源、固定版本、版权声明和许可链接见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+站点同时包含采用其他许可证发布的第三方字体、Live2D 组件、Cubism Core，以及 Mao Niziiro、Hibiki 官方示例模型；它们不适用本站 MIT 许可。完整来源、固定版本、版权声明和许可链接见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

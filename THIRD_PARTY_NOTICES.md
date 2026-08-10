@@ -20,14 +20,15 @@ The widget code is not covered by this repository's MIT license. Modifications t
 
 Cubism Core is proprietary redistributable code from Live2D Inc. It is not covered by either the site's MIT license or live2d-widget's GPL license.
 
-## Shizuku sample model
+## Mao Niziiro and Hibiki sample models
 
-- Official model page: <https://www.live2d.com/en/learn/sample/shizuku/>
+- Mao official model page: <https://www.live2d.com/en/learn/sample/niziiro-mao/>
+- Hibiki official model page: <https://www.live2d.com/en/learn/sample/hibiki/>
 - Free Material License Agreement: <https://www.live2d.com/eula/live2d-free-material-license-agreement_en.html>
 - Sample Data Terms: <https://www.live2d.com/en/learn/sample/model-terms/>
-- Local files: `public/vendor/live2d-models/shizuku/`
+- Local files: `public/vendor/live2d-models/mao/` and `public/vendor/live2d-models/hibiki/`
 
-Shizuku is a Live2D Original Character. Its name and settings are kept unchanged. The model files are not covered by this repository's MIT license.
+Mao Niziiro and Hibiki are Live2D Original Characters. Their names and settings are kept unchanged. The model files are not covered by this repository's MIT license. Only browser runtime files are included. Mao's texture is resized from 4096×4096 to 2048×2048; motion groups are adapted for click interaction; Hibiki's optional voice files are omitted.
 
 Required notice:
 

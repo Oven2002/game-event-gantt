@@ -11,11 +11,11 @@
     "changeSuccess": "模型已切换。",
     "changeFail": "当前没有其他外观。",
     "photo": "已保存截图。",
-    "goodbye": "需要时再从右下角把 Shizuku 叫回来吧。",
+    "goodbye": "需要时再从右下角把看板娘叫回来吧。",
     "hitokoto": "来自 $1 的一句话。",
-    "welcome": "欢迎来到 $1，Shizuku 会陪你一起查看日程。",
+    "welcome": "欢迎来到 $1，Mao 和 Hibiki 会陪你一起查看日程。",
     "referrer": "欢迎从 $1 来到本站。",
-    "hoverBody": "你好，这里是站点看板娘 Shizuku。",
+    "hoverBody": "你好，这里是站点看板娘。点击我会随机播放一个动作。",
     "tapBody": [
       "站点提示：当前有 {{ongoingBanners}} 个卡池正在进行。",
       "站点提示：重要的是现在和未来，默认视窗已经向未来倾斜。"
@@ -27,9 +27,14 @@
   "seasons": [],
   "models": [
     {
-      "name": "Shizuku",
+      "name": "Mao Niziiro",
       "paths": ["__MODEL_PATH__"],
-      "message": "Shizuku 已就位。"
+      "message": "Mao 已就位。"
+    },
+    {
+      "name": "Hibiki",
+      "paths": ["__MODEL_PATH__"],
+      "message": "Hibiki 已就位。"
     }
   ]
 }

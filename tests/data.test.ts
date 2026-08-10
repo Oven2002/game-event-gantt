@@ -145,6 +145,51 @@ describe("静态资源基路径", () => {
   });
 });
 
+describe("Live2D 看板娘资源", () => {
+  const modelCases = [
+    ["mao", "mao_pro.model3.json", 7],
+    ["hibiki", "hibiki.model3.json", 5],
+  ] as const;
+
+  it("默认使用 Mao 并提供 Hibiki 切换", () => {
+    const config = JSON.parse(fs.readFileSync(path.join(process.cwd(), "public/vendor/live2d-config.json"), "utf8"));
+    expect(config.models.map((model: { name: string }) => model.name))
+      .toEqual(["Mao Niziiro", "Hibiki"]);
+  });
+
+  it.each(modelCases)("%s 模型只在点击时播放动作且引用完整", (directory, configFile, motionCount) => {
+    const root = path.join(process.cwd(), "public/vendor/live2d-models", directory);
+    const model = JSON.parse(fs.readFileSync(path.join(root, configFile), "utf8"));
+    const references = model.FileReferences;
+    const files = [
+      references.Moc,
+      references.Physics,
+      references.Pose,
+      references.DisplayInfo,
+      ...references.Textures,
+      ...(references.Expressions ?? []).map((entry: { File: string }) => entry.File),
+      ...Object.values(references.Motions ?? {}).flatMap((entries) =>
+        (entries as Array<{ File: string; Sound?: string }>).flatMap((entry) => [entry.File, entry.Sound])
+      ),
+    ].filter((file): file is string => typeof file === "string");
+
+    expect(references.Motions.Idle).toBeUndefined();
+    expect(references.Motions.TapBody).toHaveLength(motionCount);
+    expect(files.every((file) => fs.existsSync(path.join(root, file)))).toBe(true);
+  });
+
+  it("网页纹理最长边不超过 2048", () => {
+    const textures = [
+      "public/vendor/live2d-models/mao/mao_pro.2048/texture_00.png",
+      "public/vendor/live2d-models/hibiki/hibiki.2048/texture_00.png",
+    ];
+    for (const texture of textures) {
+      const png = fs.readFileSync(path.join(process.cwd(), texture));
+      expect(Math.max(png.readUInt32BE(16), png.readUInt32BE(20))).toBeLessThanOrEqual(2048);
+    }
+  });
+});
+
 describe("轨道自动合并", () => {
   it("将互不重叠的上下半卡池放在同一行", () => {
     const lanes = packIntoLanes([

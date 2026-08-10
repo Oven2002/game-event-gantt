@@ -25,7 +25,7 @@ function makeAccessible(): void {
     if (toggle && !toggle.hasAttribute("role")) {
       toggle.setAttribute("role", "button");
       toggle.tabIndex = 0;
-      toggle.setAttribute("aria-label", "显示看板娘 Shizuku");
+      toggle.setAttribute("aria-label", "显示看板娘");
       toggle.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
@@ -33,7 +33,11 @@ function makeAccessible(): void {
         }
       });
     }
-    const labels: Record<string, string> = { info: "查看 Live2D 组件信息", quit: "隐藏看板娘" };
+    const labels: Record<string, string> = {
+      "switch-model": "切换看板娘",
+      info: "查看 Live2D 组件信息",
+      quit: "隐藏看板娘",
+    };
     Object.entries(labels).forEach(([tool, label]) => {
       const element = document.querySelector<HTMLElement>(`#waifu-tool-${tool}`);
       if (!element || element.hasAttribute("role")) return;
@@ -61,7 +65,15 @@ async function initializeMascot(): Promise<void> {
     config.message.tapBody = config.message.tapBody.map((text: string) =>
       text.replace("{{ongoingBanners}}", String(bannerCount))
     );
-    config.models[0].paths[0] = assetUrl("vendor/live2d-models/shizuku/shizuku.model3.json");
+    const modelPaths: Record<string, string> = {
+      "Mao Niziiro": "vendor/live2d-models/mao/mao_pro.model3.json",
+      Hibiki: "vendor/live2d-models/hibiki/hibiki.model3.json",
+    };
+    config.models.forEach((model: { name: string; paths: string[] }) => {
+      const path = modelPaths[model.name];
+      if (!path) throw new Error(`未知看板娘模型：${model.name}`);
+      model.paths[0] = assetUrl(path);
+    });
     const configBlob = new Blob([JSON.stringify(config)], { type: "application/json" });
     const configUrl = URL.createObjectURL(configBlob);
     if (typeof window.initWidget !== "function") throw new Error("Live2D 组件未正确初始化");
@@ -69,7 +81,7 @@ async function initializeMascot(): Promise<void> {
     window.initWidget({
       waifuPath: configUrl,
       cubism5Path: assetUrl("vendor/live2d-runtime/live2dcubismcore.min.js"),
-      tools: ["info", "quit"],
+      tools: ["switch-model", "info", "quit"],
       drag: true,
       showToggleAfterQuit: true,
       logLevel: "warn",

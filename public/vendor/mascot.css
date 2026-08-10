@@ -1,5 +1,5 @@
 #waifu {
-  z-index: 18;
+  z-index: 30;
   right: 2px;
   left: auto;
   transform: translateY(38px) scale(.82);
@@ -36,7 +36,7 @@
 #waifu-tool svg:hover { fill: #f15b9a; }
 
 #waifu-toggle {
-  z-index: 18;
+  z-index: 30;
   right: 0;
   bottom: 72px;
   left: auto;
