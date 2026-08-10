@@ -385,11 +385,11 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
     );
     defs.append(gradient);
   };
-  addGradient(gradientIds.version, "#5f72ef", "#9b8cff");
-  addGradient(gradientIds.event, "#8b5cf6", "#d17ee8");
-  addGradient(gradientIds.banner, "#ff5da2", "#ff9acb");
-  addGradient(gradientIds.maintenance, "#1fb9b4", "#6ee7dc");
-  addGradient(gradientIds.preview, "#ff9f43", "#ffd166");
+  addGradient(gradientIds.version, "#6475e0", "#9a91e1");
+  addGradient(gradientIds.event, "#8a68dc", "#ce96d9");
+  addGradient(gradientIds.banner, "#ee77ad", "#f7a6ca");
+  addGradient(gradientIds.maintenance, "#32aaa6", "#78d0c5");
+  addGradient(gradientIds.preview, "#eba25f", "#f5cc86");
   chart.append(defs);
 
   const gradientForItem = (item: TimelineItem): string => {

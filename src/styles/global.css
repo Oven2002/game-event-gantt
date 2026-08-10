@@ -12,7 +12,7 @@
   --brand-3: #fd79a8;
   --brand-soft: #f1edff;
   --grad-brand: linear-gradient(120deg, #6c5ce7 0%, #a29bfe 52%, #fd79a8 100%);
-  --grad-control: linear-gradient(120deg, #7068c9 0%, #8880d2 100%);
+  --grad-control: linear-gradient(120deg, #6658c3 0%, #8173d1 52%, #a08bdf 100%);
   --grad-surface: linear-gradient(135deg, rgba(255,255,255,.94), rgba(246,240,255,.9));
   --blue: #667eea;
   --violet: #9b6dff;
