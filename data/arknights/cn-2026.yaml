@@ -2,39 +2,157 @@ game: arknights
 region: cn
 
 events:
-  - id: summer-carnival-2026-p1
-    name: "夏日嘉年华 Part.1 · 直到大地变成一颗酸橙"
+  - id: story-jungle
+    name: "故事集「丛林症结」（活动关卡）"
+    type: event
+    start: "2026-07-10T12:00:00+08:00"
+    end: "2026-07-17T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9686"
+  - id: story-jungle-shop
+    name: "「丛林症结」全息修复仪（兑换处）"
+    type: event
+    start: "2026-07-10T12:00:00+08:00"
+    end: "2026-07-20T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9686"
+  - id: banner-quedingxing
+    name: "限时寻访【确定性混沌】（谬因/佩德洛/钼铅）"
+    type: banner
+    start: "2026-07-10T12:00:00+08:00"
+    end: "2026-07-24T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9686"
+  - id: collab-mlp
+    name: "明日方舟×小马宝莉 合作活动"
+    type: event
+    start: "2026-07-03T16:00:00+08:00"
+    end: "2026-07-13T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/7363"
+  - id: event-iss
+    name: "集成战略【沉沦者的黑流树海】"
+    type: event
+    start: "2026-07-17T16:00:00+08:00"
+    note: "闪断更新后开启；结束未公布（通常持续至下一集成战略主题）"
+    sources:
+      - "https://ak.hypergryph.com/news/0795"
+  - id: preview-summer-comm
+    name: 2026夏日嘉年华特别通讯（前瞻直播）
+    type: preview
+    start: "2026-07-25T19:30:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9684"
+  - id: event-red-velvet
+    name: "SideStory「红丝绒」复刻"
+    type: event
+    start: "2026-07-20T04:00:00+08:00"
+    end: "2026-08-03T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/5107"
+  - id: banner-yongbumuluo
+    name: "限时寻访【永不落幕】复刻（酒神）"
+    type: banner
+    start: "2026-07-20T16:00:00+08:00"
+    end: "2026-08-03T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/5107"
+  - id: event-fushi-return
+    name: "复刻时装限时上架（珊瑚海岸/时代等11款）"
+    type: event
+    start: "2026-07-25T04:00:00+08:00"
+    end: "2026-08-22T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/5107"
+  - id: event-mojie
+    name: "剿灭作战关卡【默祷圣祠】追加"
+    type: event
+    start: "2026-07-27T04:00:00+08:00"
+    end: "2026-10-26T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/5107"
+  - id: summer-p1
+    name: "夏日嘉年华 Part.1「直到大地变成一颗酸橙」"
     type: event
     start: "2026-08-01T12:00:00+08:00"
     end: "2026-08-29T03:59:00+08:00"
     sources:
       - "https://ak.hypergryph.com/news/8571"
-  - id: banner-tracks-and-wind
+  - id: banner-chejigu
     name: "限定寻访【车辙与风的归所】（予愿安洁莉娜）"
     type: banner
     start: "2026-08-01T12:00:00+08:00"
     end: "2026-08-15T03:59:00+08:00"
     sources:
       - "https://ak.hypergryph.com/news/8571"
-  - id: summer-carnival-2026-p2
-    name: "夏日嘉年华 Part.2 · 奇象巡展（关卡）"
+  - id: summer-login
+    name: "夏日嘉年华 特别登录活动"
+    type: event
+    start: "2026-08-01T12:00:00+08:00"
+    end: "2026-08-15T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: summer-sign
+    name: "夏日嘉年华 透明信笺签到"
+    type: event
+    start: "2026-08-01T12:00:00+08:00"
+    end: "2026-08-15T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: summer-xuyuan
+    name: "夏日嘉年华 零号公路许愿墙"
+    type: event
+    start: "2026-08-01T12:00:00+08:00"
+    end: "2026-08-15T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: summer-tebie
+    name: "夏日嘉年华 特别活动（高级干员自选凭证）"
+    type: event
+    start: "2026-08-01T12:00:00+08:00"
+    end: "2026-09-10T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: summer-xinzhuang
+    name: "夏日嘉年华 新装限时上架（时代/0011飙系列4款）"
+    type: event
+    start: "2026-08-01T12:00:00+08:00"
+    end: "2026-08-29T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: summer-p2
+    name: "夏日嘉年华 Part.2「奇象巡展」"
     type: event
     start: "2026-08-08T16:00:00+08:00"
     end: "2026-09-04T03:59:00+08:00"
     sources:
       - "https://ak.hypergryph.com/news/8571"
-  - id: qixiang-exchange
+  - id: summer-p2-shop
     name: "奇象巡展 兑换处"
     type: event
     start: "2026-08-08T16:00:00+08:00"
     end: "2026-09-07T03:59:00+08:00"
     sources:
       - "https://ak.hypergryph.com/news/8571"
-  - id: banner-union-action
-    name: "联合行动 特选干员定向寻访"
+  - id: summer-qixiang
+    name: "奇象时装回顾展"
+    type: event
+    start: "2026-08-08T16:00:00+08:00"
+    end: "2026-08-22T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: banner-lianhe
+    name: "【联合行动】特选干员定向寻访"
     type: banner
     start: "2026-08-18T16:00:00+08:00"
     end: "2026-09-01T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: event-0011
+    name: "【0011/韵】系列新装限时上架（云迹）"
+    type: event
+    start: "2026-08-19T04:00:00+08:00"
+    end: "2026-09-02T03:59:00+08:00"
     sources:
       - "https://ak.hypergryph.com/news/8571"
   - id: banner-zhongjian
