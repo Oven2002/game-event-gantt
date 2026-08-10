@@ -1,31 +1,66 @@
 # 二游版本活动时间表
 
-一个由社区数据驱动的静态甘特图站点，用北京时间展示多个游戏、服务器的版本、活动和单点日程。
+一个社区数据驱动的**二次元手游版本/卡池/活动甘特图**。用北京时间（UTC+8）精确到分钟展示各大国产二游的版本排期，一眼看清「现在在开什么、接下来开什么」。
+
+> 站点：<https://oven2002.github.io/game-event-gantt/>
+
+## 特性
+
+- **甘特图时间轴**：按游戏分组的可视化时间表，支持缩放、拖动、一键回到「今天」
+- **精确到分钟**：所有时间均为北京时间，ISO 8601 完整格式（`+08:00`）
+- **多维度筛选**：按游戏 / 服务器 / 活动类型（版本·卡池·活动·前瞻）/ 状态（未开始·进行中·已结束）过滤
+- **点击查看详情**：每条目可展开来源链接与备注
+- **全量国服数据**：目前覆盖 8 款国产二游国服（见下），数据由社区维护、来源可核验
+
+## 已收录游戏（国服）
+
+| 游戏 | 厂商 |
+|---|---|
+| 原神 | 米哈游 |
+| 崩坏：星穹铁道 | 米哈游 |
+| 绝区零 | 米哈游 |
+| 明日方舟 | 鹰角网络 |
+| 明日方舟：终末地 | 鹰角网络 |
+| 鸣潮 | 库洛游戏 |
+| 碧蓝航线 | 蛮啾/悠星 |
+| 异环 | 完美世界（幻塔工作室） |
+
+> 想收录更多游戏？见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
 ## 本地开发
 
-需要 Node.js 22 或更新版本。
+需要 **Node.js 22+**。
 
 ```bash
 npm install
-npm run validate:data
-npm run dev
+npm run dev          # 开发服务器
+npm run validate:data  # 校验数据
+npm test             # 单元测试
+npm run build        # 校验 + 类型检查 + 构建
 ```
 
-完整检查：
+## 数据贡献
 
-```bash
-npm test
-npm run build
-```
-
-数据格式和提交流程见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+- 数据格式、字段规则、提交流程见 **[CONTRIBUTING.md](./CONTRIBUTING.md)**
+- 新增/修正条目请发 Pull Request；不确定的时间可先开 Issue 讨论
+- 所有时间必须能由**公开来源**核实，推荐使用官方公告（官网 / 官方社区账号）
 
 ## 部署
 
-仓库包含 GitHub Pages 工作流。启用方式：
+仓库内置 GitHub Pages 工作流：
 
-1. 在仓库 Settings → Pages 中将 Source 设为 **GitHub Actions**。
-2. 合并到 `main` 后，工作流会校验、构建并部署站点。
+1. 仓库 Settings → Pages → Source 设为 **GitHub Actions**
+2. 合并到 `main` 后自动：校验数据 → 构建 → 部署
 
-Astro 会在 GitHub Actions 中根据 `GITHUB_REPOSITORY` 自动设置项目站点的 `base` 路径。
+Astro 会在 Actions 中根据 `GITHUB_REPOSITORY` 自动设置项目站点的 `base` 路径。
+
+## 技术栈
+
+- [Astro](https://astro.build/) 7（静态站点）
+- TypeScript + Zod（数据校验）
+- Vitest（测试）
+- 纯 SVG 甘特图渲染（无第三方图表库依赖）
+
+## 许可
+
+数据由社区维护，时间仅供参考，请以游戏官方公告为准。仓库当前未声明代码许可证。
