@@ -19,7 +19,7 @@ versions:
       - "https://ys.mihoyo.com/main/news/detail/164216"
       - "https://ys.mihoyo.com/main/news/detail/164263"
   - id: luna-8
-    name: 月之八 空月之歌·谐谑
+    name: "月之八 空月之歌·谐谑（映夏！归乡？千灵节！）"
     start: "2026-07-01T06:00:00+08:00"
     end: "2026-08-11T18:00:00+08:00"
     note: end 为版本切换惯例；末期满卡池官方止于 08-11 14:59
@@ -30,9 +30,9 @@ versions:
     name: "7.0 无神怜爱的雪国"
     start: "2026-08-12T06:00:00+08:00"
     end: "2026-09-23T18:00:00+08:00"
-    note: 预估结束时间（官方未公布，7.0 更新说明未发布）
+    note: "预估结束（官方未公布）；佐证：月之八探索奖励截止 09-22 14:59；维护预告 165618"
     sources:
-      - "https://ys.mihoyo.com/main/news/detail/165422"
+      - "https://ys.mihoyo.com/main/news/detail/165618"
       - "https://ys.mihoyo.com/main/news/detail/165475"
 
 events:
@@ -64,21 +64,146 @@ events:
     related: ["7.0"]
     sources:
       - "https://ys.mihoyo.com/main/news/detail/165422"
+  # 月之八 卡池
+  - id: banner-luna-8-p1
+    name: "月之八 第一期角色祈愿（桑多涅+茜特菈莉）"
+    type: banner
+    start: "2026-07-01T06:00:00+08:00"
+    end: "2026-07-21T17:59:00+08:00"
+    related: ["luna-8"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165062"
+  - id: banner-luna-8-p1-weapon
+    name: "月之八 第一期武器祈愿（超越之匙+祭星者之望）"
+    type: banner
+    start: "2026-07-01T06:00:00+08:00"
+    end: "2026-07-21T17:59:00+08:00"
+    related: ["luna-8"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165062"
+  - id: banner-luna-8-p2
+    name: "月之八 第二期角色祈愿（哥伦比娅+雷电将军）"
+    type: banner
+    start: "2026-07-21T18:00:00+08:00"
+    end: "2026-08-11T14:59:00+08:00"
+    related: ["luna-8"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165302"
+  - id: banner-luna-8-p2-weapon
+    name: "月之八 第二期武器祈愿（帷间夜曲+薙草之稻光）"
+    type: banner
+    start: "2026-07-21T18:00:00+08:00"
+    end: "2026-08-11T14:59:00+08:00"
+    related: ["luna-8"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165315"
+  # 7.0 卡池
   - id: banner-7-0-upper
     name: "7.0 上半卡池（奥黛塔+阿蕾奇诺 含阿罗夏）"
     type: banner
     start: "2026-08-12T06:00:00+08:00"
     end: "2026-09-01T17:59:00+08:00"
-    note: 精确起止官方未公布，end 09-01 为社区估算
+    note: "阵容来自官方前瞻回顾长图；祈愿预告未发布，end 09-01 为社区估算"
     related: ["7.0"]
     sources:
       - "https://ys.mihoyo.com/main/news/detail/165472"
+  - id: banner-7-0-upper-weapon
+    name: "7.0 上半武器祈愿「神铸赋形」（白湖冬羽）"
+    type: banner
+    start: "2026-08-12T06:00:00+08:00"
+    end: "2026-09-23T18:00:00+08:00"
+    note: "官方武器说明 8/12 更新后开启；结束未公布，按 7.0 版本结束估算"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165549"
   - id: banner-7-0-lower
     name: "7.0 下半卡池（伊涅芙+菲林斯）"
     type: banner
     start: "2026-09-02T18:00:00+08:00"
     end: "2026-09-22T17:59:00+08:00"
-    note: 精确起止官方未公布，为社区估算
+    note: "阵容来自官方前瞻回顾长图；精确起止官方未公布，为社区估算"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165472"
+  # 月之八 活动
+  - id: event-luna-8-main
+    name: "映夏！归乡？千灵节！（含夏洛蒂衣装）"
+    type: event
+    start: "2026-07-01T06:00:00+08:00"
+    end: "2026-08-11T03:59:00+08:00"
+    related: ["luna-8"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165035"
+  - id: event-luna-8-youjing
+    name: "幽境危战：紊乱地脉挑战"
+    type: event
+    start: "2026-07-08T10:00:00+08:00"
+    end: "2026-08-11T03:59:00+08:00"
+    related: ["luna-8"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165149"
+  - id: event-luna-8-sheshe
+    name: "最终远射瞄准线：射击规划挑战"
+    type: event
+    start: "2026-07-17T10:00:00+08:00"
+    end: "2026-07-27T03:59:00+08:00"
+    related: ["luna-8"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165231"
+  - id: event-luna-8-qisheng
+    name: "七圣召唤·热斗模式：自行巧局"
+    type: event
+    start: "2026-07-18T10:00:00+08:00"
+    end: "2026-08-03T03:59:00+08:00"
+    related: ["luna-8"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165238"
+  - id: event-luna-8-wudao
+    name: "悠悠律动舞力聚会：共舞挑战"
+    type: event
+    start: "2026-07-24T10:00:00+08:00"
+    end: "2026-08-03T03:59:00+08:00"
+    related: ["luna-8"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165329"
+  - id: event-luna-8-yiyong
+    name: "地脉移涌：藏金之花/启示之花双倍掉落"
+    type: event
+    start: "2026-07-01T06:00:00+08:00"
+    end: "2026-08-10T03:59:00+08:00"
+    related: ["luna-8"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165038"
+  - id: event-luna-8-wangyueliang
+    name: "当我们抬头望月亮：区域探索限时奖励"
+    type: event
+    start: "2026-07-01T06:00:00+08:00"
+    end: "2026-09-22T14:59:00+08:00"
+    related: ["luna-8"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165037"
+  - id: event-zhidong
+    name: "至冬将至：网页预约活动"
+    type: event
+    start: "2026-07-31T00:00:00+08:00"
+    end: "2026-08-11T23:59:00+08:00"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165452"
+  - id: event-lixiu
+    name: "砺行修远：勤修馈赠（7.0周期）"
+    type: event
+    start: "2026-08-10T04:00:00+08:00"
+    end: "2026-11-02T03:59:00+08:00"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165613"
+  - id: event-7-0-main
+    name: "7.0 主活动「险境征奇竞锋大赛」"
+    type: event
+    start: "2026-08-12T11:00:00+08:00"
+    end: "2026-09-22T17:59:00+08:00"
+    note: "官方前瞻长图列名；精确时间未公布，按 7.0 版本周期估算（8/12 开服 ~ 9/22）"
     related: ["7.0"]
     sources:
       - "https://ys.mihoyo.com/main/news/detail/165472"
