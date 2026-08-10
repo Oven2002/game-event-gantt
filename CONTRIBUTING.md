@@ -47,33 +47,30 @@ game: genshin-impact
 region: cn
 
 versions:
-  - id: "5.0"
-    name: "5.0"
-    start: "2026-08-28T06:00:00+08:00"
-    end: "2026-10-09T18:00:00+08:00"
+  - id: "7.0"
+    name: "7.0 无神怜爱的雪国"
+    start: "2026-08-12T06:00:00+08:00"
+    end: "2026-09-23T18:00:00+08:00"
     sources:
-      - "https://example.com/official-notice"
+      - "https://ys.mihoyo.com/main/news/detail/165475"
 
 events:
-  - id: anniversary-2026
-    name: 周年庆
-    type: event
-    priority: 20
-    start: "2026-09-15T10:00:00+08:00"
-    end: "2026-10-25T18:00:00+08:00"
-    related: ["5.0"]
-    url: "https://example.com/event-page"
+  - id: banner-7-0-upper
+    name: "7.0 上半卡池（奥黛塔+阿蕾奇诺 含阿罗夏）"
+    type: banner
+    start: "2026-08-12T06:00:00+08:00"
+    end: "2026-09-01T17:59:00+08:00"
+    related: ["7.0"]
     sources:
-      - "https://example.com/official-notice"
-    note: 跨版本活动
+      - "https://ys.mihoyo.com/main/news/detail/165472"
 
-  - id: preview-5-1
-    name: 5.1 前瞻直播
+  - id: preview-7-0
+    name: 7.0 前瞻直播
     type: preview
-    start: "2026-10-01T19:00:00+08:00"
-    related: ["5.1"]
+    start: "2026-07-31T20:00:00+08:00"
+    related: ["7.0"]
     sources:
-      - "https://example.com/preview-notice"
+      - "https://ys.mihoyo.com/main/news/detail/165422"
 ```
 
 ### 字段规则
