@@ -1,4 +1,5 @@
 import type { TimelinePayload } from "../lib/types";
+import { resolveAssetUrl } from "../lib/asset-url";
 
 declare global {
   interface Window {
@@ -6,7 +7,7 @@ declare global {
   }
 }
 
-const assetUrl = (path: string) => new URL(path, new URL(import.meta.env.BASE_URL, window.location.origin)).href;
+const assetUrl = (path: string) => resolveAssetUrl(import.meta.env.BASE_URL, path, window.location.origin);
 
 function ongoingBannerCount(): number {
   const data = document.querySelector<HTMLScriptElement>("#timeline-data")?.textContent;

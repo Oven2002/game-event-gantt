@@ -11,6 +11,7 @@ import {
 import { domainAroundAnchor } from "../src/lib/timeline-domain.ts";
 import { packIntoLanes, statusAt } from "../src/lib/types.ts";
 import { parseEffectsPreferences } from "../src/lib/effects-preferences.ts";
+import { resolveAssetUrl } from "../src/lib/asset-url.ts";
 
 const temporaryDirectories: string[] = [];
 
@@ -129,6 +130,18 @@ describe("页面特效偏好", () => {
       .toEqual({ sakuraEnabled: false, mascotVisible: false });
     expect(parseEffectsPreferences("not-json", true))
       .toEqual({ sakuraEnabled: true, mascotVisible: true });
+  });
+});
+
+describe("静态资源基路径", () => {
+  it("保留没有尾斜杠的 GitHub Pages 仓库路径", () => {
+    expect(resolveAssetUrl("/game-event-gantt", "vendor/live2d-config.json", "https://example.com"))
+      .toBe("https://example.com/game-event-gantt/vendor/live2d-config.json");
+  });
+
+  it("兼容站点根路径与资源前导斜杠", () => {
+    expect(resolveAssetUrl("/", "/vendor/model.json", "https://example.com"))
+      .toBe("https://example.com/vendor/model.json");
   });
 });
 
