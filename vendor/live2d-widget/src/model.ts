@@ -24,7 +24,12 @@ interface Config {
    * Path to the waifu configuration file.
    * @type {string}
    */
-  waifuPath: string;
+  waifuPath?: string;
+  /**
+   * In-memory waifu configuration. This avoids creating a Blob URL for
+   * dynamically adjusted messages and model paths.
+   */
+  waifuData?: unknown;
   /**
    * Path to the API, if you need to load models via API.
    * @type {string | undefined}
@@ -92,6 +97,10 @@ class ModelManager {
   private modelSwitchQueue: Promise<void>;
   private modelJSONCache: Record<string, any>;
   private models: ModelList[];
+  private lifecycleToken: number;
+  private pendingDispose: boolean;
+  private disposed: boolean;
+  private paused: boolean;
 
   /**
    * Create a Model instance.
@@ -133,6 +142,10 @@ class ModelManager {
     this.modelSwitchQueue = Promise.resolve();
     this.modelJSONCache = {};
     this.models = models;
+    this.lifecycleToken = 0;
+    this.pendingDispose = false;
+    this.disposed = false;
+    this.paused = false;
   }
 
   public static async initCheck(config: Config, models: ModelList[] = []) {
@@ -189,7 +202,57 @@ class ModelManager {
   }
 
   resetCanvas() {
-    document.getElementById('waifu-canvas').innerHTML = '<canvas id="live2d" width="800" height="800"></canvas>';
+    document.getElementById('waifu-canvas').innerHTML = '<canvas id="live2d" width="300" height="300"></canvas>';
+  }
+
+  private releaseRuntime(): void {
+    this.lifecycleToken += 1;
+    this.pendingDispose = false;
+    this.paused = false;
+
+    if (this.cubism5model) {
+      try {
+        this.cubism5model.release?.();
+      } catch (error) {
+        logger.warn('Failed to release Cubism 5 runtime.', error);
+      }
+      this.cubism5model = undefined;
+    }
+    if (this.cubism2model) {
+      try {
+        this.cubism2model.destroy?.();
+      } catch (error) {
+        logger.warn('Failed to release Cubism 2 runtime.', error);
+      }
+      this.cubism2model = undefined;
+    }
+    this.currentCubism5ModelPath = undefined;
+    this.currentModelVersion = 0;
+  }
+
+  pause(): void {
+    this.paused = true;
+    this.cubism5model?.stop?.();
+    this.cubism2model?.pauseDraw?.();
+  }
+
+  resume(): void {
+    if (this.disposed) return;
+    this.paused = false;
+    if (document.hidden) return;
+    if (this.cubism5model) this.cubism5model.run?.();
+    else this.cubism2model?.resumeDraw?.();
+  }
+
+  dispose(): void {
+    this.disposed = true;
+    this.lifecycleToken += 1;
+    this.pause();
+    if (this.loading) {
+      this.pendingDispose = true;
+      return;
+    }
+    this.releaseRuntime();
   }
 
   async fetchWithCache(url: string) {
@@ -214,7 +277,7 @@ class ModelManager {
     return 2;
   }
 
-  async waitForCubism5ModelReady(timeoutMs = 30000): Promise<void> {
+  async waitForCubism5ModelReady(token: number, timeoutMs = 30000): Promise<void> {
     const live2dManager = this.cubism5model?.subdelegates.at(0)?.getLive2DManager();
     const model = live2dManager?._models?.at(0);
     if (!model) throw new Error('Cubism 5 model was not created.');
@@ -241,14 +304,19 @@ class ModelManager {
       };
       const checkReady = () => {
         // LoadStep.CompleteSetup in the bundled Cubism SDK.
-        if (model._state === 22) {
+        if (token !== this.lifecycleToken || this.disposed) {
+          cleanup();
+          reject(new Error('Cubism 5 model load was cancelled.'));
+        } else if (model._state === 22) {
           cleanup();
           resolve();
         } else if (getVisibleElapsed() >= timeoutMs) {
           cleanup();
           reject(new Error('Timed out while loading Cubism 5 model.'));
         } else {
-          checkTimer = setTimeout(checkReady, 16);
+          // Poll less often while the tab is backgrounded; loading time is
+          // measured only while visible, so this does not shorten the budget.
+          checkTimer = setTimeout(checkReady, document.hidden ? 250 : 16);
         }
       };
       document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -284,11 +352,12 @@ class ModelManager {
   }
 
   async loadLive2D(modelSettingPath: string, modelSetting: object): Promise<boolean> {
-    if (this.loading) {
+    if (this.loading || this.disposed) {
       logger.warn('Still loading. Abort.');
       return false;
     }
     this.loading = true;
+    const token = this.lifecycleToken;
     let changedCubism5Model = false;
     const previousCubism5ModelPath = this.currentCubism5ModelPath;
     try {
@@ -300,11 +369,12 @@ class ModelManager {
             return false;
           }
           await loadExternalResource(this.cubism2Path, 'js');
+          if (token !== this.lifecycleToken || this.disposed) return false;
           const { default: Cubism2Model } = await import('./cubism2/index.js');
           this.cubism2model = new Cubism2Model();
         }
         if (this.currentModelVersion === 3) {
-          (this.cubism5model as any).release();
+          this.cubism5model?.release?.();
           this.cubism5model = undefined;
           this.currentCubism5ModelPath = undefined;
           // Recycle WebGL resources
@@ -313,20 +383,25 @@ class ModelManager {
         if (this.currentModelVersion === 3 || !this.cubism2model.gl) {
           await this.cubism2model.init('live2d', modelSettingPath, modelSetting);
         } else {
-          await this.cubism2model.changeModelWithJSON(modelSettingPath, modelSetting);
+          const changed = await (this.cubism2model.changeModelWithJSON(modelSettingPath, modelSetting) as unknown as Promise<boolean>);
+          if (changed === false) return false;
         }
+        if (token !== this.lifecycleToken || this.disposed) return false;
+        if (this.paused || document.hidden) this.cubism2model.pauseDraw?.();
       } else {
         if (!this.cubism5Path) {
           logger.error('No cubism5Path set, cannot load Cubism 5 Core.')
           return false;
         }
         if (this.currentModelVersion === 2) {
-          this.cubism2model.destroy();
+          this.cubism2model?.destroy?.();
+          this.cubism2model = undefined;
           // Recycle WebGL resources
           this.resetCanvas();
         }
         if (!this.cubism5model) {
           await loadExternalResource(this.cubism5Path, 'js');
+          if (token !== this.lifecycleToken || this.disposed) return false;
           const { AppDelegate: Cubism5Model } = await import('./cubism5/index.js');
           this.cubism5model = new (Cubism5Model as any)();
           this.configureCubism5InputHandlers();
@@ -335,19 +410,24 @@ class ModelManager {
           this.cubism5model.initialize();
           this.cubism5model.changeModel(modelSettingPath);
           changedCubism5Model = true;
-          this.cubism5model.run();
+          if (!this.paused && !document.hidden) this.cubism5model.run();
         } else {
           this.cubism5model.changeModel(modelSettingPath);
           changedCubism5Model = true;
         }
-        await this.waitForCubism5ModelReady();
+        await this.waitForCubism5ModelReady(token);
+        if (token !== this.lifecycleToken || this.disposed) return false;
         this.currentCubism5ModelPath = modelSettingPath;
+      }
+      if (!this.paused && !document.hidden) {
+        if (this.cubism5model) this.cubism5model.run?.();
+        else this.cubism2model?.resumeDraw?.();
       }
       logger.info(`Model ${modelSettingPath} (Cubism version ${version}) loaded`);
       this.currentModelVersion = version;
       return true;
     } catch (err) {
-      if (changedCubism5Model && previousCubism5ModelPath && this.cubism5model) {
+      if (token === this.lifecycleToken && !this.disposed && changedCubism5Model && previousCubism5ModelPath && this.cubism5model) {
         try {
           this.cubism5model.changeModel(previousCubism5ModelPath);
         } catch (rollbackError) {
@@ -358,6 +438,7 @@ class ModelManager {
       return false;
     } finally {
       this.loading = false;
+      if (this.pendingDispose) this.releaseRuntime();
     }
   }
 
@@ -375,6 +456,7 @@ class ModelManager {
     modelId = this.modelId,
     modelTexturesId = this.modelTexturesId
   ): Promise<boolean> {
+    if (this.disposed) return false;
     let modelSettingPath, modelSetting;
     if (this.useCDN) {
       let modelName = this.modelList.models[modelId];
@@ -406,6 +488,7 @@ class ModelManager {
    * Load a random texture for the current model.
    */
   async loadRandTexture(successMessage: string | string[] = '', failMessage: string | string[] = '') {
+    if (this.disposed || this.paused) return;
     const { modelId } = this;
     let noTextureAvailable = false;
     if (this.useCDN) {
@@ -446,6 +529,7 @@ class ModelManager {
    */
   loadNextModel(): Promise<void> {
     const switchModel = async () => {
+      if (this.disposed || this.paused) return;
       const modelCount = this.useCDN ? this.modelList.models.length : this.models.length;
       const nextModelId = (this.modelId + 1) % modelCount;
       const message = this.useCDN

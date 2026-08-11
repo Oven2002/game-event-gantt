@@ -71,7 +71,7 @@ class Cubism2Model {
         this.deviceToScreen = new L2DMatrix44();
         this.deviceToScreen.multTranslate(-width / 2.0, -height / 2.0);
         this.deviceToScreen.multScale(2 / width, -2 / width);
-        this.gl = this.canvas.getContext('webgl2', { premultipliedAlpha: true, preserveDrawingBuffer: true });
+        this.gl = this.canvas.getContext('webgl2', { premultipliedAlpha: true, preserveDrawingBuffer: false });
         if (!this.gl) {
             logger.error('Failed to create WebGL context.');
             return;
@@ -92,11 +92,7 @@ class Cubism2Model {
             this.canvas.removeEventListener('touchend', this._boundTouchEvent, false);
             this.canvas.removeEventListener('touchmove', this._boundTouchEvent, false);
         }
-        if (this._drawFrameId) {
-            window.cancelAnimationFrame(this._drawFrameId);
-            this._drawFrameId = null;
-        }
-        this.isDrawStart = false;
+        this.pauseDraw();
         if (this.live2DMgr && typeof this.live2DMgr.release === 'function') {
             this.live2DMgr.release();
         }
@@ -113,13 +109,28 @@ class Cubism2Model {
         if (!this.isDrawStart) {
             this.isDrawStart = true;
             const tick = () => {
+                if (!this.isDrawStart)
+                    return;
                 this.draw();
                 this._drawFrameId = window.requestAnimationFrame(tick, this.canvas);
             };
             tick();
         }
     }
+    pauseDraw() {
+        this.isDrawStart = false;
+        if (this._drawFrameId != null) {
+            window.cancelAnimationFrame(this._drawFrameId);
+            this._drawFrameId = null;
+        }
+    }
+    resumeDraw() {
+        if (this.canvas && this.gl)
+            this.startDraw();
+    }
     draw() {
+        if (!this.isDrawStart || !this.gl || !this.canvas || !this.dragMgr || !this.live2DMgr)
+            return;
         MatrixStack.reset();
         MatrixStack.loadIdentity();
         this.dragMgr.update();

@@ -161,10 +161,15 @@ class LAppModel extends L2DBaseModel {
   }
 
   release(gl) {
-    // this.live2DModel.deleteTextures();
+    // Cubism 2 keeps texture handles on the model. Releasing only the
+    // platform manager's legacy texture field leaves those handles alive on
+    // every model switch.
+    this.live2DModel?.deleteTextures?.();
     const pm = Live2DFramework.getPlatformManager();
 
-    gl.deleteTexture(pm.texture);
+    if (pm.texture) gl.deleteTexture(pm.texture);
+    this.live2DModel = null;
+    this.modelSetting = null;
   }
 
   preloadMotionGroup(name) {

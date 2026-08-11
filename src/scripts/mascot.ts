@@ -96,6 +96,11 @@ function makeAccessible(): () => void {
 
 async function initializeMascot(): Promise<void> {
   let stopAccessibilityObserver = () => {};
+  const refreshAccessibility = () => {
+    stopAccessibilityObserver();
+    stopAccessibilityObserver = makeAccessible();
+  };
+  window.addEventListener("live2d:widget-ready", refreshAccessibility);
   try {
     const response = await fetch(assetUrl("vendor/live2d-config.json"));
     if (!response.ok) throw new Error(`配置加载失败：${response.status}`);
@@ -113,12 +118,10 @@ async function initializeMascot(): Promise<void> {
       if (!path) throw new Error(`未知看板娘模型：${model.name}`);
       model.paths[0] = assetUrl(path);
     });
-    const configBlob = new Blob([JSON.stringify(config)], { type: "application/json" });
-    const configUrl = URL.createObjectURL(configBlob);
     if (typeof window.initWidget !== "function") throw new Error("Live2D 组件未正确初始化");
     stopAccessibilityObserver = makeAccessible();
     window.initWidget({
-      waifuPath: configUrl,
+      waifuData: config,
       cubism5Path: assetUrl("vendor/live2d-runtime/live2dcubismcore.min.js"),
       tools: ["switch-model", "info", "quit"],
       drag: true,
@@ -133,6 +136,7 @@ async function initializeMascot(): Promise<void> {
     }, { capture: true });
   } catch (error) {
     stopAccessibilityObserver();
+    window.removeEventListener("live2d:widget-ready", refreshAccessibility);
     console.warn("看板娘加载失败，时间表功能不受影响。", error);
     document.querySelector("#waifu")?.remove();
     document.querySelector("#waifu-toggle")?.remove();

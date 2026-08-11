@@ -8,7 +8,9 @@ import logger from '../logger.js';
 class LAppLive2DManager {
   constructor() {
     this.model = null;
+    this.gl = null;
     this.reloading = false;
+    this.loadToken = 0;
 
     Live2D.init();
     Live2DFramework.setPlatformManager(new PlatformManager());
@@ -19,45 +21,82 @@ class LAppLive2DManager {
   }
 
   releaseModel(gl) {
+    this.loadToken += 1;
     if (this.model) {
       this.model.release(gl);
       this.model = null;
     }
   }
 
+  release() {
+    this.loadToken += 1;
+    if (this.model && this.gl) this.model.release(this.gl);
+    this.model = null;
+    this.gl = null;
+    this.reloading = false;
+  }
+
   async changeModel(gl, modelSettingPath) {
+    this.gl = gl;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise((resolve, reject) => {
-      if (this.reloading) return;
+      if (this.reloading) {
+        resolve(false);
+        return;
+      }
       this.reloading = true;
+      const token = ++this.loadToken;
 
       const oldModel = this.model;
       const newModel = new LAppModel();
 
       newModel.load(gl, modelSettingPath, () => {
+        if (token !== this.loadToken) {
+          try {
+            newModel.release(gl);
+          } catch (error) {
+            logger.warn('Failed to release a cancelled Cubism 2 model.', error);
+          }
+          resolve(false);
+          return;
+        }
         if (oldModel) {
           oldModel.release(gl);
         }
         this.model = newModel;
         this.reloading = false;
-        resolve();
+        resolve(true);
       });
     });
   }
 
   async changeModelWithJSON(gl, modelSettingPath, modelSetting) {
-    if (this.reloading) return;
+    this.gl = gl;
+    if (this.reloading) return false;
     this.reloading = true;
+    const token = ++this.loadToken;
 
     const oldModel = this.model;
     const newModel = new LAppModel();
 
-    await newModel.loadModelSetting(modelSettingPath, modelSetting);
-    if (oldModel) {
-      oldModel.release(gl);
+    try {
+      await newModel.loadModelSetting(modelSettingPath, modelSetting);
+      if (token !== this.loadToken) {
+        try {
+          newModel.release(gl);
+        } catch (error) {
+          logger.warn('Failed to release a cancelled Cubism 2 model.', error);
+        }
+        return false;
+      }
+      if (oldModel) {
+        oldModel.release(gl);
+      }
+      this.model = newModel;
+      return true;
+    } finally {
+      if (token === this.loadToken) this.reloading = false;
     }
-    this.model = newModel;
-    this.reloading = false;
   }
 
   setDrag(x, y) {

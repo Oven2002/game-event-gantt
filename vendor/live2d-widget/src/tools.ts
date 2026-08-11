@@ -37,15 +37,24 @@ interface Tools {
   };
 }
 
+interface WidgetLifecycle {
+  onPause?: () => void;
+  onDispose?: () => void;
+}
+
 /**
  * Waifu tools manager.
  */
 class ToolsManager {
   tools: Tools;
   config: Config;
+  private readonly lifecycle: WidgetLifecycle;
+  private readonly timers = new Set<ReturnType<typeof setTimeout>>();
+  private disposed = false;
 
-  constructor(model: ModelManager, config: Config, tips: Tips) {
+  constructor(model: ModelManager, config: Config, tips: Tips, lifecycle: WidgetLifecycle = {}) {
     this.config = config;
+    this.lifecycle = lifecycle;
     this.tools = {
       hitokoto: {
         icon: fa_comment,
@@ -53,12 +62,16 @@ class ToolsManager {
           // Add hitokoto.cn API
           const response = await fetch('https://v1.hitokoto.cn');
           const result = await response.json();
+          if (this.disposed) return;
           const template = tips.message.hitokoto;
           const text = i18n(template, result.from, result.creator);
           showMessage(result.hitokoto, 6000, 9);
-          setTimeout(() => {
+          const timer = setTimeout(() => {
+            this.timers.delete(timer);
+            if (this.disposed) return;
             showMessage(text, 4000, 9);
           }, 6000);
+          this.timers.add(timer);
         }
       },
       asteroids: {
@@ -118,6 +131,7 @@ class ToolsManager {
       quit: {
         icon: fa_xmark,
         callback: () => {
+          if (this.disposed) return;
           const showToggleAfterQuit = this.config.showToggleAfterQuit ?? true;
           if (showToggleAfterQuit) {
             localStorage.setItem('waifu-display', Date.now().toString());
@@ -128,17 +142,22 @@ class ToolsManager {
           const message = tips.message.goodbye;
           showMessage(message, 2000, 11);
           const waifu = document.getElementById('waifu');
+          this.lifecycle.onPause?.();
+          // Quitting is a destructive action: release WebGL/Cubism resources
+          // immediately. The toggle remains available for a fresh instance.
+          this.disposed = true;
+          this.timers.forEach((timer) => clearTimeout(timer));
+          this.timers.clear();
+          this.lifecycle.onDispose?.();
           if (!waifu) return;
           waifu.classList.remove('waifu-active');
-          setTimeout(() => {
-            waifu.classList.add('waifu-hidden');
-            if (showToggleAfterQuit) {
-              const waifuToggle = document.getElementById('waifu-toggle');
-              waifuToggle?.classList.add('waifu-toggle-active');
-            } else {
-              document.getElementById('waifu-toggle')?.remove();
-            }
-          }, 3000);
+          waifu.classList.add('waifu-hidden');
+          if (showToggleAfterQuit) {
+            const waifuToggle = document.getElementById('waifu-toggle');
+            waifuToggle?.classList.add('waifu-toggle-active');
+          } else {
+            document.getElementById('waifu-toggle')?.remove();
+          }
         }
       }
     };

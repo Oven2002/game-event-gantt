@@ -238,7 +238,10 @@ describe("Live2D 看板娘资源", () => {
       "utf8"
     );
     expect(source).toContain("if (!this.cubism5model)");
-    expect(source).toContain("await this.waitForCubism5ModelReady()");
+    expect(source).toContain("await this.waitForCubism5ModelReady(token)");
+    expect(source).toContain("private releaseRuntime()");
+    expect(source).toContain("this.cubism5model?.stop?.()");
+    expect(source).toContain("this.cubism5model?.release?.()");
     expect(source).toContain("document.addEventListener('visibilitychange', handleVisibilityChange)");
     expect(source).toContain("getVisibleElapsed() >= timeoutMs");
     expect(source).toContain("this.cubism5model.changeModel(previousCubism5ModelPath)");
@@ -248,6 +251,61 @@ describe("Live2D 看板娘资源", () => {
     expect(source).toContain("this.modelSwitchQueue.then(switchModel)");
     expect(source.indexOf("const loaded = await this.loadModel(message, nextModelId, 0)"))
       .toBeLessThan(source.indexOf("this.modelId = nextModelId"));
+  });
+
+  it("Live2D lifecycle releases resources and limits canvas resolution", () => {
+    const cubism5 = fs.readFileSync(
+      path.join(process.cwd(), "vendor/live2d-widget/src/cubism5/index.js"),
+      "utf8"
+    );
+    const cubism2 = fs.readFileSync(
+      path.join(process.cwd(), "vendor/live2d-widget/src/cubism2/index.js"),
+      "utf8"
+    );
+    const cubism2Manager = fs.readFileSync(
+      path.join(process.cwd(), "vendor/live2d-widget/src/cubism2/LAppLive2DManager.js"),
+      "utf8"
+    );
+    const cubism2Model = fs.readFileSync(
+      path.join(process.cwd(), "vendor/live2d-widget/src/cubism2/LAppModel.js"),
+      "utf8"
+    );
+    const mascot = fs.readFileSync(path.join(process.cwd(), "src/scripts/mascot.ts"), "utf8");
+    const runtime = fs.readFileSync(
+      path.join(process.cwd(), "public/vendor/live2d-widget/dist/chunk/index2.js"),
+      "utf8"
+    );
+    const cubism2Runtime = fs.readFileSync(
+      path.join(process.cwd(), "public/vendor/live2d-widget/dist/chunk/index.js"),
+      "utf8"
+    );
+    expect(cubism5).toContain("releaseLive2DModels");
+    expect(cubism5).toContain("super.release()");
+    expect(cubism5).toContain("preserveDrawingBuffer: false");
+    expect(cubism5).toContain("if (this._running) return;");
+    expect(cubism2).toContain("pauseDraw()");
+    expect(cubism2).toContain("preserveDrawingBuffer: false");
+    expect(cubism2Manager).toContain("this.loadToken = 0");
+    expect(cubism2Model).toContain("this.live2DModel?.deleteTextures?.()");
+    expect(mascot).toContain("waifuData: config");
+    expect(mascot).not.toContain("URL.createObjectURL");
+    expect(runtime).toContain("preserveDrawingBuffer:!1");
+    expect(runtime.match(/function ws\(/g)).toHaveLength(1);
+    expect(cubism2Runtime).toContain("getModel(){return this.model}release(){");
+    expect(cubism2Runtime).toContain("pauseDraw(){");
+  });
+
+  it("樱花渐变按尺寸缓存且降低粒子数量", () => {
+    const source = fs.readFileSync(path.join(process.cwd(), "src/scripts/effects.ts"), "utf8");
+    expect(source).toContain("const petalSprites = new Map");
+    expect(source).toContain("const targetCount = width <= 760 ? 10 : 20");
+    expect(source).not.toContain("context.createLinearGradient");
+  });
+
+  it("时间轴导航将连续操作合并到动画帧", () => {
+    const source = fs.readFileSync(path.join(process.cwd(), "src/scripts/timeline.ts"), "utf8");
+    expect(source).toContain("function scheduleRender()");
+    expect(source).toContain("renderFrame = window.requestAnimationFrame");
   });
 
   it("折叠或禁用看板娘时不会持续观察页面 DOM", () => {

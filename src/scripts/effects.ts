@@ -21,6 +21,8 @@ let frame: number | undefined;
 let width = 0;
 let height = 0;
 let dpr = 1;
+let resizeTimer: number | undefined;
+const petalSprites = new Map<number, { canvas: HTMLCanvasElement; cssSize: number }>();
 
 function loadPreferences() {
   try {
@@ -66,7 +68,7 @@ function randomPetal(startAbove = false): Petal {
 
 function resize(): void {
   if (!canvas) return;
-  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   width = window.innerWidth;
   height = window.innerHeight;
   canvas.width = Math.round(width * dpr);
@@ -75,26 +77,48 @@ function resize(): void {
   canvas.style.height = `${height}px`;
   context = canvas.getContext("2d");
   context?.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const targetCount = width <= 760 ? 16 : 34;
+  petalSprites.clear();
+  const targetCount = width <= 760 ? 10 : 20;
   petals = Array.from({ length: targetCount }, (_, index) => petals[index] ?? randomPetal());
+}
+
+function getPetalSprite(size: number): { canvas: HTMLCanvasElement; cssSize: number } {
+  const key = Math.round(size * 10) / 10;
+  const cssSize = key * 2.4 + 4;
+  const existing = petalSprites.get(key);
+  if (existing) return existing;
+
+  const sprite = document.createElement("canvas");
+  sprite.width = Math.ceil(cssSize * dpr);
+  sprite.height = Math.ceil(cssSize * dpr);
+  const spriteContext = sprite.getContext("2d");
+  if (spriteContext) {
+    spriteContext.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const center = cssSize / 2;
+    const gradient = spriteContext.createLinearGradient(center - key, center - key, center + key, center + key);
+    gradient.addColorStop(0, "#fff3fa");
+    gradient.addColorStop(.45, "#ffacd2");
+    gradient.addColorStop(1, "#d88cff");
+    spriteContext.fillStyle = gradient;
+    spriteContext.beginPath();
+    spriteContext.moveTo(center, center);
+    spriteContext.bezierCurveTo(center - key, center - key * .65, center - key * .75, center - key * 1.45, center, center - key * 1.7);
+    spriteContext.bezierCurveTo(center + key * .78, center - key * 1.3, center + key, center - key * .55, center, center);
+    spriteContext.fill();
+  }
+  const result = { canvas: sprite, cssSize };
+  petalSprites.set(key, result);
+  return result;
 }
 
 function drawPetal(petal: Petal): void {
   if (!context) return;
+  const { canvas: sprite, cssSize } = getPetalSprite(petal.size);
   context.save();
   context.translate(petal.x, petal.y);
   context.rotate(petal.rotation);
   context.globalAlpha = petal.opacity;
-  const gradient = context.createLinearGradient(-petal.size, -petal.size, petal.size, petal.size);
-  gradient.addColorStop(0, "#fff3fa");
-  gradient.addColorStop(.45, "#ffacd2");
-  gradient.addColorStop(1, "#d88cff");
-  context.fillStyle = gradient;
-  context.beginPath();
-  context.moveTo(0, 0);
-  context.bezierCurveTo(-petal.size, -petal.size * .65, -petal.size * .75, -petal.size * 1.45, 0, -petal.size * 1.7);
-  context.bezierCurveTo(petal.size * .78, -petal.size * 1.3, petal.size, -petal.size * .55, 0, 0);
-  context.fill();
+  context.drawImage(sprite, -cssSize / 2, -cssSize / 2);
   context.restore();
 }
 
@@ -115,6 +139,14 @@ function stop(): void {
   if (frame !== undefined) cancelAnimationFrame(frame);
   frame = undefined;
   context?.clearRect(0, 0, width, height);
+}
+
+function scheduleResize(): void {
+  if (resizeTimer !== undefined) window.clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => {
+    resizeTimer = undefined;
+    if (preferences.sakuraEnabled && !reducedMotion.matches) resize();
+  }, 120);
 }
 
 function updateToggle(): void {
@@ -157,6 +189,6 @@ document.addEventListener("click", (event) => {
   }
 });
 
-window.addEventListener("resize", resize);
+window.addEventListener("resize", scheduleResize);
 document.addEventListener("visibilitychange", () => document.hidden ? stop() : updateEffect());
 reducedMotion.addEventListener("change", updateEffect);

@@ -47,6 +47,7 @@ let now = Date.now();
 let [domainStart, domainEnd] = domainAroundAnchor(now, INITIAL_SPAN, NOW_POSITION);
 let resizeTimer: number | undefined;
 let restoreScrollFrame: number | undefined;
+let renderFrame: number | undefined;
 
 function loadPreferences() {
   try {
@@ -225,7 +226,15 @@ function zoomAt(factor: number, anchor = (domainStart + domainEnd) / 2): void {
   const nextSpan = span * factor;
   const ratio = (anchor - domainStart) / span;
   applyDomain(anchor - nextSpan * ratio, anchor + nextSpan * (1 - ratio));
-  render();
+  scheduleRender();
+}
+
+function scheduleRender(): void {
+  if (renderFrame !== undefined) return;
+  renderFrame = window.requestAnimationFrame(() => {
+    renderFrame = undefined;
+    render();
+  });
 }
 
 function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: number): void {
@@ -304,7 +313,7 @@ function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: 
     if (moved && pendingDomain) {
       applyDomain(...pendingDomain);
       pendingDomain = undefined;
-      render();
+      scheduleRender();
     } else {
       setPreviewTransform();
     }
@@ -566,7 +575,7 @@ function render(): void {
     heading.addEventListener("click", () => {
       preferences.groupOpen[entry.group.key] = !groupOpen;
       savePreferences();
-      render();
+      scheduleRender();
     });
     section.append(heading, chartFrame);
     timeline.append(section);
@@ -593,7 +602,7 @@ document.querySelectorAll<HTMLInputElement>("[data-filter] input").forEach((inpu
       preferences.filters[filterName]![input.value] = input.checked;
       savePreferences();
     }
-    render();
+    scheduleRender();
   });
 });
 
@@ -602,7 +611,7 @@ document.querySelector('[data-action="zoom-out"]')?.addEventListener("click", ()
 document.querySelector('[data-action="today"]')?.addEventListener("click", () => {
   const span = domainEnd - domainStart;
   applyDomain(...domainAroundAnchor(now, span, NOW_POSITION));
-  render();
+  scheduleRender();
 });
 document.querySelector("[data-close-detail]")?.addEventListener("click", () => dialog.close());
 dialog.addEventListener("click", (event) => {
@@ -611,17 +620,17 @@ dialog.addEventListener("click", (event) => {
 
 window.addEventListener("resize", () => {
   window.clearTimeout(resizeTimer);
-  resizeTimer = window.setTimeout(render, 120);
+  resizeTimer = window.setTimeout(scheduleRender, 120);
 });
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
     now = Date.now();
-    render();
+    scheduleRender();
   }
 });
 window.setInterval(() => {
   now = Date.now();
-  render();
+  scheduleRender();
 }, MINUTE);
 
 render();

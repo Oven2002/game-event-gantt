@@ -1,5 +1,14 @@
 import { randomSelection } from './utils.js';
 let messageTimer = null;
+function clearMessage() {
+    var _a;
+    if (messageTimer) {
+        clearTimeout(messageTimer);
+        messageTimer = null;
+    }
+    sessionStorage.removeItem('waifu-message-priority');
+    (_a = document.getElementById('waifu-tips')) === null || _a === void 0 ? void 0 : _a.classList.remove('waifu-tips-active');
+}
 function showMessage(text, timeout, priority, override = true) {
     let currentPriority = parseInt(sessionStorage.getItem('waifu-message-priority'), 10);
     if (isNaN(currentPriority)) {
@@ -50,4 +59,4 @@ function i18n(template, ...args) {
         return (_a = args[i]) !== null && _a !== void 0 ? _a : '';
     });
 }
-export { showMessage, welcomeMessage, i18n };
+export { clearMessage, showMessage, welcomeMessage, i18n };

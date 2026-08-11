@@ -20,6 +20,15 @@ type Time = {
 
 let messageTimer: NodeJS.Timeout | null = null;
 
+function clearMessage() {
+  if (messageTimer) {
+    clearTimeout(messageTimer);
+    messageTimer = null;
+  }
+  sessionStorage.removeItem('waifu-message-priority');
+  document.getElementById('waifu-tips')?.classList.remove('waifu-tips-active');
+}
+
 /**
  * Display waifu message.
  * @param {string | string[]} text - Message text or array of texts.
@@ -96,4 +105,4 @@ function i18n(template: string, ...args: string[]) {
   });
 }
 
-export { showMessage, welcomeMessage, i18n, Time };
+export { clearMessage, showMessage, welcomeMessage, i18n, Time };

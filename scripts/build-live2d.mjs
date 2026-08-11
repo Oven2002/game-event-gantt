@@ -31,4 +31,9 @@ for (const artifact of artifacts) {
   copyFileSync(path.join(sourceDist, artifact), destination);
 }
 
+execFileSync(process.execPath, [path.join(root, "scripts/patch-live2d-cubism.mjs")], {
+  cwd: root,
+  stdio: "inherit",
+});
+
 console.log(`Synced ${artifacts.length} Live2D runtime artifacts to public/.`);

@@ -9,6 +9,24 @@ import logger from '../logger.js';
 
 LAppPal.printMessage = () => {};
 
+/**
+ * The bundled Cubism manager's releaseAllModel() only clears its vector. The
+ * models own the moc, renderer, motion and texture resources, so release
+ * them explicitly before clearing the vector.
+ */
+function releaseLive2DModels(live2dManager) {
+  const models = live2dManager?._models;
+  if (!models) return;
+  for (let index = models.getSize() - 1; index >= 0; index -= 1) {
+    try {
+      models.at(index)?.release?.();
+    } catch (error) {
+      logger.warn('Failed to release a Cubism 5 model.', error);
+    }
+  }
+  live2dManager.releaseAllModel?.();
+}
+
 // Custom subdelegate class, responsible for Canvas-related initialization and rendering management
 class AppSubdelegate extends LAppSubdelegate {
   /**
@@ -16,10 +34,9 @@ class AppSubdelegate extends LAppSubdelegate {
    * @param {HTMLCanvasElement} canvas The canvas object passed in
    */
   initialize(canvas) {
-    // Preserve the drawing buffer so the photo tool can export moc3 models.
     const context = canvas.getContext('webgl2', {
       premultipliedAlpha: true,
-      preserveDrawingBuffer: true
+      preserveDrawingBuffer: false
     });
     if (!context) {
       logger.error('Cannot initialize WebGL. This browser does not support.');
@@ -78,6 +95,18 @@ class AppSubdelegate extends LAppSubdelegate {
     return true;
   }
 
+  resizeCanvas() {
+    const canvas = this._canvas;
+    if (!canvas) return;
+    const cssWidth = canvas.clientWidth || 300;
+    const cssHeight = canvas.clientHeight || cssWidth;
+    const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width = Math.max(1, Math.round(cssWidth * ratio));
+    canvas.height = Math.max(1, Math.round(cssHeight * ratio));
+    const gl = this._glManager?.getGl?.();
+    gl?.viewport(0, 0, canvas.width, canvas.height);
+  }
+
   /**
    * Adjust and reinitialize the view when the canvas size changes
    */
@@ -132,8 +161,11 @@ export class AppDelegate extends LAppDelegate {
    * Start the main loop.
    */
   run() {
+    if (this._running) return;
+    this._running = true;
     // Main loop function, responsible for updating time and all subdelegates
     const loop = () => {
+      if (!this._running) return;
       // Update time
       LAppPal.updateTime();
 
@@ -149,7 +181,8 @@ export class AppDelegate extends LAppDelegate {
   }
 
   stop() {
-    if (this._drawFrameId) {
+    this._running = false;
+    if (this._drawFrameId != null) {
       window.cancelAnimationFrame(this._drawFrameId);
       this._drawFrameId = null;
     }
@@ -157,19 +190,25 @@ export class AppDelegate extends LAppDelegate {
 
   release() {
     this.stop();
-    this.releaseEventListener();
-    this._subdelegates.clear();
-
-    this._cubismOption = null;
+    for (let index = this._subdelegates.getSize() - 1; index >= 0; index -= 1) {
+      const subdelegate = this._subdelegates.at(index);
+      releaseLive2DModels(subdelegate?.getLive2DManager?.());
+    }
+    // The SDK base release also disposes CubismFramework and releases each
+    // subdelegate (resize observer, view, textures and GL manager).
+    super.release();
+    this._canvases.clear();
   }
 
   transformOffset(e) {
     const subdelegate = this._subdelegates.at(0);
     const rect = subdelegate.getCanvas().getBoundingClientRect();
-    const localX = e.pageX - rect.left;
-    const localY = e.pageY - rect.top;
-    const posX = localX * window.devicePixelRatio;
-    const posY = localY * window.devicePixelRatio;
+    const ratioX = rect.width ? subdelegate.getCanvas().width / rect.width : 1;
+    const ratioY = rect.height ? subdelegate.getCanvas().height / rect.height : 1;
+    const localX = (e.clientX - rect.left) * ratioX;
+    const localY = (e.clientY - rect.top) * ratioY;
+    const posX = localX;
+    const posY = localY;
     const x = subdelegate._view.transformViewX(posX);
     const y = subdelegate._view.transformViewY(posY);
     return {
@@ -283,8 +322,8 @@ export class AppDelegate extends LAppDelegate {
     const modelPath = segments.join('/') + '/';
     // Get the current Live2D manager
     const live2dManager = this._subdelegates.at(0).getLive2DManager();
-    // Release all old models
-    live2dManager.releaseAllModel();
+    // Release all old models, including their GPU and Cubism resources.
+    releaseLive2DModels(live2dManager);
     // Create a new model instance, set subdelegate and load resources
     const instance = new LAppModel();
     instance.setSubdelegate(live2dManager._subdelegate);

@@ -2,20 +2,29 @@ import { fa_comment, fa_paper_plane, fa_street_view, fa_shirt, fa_camera_retro, 
 import { showMessage, i18n } from './message.js';
 const WAIFU_DISABLED_KEY = 'waifu-disabled';
 class ToolsManager {
-    constructor(model, config, tips) {
+    constructor(model, config, tips, lifecycle = {}) {
+        this.timers = new Set();
+        this.disposed = false;
         this.config = config;
+        this.lifecycle = lifecycle;
         this.tools = {
             hitokoto: {
                 icon: fa_comment,
                 callback: async () => {
                     const response = await fetch('https://v1.hitokoto.cn');
                     const result = await response.json();
+                    if (this.disposed)
+                        return;
                     const template = tips.message.hitokoto;
                     const text = i18n(template, result.from, result.creator);
                     showMessage(result.hitokoto, 6000, 9);
-                    setTimeout(() => {
+                    const timer = setTimeout(() => {
+                        this.timers.delete(timer);
+                        if (this.disposed)
+                            return;
                         showMessage(text, 4000, 9);
                     }, 6000);
+                    this.timers.add(timer);
                 }
             },
             asteroids: {
@@ -76,7 +85,9 @@ class ToolsManager {
             quit: {
                 icon: fa_xmark,
                 callback: () => {
-                    var _a;
+                    var _a, _b, _c, _d, _e, _f;
+                    if (this.disposed)
+                        return;
                     const showToggleAfterQuit = (_a = this.config.showToggleAfterQuit) !== null && _a !== void 0 ? _a : true;
                     if (showToggleAfterQuit) {
                         localStorage.setItem('waifu-display', Date.now().toString());
@@ -88,20 +99,22 @@ class ToolsManager {
                     const message = tips.message.goodbye;
                     showMessage(message, 2000, 11);
                     const waifu = document.getElementById('waifu');
+                    (_c = (_b = this.lifecycle).onPause) === null || _c === void 0 ? void 0 : _c.call(_b);
+                    this.disposed = true;
+                    this.timers.forEach((timer) => clearTimeout(timer));
+                    this.timers.clear();
+                    (_e = (_d = this.lifecycle).onDispose) === null || _e === void 0 ? void 0 : _e.call(_d);
                     if (!waifu)
                         return;
                     waifu.classList.remove('waifu-active');
-                    setTimeout(() => {
-                        var _a;
-                        waifu.classList.add('waifu-hidden');
-                        if (showToggleAfterQuit) {
-                            const waifuToggle = document.getElementById('waifu-toggle');
-                            waifuToggle === null || waifuToggle === void 0 ? void 0 : waifuToggle.classList.add('waifu-toggle-active');
-                        }
-                        else {
-                            (_a = document.getElementById('waifu-toggle')) === null || _a === void 0 ? void 0 : _a.remove();
-                        }
-                    }, 3000);
+                    waifu.classList.add('waifu-hidden');
+                    if (showToggleAfterQuit) {
+                        const waifuToggle = document.getElementById('waifu-toggle');
+                        waifuToggle === null || waifuToggle === void 0 ? void 0 : waifuToggle.classList.add('waifu-toggle-active');
+                    }
+                    else {
+                        (_f = document.getElementById('waifu-toggle')) === null || _f === void 0 ? void 0 : _f.remove();
+                    }
                 }
             }
         };

@@ -4,7 +4,7 @@
  */
 
 import { ModelManager, Config, ModelList } from './model.js';
-import { showMessage, welcomeMessage, Time } from './message.js';
+import { clearMessage, showMessage, welcomeMessage, Time } from './message.js';
 import { randomSelection } from './utils.js';
 import { ToolsManager } from './tools.js';
 import logger from './logger.js';
@@ -13,7 +13,7 @@ import { fa_child } from './icons.js';
 
 const WAIFU_DISABLED_KEY = 'waifu-disabled';
 
-interface Tips {
+export interface Tips {
   /**
    * Default message configuration.
    */
@@ -80,15 +80,28 @@ interface Tips {
   models: ModelList[];
 }
 
+// Keep the console easter egg on one stable function. Reopening the widget
+// must not leave one new console closure retaining every previous tips object.
+let activeConsoleTips: Tips | null = null;
+const devtools = () => {
+  if (activeConsoleTips) showMessage(activeConsoleTips.message.console, 6000, 9);
+};
+devtools.toString = () => {
+  if (activeConsoleTips) showMessage(activeConsoleTips.message.console, 6000, 9);
+  return '';
+};
+console.log('%c', devtools);
+
 /**
  * Register event listeners.
  * @param {Tips} tips - Result configuration.
  */
-function registerEventListener(tips: Tips) {
+function registerEventListener(tips: Tips): () => void {
   // Detect user activity and display messages when idle
   let userAction = false;
-  let userActionTimer: any;
-  const messageArray = tips.message.default;
+  let userActionTimer: ReturnType<typeof setInterval> | undefined;
+  let idleTimer: ReturnType<typeof setInterval> | undefined;
+  const messageArray = [...tips.message.default];
   tips.seasons.forEach(({ date, text }) => {
     const now = new Date(),
       after = date.split('-')[0],
@@ -105,21 +118,24 @@ function registerEventListener(tips: Tips) {
     }
   });
   let lastHoverElement: any;
-  window.addEventListener('mousemove', () => (userAction = true));
-  window.addEventListener('keydown', () => (userAction = true));
-  setInterval(() => {
+  const markUserAction = () => (userAction = true);
+  const checkIdle = () => {
     if (userAction) {
       userAction = false;
-      clearInterval(userActionTimer);
-      userActionTimer = null;
+      if (userActionTimer) clearInterval(userActionTimer);
+      userActionTimer = undefined;
     } else if (!userActionTimer) {
       userActionTimer = setInterval(() => {
         showMessage(messageArray, 6000, 9);
       }, 20000);
     }
-  }, 1000);
+  };
+  const startIdleTimer = () => {
+    if (idleTimer === undefined) idleTimer = setInterval(checkIdle, 1000);
+  };
+  startIdleTimer();
 
-  window.addEventListener('mouseover', (event) => {
+  const handleMouseOver = (event: MouseEvent) => {
     // eslint-disable-next-line prefer-const
     for (let { selector, text } of tips.mouseover) {
       if (!(event.target as HTMLElement)?.closest(selector)) continue;
@@ -133,8 +149,8 @@ function registerEventListener(tips: Tips) {
       showMessage(text, 4000, 8);
       return;
     }
-  });
-  window.addEventListener('click', (event) => {
+  };
+  const handleClick = (event: MouseEvent) => {
     // eslint-disable-next-line prefer-const
     for (let { selector, text } of tips.click) {
       if (!(event.target as HTMLElement)?.closest(selector)) continue;
@@ -146,61 +162,157 @@ function registerEventListener(tips: Tips) {
       showMessage(text, 4000, 8);
       return;
     }
-  });
-  window.addEventListener('live2d:hoverbody', () => {
+  };
+  const handleHoverBody = () => {
     const text = randomSelection(tips.message.hoverBody);
     showMessage(text, 4000, 8, false);
-  });
-  window.addEventListener('live2d:tapbody', () => {
+  };
+  const handleTapBody = () => {
     const text = randomSelection(tips.message.tapBody);
     showMessage(text, 4000, 9);
-  });
-
-  const devtools = () => {};
-  console.log('%c', devtools);
-  devtools.toString = () => {
-    showMessage(tips.message.console, 6000, 9);
   };
-  window.addEventListener('copy', () => {
+
+  activeConsoleTips = tips;
+  const handleCopy = () => {
     showMessage(tips.message.copy, 6000, 9);
-  });
-  window.addEventListener('visibilitychange', () => {
-    if (!document.hidden)
+  };
+  const handleVisibility = () => {
+    if (document.hidden) {
+      if (idleTimer) clearInterval(idleTimer);
+      idleTimer = undefined;
+      if (userActionTimer) clearInterval(userActionTimer);
+      userActionTimer = undefined;
+    } else {
+      startIdleTimer();
       showMessage(tips.message.visibilitychange, 6000, 9);
-  });
+    }
+  };
+
+  window.addEventListener('mousemove', markUserAction);
+  window.addEventListener('keydown', markUserAction);
+  window.addEventListener('mouseover', handleMouseOver);
+  window.addEventListener('click', handleClick);
+  window.addEventListener('live2d:hoverbody', handleHoverBody);
+  window.addEventListener('live2d:tapbody', handleTapBody);
+  window.addEventListener('copy', handleCopy);
+  window.addEventListener('visibilitychange', handleVisibility);
+
+  return () => {
+    if (activeConsoleTips === tips) activeConsoleTips = null;
+    if (idleTimer) clearInterval(idleTimer);
+    if (userActionTimer) clearInterval(userActionTimer);
+    window.removeEventListener('mousemove', markUserAction);
+    window.removeEventListener('keydown', markUserAction);
+    window.removeEventListener('mouseover', handleMouseOver);
+    window.removeEventListener('click', handleClick);
+    window.removeEventListener('live2d:hoverbody', handleHoverBody);
+    window.removeEventListener('live2d:tapbody', handleTapBody);
+    window.removeEventListener('copy', handleCopy);
+    window.removeEventListener('visibilitychange', handleVisibility);
+  };
 }
 
-/**
- * Load the waifu widget.
- * @param {Config} config - Waifu configuration.
- */
-async function loadWidget(config: Config) {
+interface WidgetRuntime {
+  model: ModelManager;
+  dispose: () => void;
+}
+
+let activeRuntime: WidgetRuntime | null = null;
+let loadingModel: ModelManager | null = null;
+let loadPromise: Promise<WidgetRuntime> | null = null;
+let visibilityListenerInstalled = false;
+
+async function loadWidgetInternal(config: Config): Promise<WidgetRuntime> {
   localStorage.removeItem('waifu-display');
   sessionStorage.removeItem('waifu-message-priority');
+  document.getElementById('waifu')?.remove();
   document.body.insertAdjacentHTML(
     'beforeend',
     `<div id="waifu">
        <div id="waifu-tips"></div>
        <div id="waifu-canvas">
-         <canvas id="live2d" width="800" height="800"></canvas>
+         <canvas id="live2d" width="300" height="300"></canvas>
        </div>
        <div id="waifu-tool"></div>
      </div>`,
   );
+
   let models: ModelList[] = [];
-  let tips: Tips | null;
-  if (config.waifuPath) {
-    const response = await fetch(config.waifuPath);
-    tips = await response.json();
-    models = tips.models;
-    registerEventListener(tips);
-    showMessage(welcomeMessage(tips.time, tips.message.welcome, tips.message.referrer), 7000, 11);
+  let tips: Tips;
+  try {
+    if (config.waifuData) {
+      tips = config.waifuData as Tips;
+    } else if (config.waifuPath) {
+      const response = await fetch(config.waifuPath);
+      if (!response.ok) throw new Error(`Failed to load waifu config (${response.status}).`);
+      tips = await response.json() as Tips;
+    } else {
+      throw new Error('Missing waifuData or waifuPath.');
+    }
+  } catch (error) {
+    document.getElementById('waifu')?.remove();
+    throw error;
   }
-  const model = await ModelManager.initCheck(config, models);
-  await model.loadModel('');
-  new ToolsManager(model, config, tips).registerTools();
-  if (config.drag) registerDrag();
-  document.getElementById('waifu')?.classList.add('waifu-active');
+  models = tips.models;
+
+  let removeEventListeners = () => {};
+  let model: ModelManager | undefined;
+  try {
+    removeEventListeners = registerEventListener(tips);
+    showMessage(welcomeMessage(tips.time, tips.message.welcome, tips.message.referrer), 7000, 11);
+    model = await ModelManager.initCheck(config, models);
+    loadingModel = model;
+    const loaded = await model.loadModel('');
+    if (!loaded) throw new Error('The initial Live2D model failed to load.');
+    loadingModel = null;
+
+    let disposed = false;
+    const dragCleanup = config.drag ? registerDrag() : undefined;
+    const dispose = () => {
+      if (disposed) return;
+      disposed = true;
+      model.dispose();
+      removeEventListeners();
+      dragCleanup?.();
+      clearMessage();
+      document.getElementById('waifu')?.remove();
+      if (activeRuntime?.model === model) activeRuntime = null;
+      window.dispatchEvent(new Event('live2d:widget-disposed'));
+    };
+    const runtime = { model, dispose };
+    activeRuntime = runtime;
+    new ToolsManager(model, config, tips, {
+      onPause: () => model.pause(),
+      onDispose: dispose,
+    }).registerTools();
+    document.getElementById('waifu')?.classList.add('waifu-active');
+    window.dispatchEvent(new Event('live2d:widget-ready'));
+    return runtime;
+  } catch (error) {
+    model?.dispose();
+    if (activeRuntime?.model === model) activeRuntime = null;
+    loadingModel = null;
+    removeEventListeners();
+    clearMessage();
+    document.getElementById('waifu')?.remove();
+    throw error;
+  }
+}
+
+/**
+ * Load the waifu widget once. A disposed instance is recreated on the next
+ * toggle click, while concurrent opens share the same in-flight promise.
+ */
+async function loadWidget(config: Config): Promise<WidgetRuntime> {
+  if (activeRuntime) return activeRuntime;
+  if (loadPromise) return loadPromise;
+  const pending = loadWidgetInternal(config);
+  loadPromise = pending;
+  try {
+    return await pending;
+  } finally {
+    if (loadPromise === pending) loadPromise = null;
+  }
 }
 
 /**
@@ -215,6 +327,14 @@ function initWidget(config: string | Config) {
   if (localStorage.getItem(WAIFU_DISABLED_KEY) === 'true') {
     return;
   }
+  if (visibilityListenerInstalled) return;
+  visibilityListenerInstalled = true;
+  document.addEventListener('visibilitychange', () => {
+    const model = activeRuntime?.model ?? loadingModel;
+    if (!model) return;
+    if (document.hidden) model.pause();
+    else model.resume();
+  });
   logger.setLevel(config.logLevel);
   document.body.insertAdjacentHTML(
     'beforeend',
@@ -223,14 +343,21 @@ function initWidget(config: string | Config) {
      </div>`,
   );
   const toggle = document.getElementById('waifu-toggle');
-  toggle?.addEventListener('click', () => {
+  toggle?.addEventListener('click', async () => {
     toggle?.classList.remove('waifu-toggle-active');
-    if (toggle?.getAttribute('first-time')) {
-      loadWidget(config as Config);
+    const runtime = activeRuntime;
+    if (toggle?.getAttribute('first-time') || !runtime || !document.getElementById('waifu')) {
       toggle?.removeAttribute('first-time');
+      try {
+        const nextRuntime = await loadWidget(config as Config);
+        nextRuntime.model.resume();
+      } catch (error) {
+        logger.error('Failed to reopen Live2D widget.', error);
+      }
     } else {
       localStorage.removeItem('waifu-display');
       document.getElementById('waifu')?.classList.remove('waifu-hidden');
+      runtime.model.resume();
       setTimeout(() => {
         document.getElementById('waifu')?.classList.add('waifu-active');
       }, 0);
@@ -245,8 +372,10 @@ function initWidget(config: string | Config) {
       toggle?.classList.add('waifu-toggle-active');
     }, 0);
   } else {
-    loadWidget(config as Config);
+    void loadWidget(config as Config).catch((error) => {
+      logger.error('Failed to load Live2D widget.', error);
+    });
   }
 }
 
-export { initWidget, Tips };
+export { initWidget };

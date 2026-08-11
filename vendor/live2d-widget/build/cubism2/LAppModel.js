@@ -106,8 +106,13 @@ class LAppModel extends L2DBaseModel {
         });
     }
     release(gl) {
+        var _a, _b;
+        (_b = (_a = this.live2DModel) === null || _a === void 0 ? void 0 : _a.deleteTextures) === null || _b === void 0 ? void 0 : _b.call(_a);
         const pm = Live2DFramework.getPlatformManager();
-        gl.deleteTexture(pm.texture);
+        if (pm.texture)
+            gl.deleteTexture(pm.texture);
+        this.live2DModel = null;
+        this.modelSetting = null;
     }
     preloadMotionGroup(name) {
         for (let i = 0; i < this.modelSetting.getMotionNum(name); i++) {

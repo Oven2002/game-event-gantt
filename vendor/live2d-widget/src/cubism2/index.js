@@ -99,8 +99,8 @@ class Cubism2Model {
     this.deviceToScreen.multTranslate(-width / 2.0, -height / 2.0);
     this.deviceToScreen.multScale(2 / width, -2 / width);
 
-    // https://stackoverflow.com/questions/26783586/canvas-todataurl-returns-blank-image
-    this.gl = this.canvas.getContext('webgl2', { premultipliedAlpha: true, preserveDrawingBuffer: true });
+    // The photo tool is not enabled; do not retain a drawing buffer per frame.
+    this.gl = this.canvas.getContext('webgl2', { premultipliedAlpha: true, preserveDrawingBuffer: false });
     if (!this.gl) {
       logger.error('Failed to create WebGL context.');
       return;
@@ -130,11 +130,7 @@ class Cubism2Model {
     }
 
     // 2. Stop animation
-    if (this._drawFrameId) {
-      window.cancelAnimationFrame(this._drawFrameId);
-      this._drawFrameId = null;
-    }
-    this.isDrawStart = false;
+    this.pauseDraw();
 
     // 3. Release Live2D related resources
     if (this.live2DMgr && typeof this.live2DMgr.release === 'function') {
@@ -160,6 +156,7 @@ class Cubism2Model {
     if (!this.isDrawStart) {
       this.isDrawStart = true;
       const tick = () => {
+        if (!this.isDrawStart) return;
         this.draw();
         this._drawFrameId = window.requestAnimationFrame(tick, this.canvas);
       };
@@ -167,8 +164,22 @@ class Cubism2Model {
     }
   }
 
+  pauseDraw() {
+    this.isDrawStart = false;
+    if (this._drawFrameId != null) {
+      window.cancelAnimationFrame(this._drawFrameId);
+      this._drawFrameId = null;
+    }
+  }
+
+  resumeDraw() {
+    if (this.canvas && this.gl) this.startDraw();
+  }
+
   draw() {
     // logger.trace("--> draw()");
+
+    if (!this.isDrawStart || !this.gl || !this.canvas || !this.dragMgr || !this.live2DMgr) return;
 
     MatrixStack.reset();
     MatrixStack.loadIdentity();

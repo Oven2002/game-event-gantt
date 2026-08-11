@@ -1,55 +1,53 @@
-function registerDrag() {
+function registerDrag(): () => void {
   const element = document.getElementById('waifu');
-  if (!element) return;
-  let winWidth = window.innerWidth,
-    winHeight = window.innerHeight;
-  const imgWidth = element.offsetWidth,
-    imgHeight = element.offsetHeight;
-  // Bind mousedown event to the element to be dragged
-  element.addEventListener('mousedown', event => {
-    if (event.button === 2) {
-      // Right mouse button, just return, do not handle
-      return;
-    }
-    const canvas = document.getElementById('live2d');
-    if (event.target !== canvas) return;
+  if (!element) return () => {};
+
+  let winWidth = window.innerWidth;
+  let winHeight = window.innerHeight;
+  let imgWidth = element.offsetWidth;
+  let imgHeight = element.offsetHeight;
+  let dragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  const handleMouseDown = (event: MouseEvent) => {
+    if (event.button === 2 || event.target !== document.getElementById('live2d')) return;
     event.preventDefault();
-    // Record the coordinates of the cursor when pressing down on the image
-    const _offsetX = event.offsetX,
-      _offsetY = event.offsetY;
-    // Bind mousemove event
-    document.onmousemove = event => {
-      // Get the coordinates of the cursor in the viewport
-      const _x = event.clientX,
-        _y = event.clientY;
-      // Calculate the position of the dragged image
-      let _left = _x - _offsetX,
-        _top = _y - _offsetY;
-      // Check if within the window range
-      if (_top < 0) { // Top
-        _top = 0;
-      } else if (_top >= winHeight - imgHeight) { // Bottom
-        _top = winHeight - imgHeight;
-      }
-      if (_left < 0) { // Left
-        _left = 0;
-      } else if (_left >= winWidth - imgWidth) { // Right
-        _left = winWidth - imgWidth;
-      }
-      // Set the position of the element during dragging
-      element.style.top = _top + 'px';
-      element.style.left = _left + 'px';
-    }
-    // Bind mouseup event
-    document.onmouseup = () => {
-      document.onmousemove = null;
-    }
-  });
-  // Reset width and height when the browser window size changes
-  window.onresize = () => {
+    dragging = true;
+    offsetX = event.offsetX;
+    offsetY = event.offsetY;
+  };
+  const handleMouseMove = (event: MouseEvent) => {
+    if (!dragging) return;
+    let left = event.clientX - offsetX;
+    let top = event.clientY - offsetY;
+    left = Math.max(0, Math.min(left, Math.max(0, winWidth - imgWidth)));
+    top = Math.max(0, Math.min(top, Math.max(0, winHeight - imgHeight)));
+    element.style.top = `${top}px`;
+    element.style.left = `${left}px`;
+  };
+  const handleMouseUp = () => {
+    dragging = false;
+  };
+  const handleResize = () => {
     winWidth = window.innerWidth;
     winHeight = window.innerHeight;
-  }
+    imgWidth = element.offsetWidth;
+    imgHeight = element.offsetHeight;
+  };
+
+  element.addEventListener('mousedown', handleMouseDown);
+  document.addEventListener('mousemove', handleMouseMove);
+  document.addEventListener('mouseup', handleMouseUp);
+  window.addEventListener('resize', handleResize);
+
+  return () => {
+    dragging = false;
+    element.removeEventListener('mousedown', handleMouseDown);
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+    window.removeEventListener('resize', handleResize);
+  };
 }
 
 export default registerDrag;
