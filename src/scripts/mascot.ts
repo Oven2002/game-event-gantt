@@ -128,7 +128,15 @@ async function initializeMascot(): Promise<void> {
     document.addEventListener("mousedown", (event) => {
       if ((event.target as Element | null)?.closest("#live2d")) {
         const mascot = document.querySelector<HTMLElement>("#waifu");
-        if (mascot) mascot.style.right = "auto";
+        if (mascot) {
+          // 先把当前渲染位置固化为 left/top，再清 right。
+          // 否则纯点击（无拖动）时 drag.ts 不会设置 left/top，
+          // 元素会掉回 CSS 默认位置（左下角）造成瞬移。
+          const rect = mascot.getBoundingClientRect();
+          mascot.style.left = `${rect.left}px`;
+          mascot.style.top = `${rect.top}px`;
+          mascot.style.right = "auto";
+        }
       }
     }, { capture: true });
   } catch (error) {
