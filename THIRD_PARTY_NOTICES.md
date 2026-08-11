@@ -42,3 +42,11 @@ Required notice:
 - Typeface: SIL Open Font License 1.1
 
 The package is installed through npm and its license files are preserved in `vendor/licenses/lxgw-wenkai-lite-webfont/`.
+
+## Kimi and OpenCode brand icons
+
+- Kimi favicon: <https://www.kimi.com/favicon-light.ico>
+- OpenCode favicon: <https://opencode.ai/favicon-96x96-v3.png>
+- Local files: `public/icons/kimi.png` and `public/icons/opencode.png`
+
+The brand icons are the official logos of Moonshot AI and OpenCode respectively, used here solely to credit the AI tools that assisted this project. They are not covered by this repository's MIT license.
