@@ -599,7 +599,7 @@ restoreFilterPreferences();
 (function enhanceFilterMenus(): void {
   if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
-  document.querySelectorAll<HTMLElement>(".filter-menu").forEach((menu) => {
+  document.querySelectorAll<HTMLDetailsElement>(".filter-menu").forEach((menu) => {
     // 接管开关权，避免原生 click toggle 与 hover 状态打架
     menu.querySelector("summary")?.addEventListener("click", (e) => e.preventDefault());
 
