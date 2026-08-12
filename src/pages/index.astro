@@ -15,6 +15,7 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/")
 const faviconUrl = `${baseUrl}favicon.png`;
 const kimiIconUrl = `${baseUrl}icons/kimi.png`;
 const opencodeIconUrl = `${baseUrl}icons/opencode.png`;
+const glmIconUrl = `${baseUrl}icons/glm.png`;
 ---
 
 <!doctype html>
@@ -165,6 +166,12 @@ const opencodeIconUrl = `${baseUrl}icons/opencode.png`;
             <a href="https://opencode.ai/" target="_blank" rel="noopener noreferrer">
               <img class="thanks__icon" src={opencodeIconUrl} width="17" height="17" alt="" />
               OpenCode
+            </a>
+          </li>
+          <li>
+            <a href="https://www.zhipuai.cn/" target="_blank" rel="noopener noreferrer">
+              <img class="thanks__icon" src={glmIconUrl} width="17" height="17" alt="" />
+              GLM
             </a>
           </li>
         </ul>
