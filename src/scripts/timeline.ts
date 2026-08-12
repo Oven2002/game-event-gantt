@@ -594,6 +594,46 @@ function render(): void {
 
 restoreFilterPreferences();
 
+// ── Hover/focus 增强：筛选菜单鼠标放上去即展开，移开自动关闭 ──────────
+// 仅在精确指针设备（鼠标）上启用；触屏设备保留原生 <details> 点击行为
+(function enhanceFilterMenus(): void {
+  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
+  document.querySelectorAll<HTMLElement>(".filter-menu").forEach((menu) => {
+    // 接管开关权，避免原生 click toggle 与 hover 状态打架
+    menu.querySelector("summary")?.addEventListener("click", (e) => e.preventDefault());
+
+    let openTimer: number | undefined;
+    let closeTimer: number | undefined;
+
+    menu.addEventListener("mouseenter", () => {
+      clearTimeout(closeTimer);
+      openTimer = window.setTimeout(() => { menu.open = true; }, 100);
+    });
+
+    menu.addEventListener("mouseleave", () => {
+      clearTimeout(openTimer);
+      closeTimer = window.setTimeout(() => {
+        if (!menu.contains(document.activeElement)) menu.open = false;
+      }, 200);
+    });
+
+    menu.addEventListener("focusin", () => {
+      clearTimeout(openTimer);
+      clearTimeout(closeTimer);
+      menu.open = true;
+    });
+
+    menu.addEventListener("focusout", () => {
+      window.setTimeout(() => {
+        if (!menu.contains(document.activeElement) && !menu.matches(":hover")) {
+          menu.open = false;
+        }
+      });
+    });
+  });
+})();
+
 document.querySelectorAll<HTMLInputElement>("[data-filter] input").forEach((input) => {
   input.addEventListener("change", () => {
     const filterName = filterNameFor(input);
