@@ -36,6 +36,18 @@ for (const target of targets) {
     'getContext("webgl2")',
     'getContext("webgl2",{antialias:!1,premultipliedAlpha:!0,preserveDrawingBuffer:!1})',
   );
+  // Mirror the patch into the sourcemaps' embedded sourcesContent so debugger
+  // views stay consistent with the runtime context attributes. Only the
+  // attribute-bearing forms are patched; the no-arg GlManager lookup keeps its
+  // original source text. (In the JSON-encoded .map text, `\n` is two chars.)
+  source = source.replaceAll(
+    `getContext('webgl2', { premultipliedAlpha: true, preserveDrawingBuffer: false })`,
+    `getContext('webgl2', { antialias: false, premultipliedAlpha: true, preserveDrawingBuffer: false })`,
+  );
+  source = source.replaceAll(
+    `getContext('webgl2', {\\n            premultipliedAlpha: true,\\n            preserveDrawingBuffer: false\\n        })`,
+    `getContext('webgl2', {\\n            antialias: false,\\n            premultipliedAlpha: true,\\n            preserveDrawingBuffer: false\\n        })`,
+  );
   if (target.endsWith(".map")) {
     writeFileSync(target, source);
     continue;
