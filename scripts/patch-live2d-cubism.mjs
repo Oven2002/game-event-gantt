@@ -25,6 +25,17 @@ for (const target of targets) {
   let source = readFileSync(target, "utf8");
   source = source.replaceAll("preserveDrawingBuffer:!0", "preserveDrawingBuffer:!1");
   source = source.replaceAll("preserveDrawingBuffer: true", "preserveDrawingBuffer: false");
+  // Drop the default MSAA framebuffer: lighter GPU teardown on tab close and
+  // cheaper per-frame rendering on weak iGPUs. Idempotent -- the patterns no
+  // longer match once `antialias:!1` is present, so re-running is safe.
+  source = source.replaceAll(
+    'getContext("webgl2",{premultipliedAlpha:!0,preserveDrawingBuffer:!1})',
+    'getContext("webgl2",{antialias:!1,premultipliedAlpha:!0,preserveDrawingBuffer:!1})',
+  );
+  source = source.replaceAll(
+    'getContext("webgl2")',
+    'getContext("webgl2",{antialias:!1,premultipliedAlpha:!0,preserveDrawingBuffer:!1})',
+  );
   if (target.endsWith(".map")) {
     writeFileSync(target, source);
     continue;

@@ -179,22 +179,35 @@ async function loadWidgetInternal(config) {
         loadingModel = null;
         let disposed = false;
         const dragCleanup = config.drag ? registerDrag() : undefined;
+        const handlePageHide = (event) => {
+            if (event.persisted)
+                return;
+            dispose();
+        };
         const dispose = () => {
-            var _a;
+            var _a, _b, _c;
             if (disposed)
                 return;
             disposed = true;
+            window.removeEventListener('pagehide', handlePageHide);
             model.dispose();
+            try {
+                const canvas = document.getElementById('live2d');
+                const gl = (_a = canvas === null || canvas === void 0 ? void 0 : canvas.getContext('webgl2')) !== null && _a !== void 0 ? _a : canvas === null || canvas === void 0 ? void 0 : canvas.getContext('webgl');
+                (_b = gl === null || gl === void 0 ? void 0 : gl.getExtension('WEBGL_lose_context')) === null || _b === void 0 ? void 0 : _b.loseContext();
+            }
+            catch (_d) { }
             removeEventListeners();
             dragCleanup === null || dragCleanup === void 0 ? void 0 : dragCleanup();
             clearMessage();
-            (_a = document.getElementById('waifu')) === null || _a === void 0 ? void 0 : _a.remove();
+            (_c = document.getElementById('waifu')) === null || _c === void 0 ? void 0 : _c.remove();
             if ((activeRuntime === null || activeRuntime === void 0 ? void 0 : activeRuntime.model) === model)
                 activeRuntime = null;
             window.dispatchEvent(new Event('live2d:widget-disposed'));
         };
         const runtime = { model, dispose };
         activeRuntime = runtime;
+        window.addEventListener('pagehide', handlePageHide);
         new ToolsManager(model, config, tips, {
             onPause: () => model.pause(),
             onDispose: dispose,

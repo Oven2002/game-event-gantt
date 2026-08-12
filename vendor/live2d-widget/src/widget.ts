@@ -268,10 +268,20 @@ async function loadWidgetInternal(config: Config): Promise<WidgetRuntime> {
 
     let disposed = false;
     const dragCleanup = config.drag ? registerDrag() : undefined;
+    const handlePageHide = (event: PageTransitionEvent) => {
+      if (event.persisted) return;
+      dispose();
+    };
     const dispose = () => {
       if (disposed) return;
       disposed = true;
+      window.removeEventListener('pagehide', handlePageHide);
       model.dispose();
+      try {
+        const canvas = document.getElementById('live2d') as HTMLCanvasElement | null;
+        const gl = canvas?.getContext('webgl2') ?? canvas?.getContext('webgl');
+        gl?.getExtension('WEBGL_lose_context')?.loseContext();
+      } catch {}
       removeEventListeners();
       dragCleanup?.();
       clearMessage();
@@ -281,6 +291,7 @@ async function loadWidgetInternal(config: Config): Promise<WidgetRuntime> {
     };
     const runtime = { model, dispose };
     activeRuntime = runtime;
+    window.addEventListener('pagehide', handlePageHide);
     new ToolsManager(model, config, tips, {
       onPause: () => model.pause(),
       onDispose: dispose,
