@@ -1,4 +1,3 @@
-```yaml
 game: wuthering-waves
 region: cn
 
@@ -162,4 +161,3 @@ events:
     related: ["3.5"]
     sources:
       - "https://mc.kurogames.com/main/news/detail/5110"
-```

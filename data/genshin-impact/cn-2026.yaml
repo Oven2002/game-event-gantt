@@ -1,4 +1,3 @@
-```yaml
 game: genshin-impact
 region: cn
 
@@ -285,4 +284,3 @@ events:
     sources:
       - "https://ys.mihoyo.com/main/news/detail/162404"
       - "https://ys.mihoyo.com/main/news/detail/162387"
-```
