@@ -87,7 +87,9 @@ export function parseBeijingTimestamp(value: string): number {
   const daysInMonth = month >= 1 && month <= 12
     ? new Date(Date.UTC(year, month, 0)).getUTCDate()
     : 0;
-  if (day < 1 || day > daysInMonth || hour > 23 || minute > 59) {
+  // JS 会把 0000-0099 年份静默解释为 1900-1999（Date.parse 的世纪回退），
+  // 必须显式拒绝，否则错误数据会通过校验。
+  if (year < 1970 || day < 1 || day > daysInMonth || hour > 23 || minute > 59) {
     throw new Error("日期或时间数值无效");
   }
   const timestamp = Date.parse(value);
@@ -95,6 +97,8 @@ export function parseBeijingTimestamp(value: string): number {
   return timestamp;
 }
 
+// 解析失败时返回 undefined 并把语法错误写入 issues；调用方应跳过 schema 校验，
+// 避免同一个文件同时报「YAML 语法错误」和「expected object」两条重复错误。
 function readYaml(file: string, issues: string[]): unknown {
   try {
     return parse(fs.readFileSync(file, "utf8"));
@@ -169,9 +173,10 @@ export function loadTimelineData(dataRoot = path.resolve(process.cwd(), "data"))
   const issues: string[] = [];
   const relative = (file: string) => path.relative(dataRoot, file).replaceAll("\\", "/");
   const eventTypesFile = path.join(dataRoot, "event-types.yaml");
-  const eventTypesResult = eventTypesSchema.safeParse(readYaml(eventTypesFile, issues));
-  if (!eventTypesResult.success) issues.push(...formatZodIssues(relative(eventTypesFile), eventTypesResult.error));
-  const eventTypes = eventTypesResult.success ? eventTypesResult.data.types : [];
+  const eventTypesValue = readYaml(eventTypesFile, issues);
+  const eventTypesResult = eventTypesValue === undefined ? undefined : eventTypesSchema.safeParse(eventTypesValue);
+  if (eventTypesResult && !eventTypesResult.success) issues.push(...formatZodIssues(relative(eventTypesFile), eventTypesResult.error));
+  const eventTypes = eventTypesResult?.success ? eventTypesResult.data.types : [];
   issues.push(...duplicateIssues(eventTypes, "活动类型", relative(eventTypesFile)));
   const eventTypeMap = new Map(eventTypes.map((item) => [item.id, item.name]));
 
@@ -184,7 +189,9 @@ export function loadTimelineData(dataRoot = path.resolve(process.cwd(), "data"))
   for (const directory of directories) {
     const gameDirectory = path.join(dataRoot, directory.name);
     const metaFile = path.join(gameDirectory, "meta.yaml");
-    const metaResult = metaSchema.safeParse(readYaml(metaFile, issues));
+    const metaValue = readYaml(metaFile, issues);
+    if (metaValue === undefined) continue;
+    const metaResult = metaSchema.safeParse(metaValue);
     if (!metaResult.success) {
       issues.push(...formatZodIssues(relative(metaFile), metaResult.error));
       continue;
@@ -202,7 +209,9 @@ export function loadTimelineData(dataRoot = path.resolve(process.cwd(), "data"))
 
     for (const file of files) {
       const fileName = relative(file);
-      const result = dataFileSchema.safeParse(readYaml(file, issues));
+      const fileValue = readYaml(file, issues);
+      if (fileValue === undefined) continue;
+      const result = dataFileSchema.safeParse(fileValue);
       if (!result.success) {
         issues.push(...formatZodIssues(fileName, result.error));
         continue;
