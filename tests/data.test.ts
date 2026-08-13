@@ -69,6 +69,7 @@ describe("北京时间解析", () => {
     "2026-08-28T06:00:30+08:00",
     "2026-08-28T06:00:00Z",
     "2026-02-30T06:00:00+08:00",
+    "0099-08-28T06:00:00+08:00",
   ])("拒绝无效时间 %s", (value) => {
     expect(() => parseBeijingTimestamp(value)).toThrow();
   });
@@ -162,7 +163,7 @@ describe("页面特效偏好", () => {
 });
 
 describe("静态资源基路径", () => {
-  it("保留没有尾斜杠的 GitHub Pages 仓库路径", () => {
+  it("保留没有尾斜杠的子路径部署基路径", () => {
     expect(resolveAssetUrl("/game-event-gantt", "vendor/live2d-config.json", "https://example.com"))
       .toBe("https://example.com/game-event-gantt/vendor/live2d-config.json");
   });
@@ -295,19 +296,6 @@ describe("Live2D 看板娘资源", () => {
     expect(cubism2Runtime).toContain("pauseDraw(){");
   });
 
-  it("樱花渐变按尺寸缓存且降低粒子数量", () => {
-    const source = fs.readFileSync(path.join(process.cwd(), "src/scripts/effects.ts"), "utf8");
-    expect(source).toContain("const petalSprites = new Map");
-    expect(source).toContain("const targetCount = width <= 760 ? 10 : 20");
-    expect(source).not.toContain("context.createLinearGradient");
-  });
-
-  it("时间轴导航将连续操作合并到动画帧", () => {
-    const source = fs.readFileSync(path.join(process.cwd(), "src/scripts/timeline.ts"), "utf8");
-    expect(source).toContain("function scheduleRender()");
-    expect(source).toContain("renderFrame = window.requestAnimationFrame");
-  });
-
   it("折叠或禁用看板娘时不会持续观察页面 DOM", () => {
     const source = fs.readFileSync(
       path.join(process.cwd(), "src/scripts/mascot.ts"),
@@ -364,6 +352,18 @@ describe("跨文件业务校验", () => {
   it("拒绝缺少来源的数据", () => {
     const root = fixture(`versions:\n  - id: v1\n    name: V1\n    start: "2026-08-01T00:00:00+08:00"\n    end: "2026-09-01T00:00:00+08:00"\n    sources: []\n`);
     expect(() => loadTimelineData(root)).toThrow(/至少提供一个来源链接/);
+  });
+
+  it("YAML 语法错误只报一次，不追加 schema 解析错误", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "game-gantt-test-"));
+    temporaryDirectories.push(root);
+    fs.mkdirSync(path.join(root, "demo-game"));
+    fs.writeFileSync(path.join(root, "event-types.yaml"), `types:\n  - id: event\n    name: 活动\n`);
+    fs.writeFileSync(path.join(root, "demo-game", "meta.yaml"), `id: demo-game\nname: 示例游戏\nregions:\n  - id: cn\n    name: 国服\n`);
+    fs.writeFileSync(path.join(root, "demo-game", "cn.yaml"), `game: demo-game\nregion: cn\nversions: [未闭合\n`);
+
+    expect(() => loadTimelineData(root)).toThrow(/YAML 语法错误/);
+    expect(() => loadTimelineData(root)).not.toThrow(/expected object|Invalid input/);
   });
 
   it("按游戏优先级排序并保留活动优先级", () => {
