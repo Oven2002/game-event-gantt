@@ -1,3 +1,4 @@
+```yaml
 game: wuthering-waves
 region: cn
 
@@ -6,16 +7,18 @@ versions:
     name: "3.5 遗音扶剑，荡梦而歌"
     start: "2026-07-10T11:00:00+08:00"
     end: "2026-08-20T04:00:00+08:00"
-    note: 3.6 定档 8/20 更新；04:00 按一贯维护窗口推算
+    note: 结束时刻已由官方 3.6 维护预告确认（维护 08-20 04:00 开始，演唱会礼包下架至 08-20 03:59）
     sources:
       - "https://mc.kurogames.com/main/news/detail/5004"
       - "https://mc.kurogames.com/main/news/detail/5110"
+      - "https://www.taptap.cn/moment/836917677271287865"
   - id: "3.6"
     name: "3.6 蜃云灯影，凡尘剑心"
     start: "2026-08-20T11:00:00+08:00"
     end: "2026-09-30T04:00:00+08:00"
-    note: "8/20 更新日期已官宣；start 11:00 按维护惯例推算；end 09-30 为预估（3.5 共 41 天惯例），待官方公告"
+    note: "维护 08-20 04:00~11:00 官方已确认（11:00 开服即版本开始）；end 09-30 为预估（3.5 共 41 天惯例），待官方公告"
     sources:
+      - "https://www.taptap.cn/moment/836917677271287865"
       - "https://www.taptap.cn/moment/834851999445944775"
       - "https://weibo.com/7730797357/RcjWZ3lox"
 
@@ -34,6 +37,30 @@ events:
     related: ["3.6"]
     sources:
       - "https://www.taptap.cn/moment/832320560661794450"
+      - "https://www.taptap.cn/moment/834834170424331519"
+  - id: maintenance-3-5
+    name: 3.5 版本更新维护
+    type: maintenance
+    start: "2026-07-10T04:00:00+08:00"
+    end: "2026-07-10T11:00:00+08:00"
+    related: ["3.5"]
+    sources:
+      - "https://mc.kurogames.com/main/news/detail/5004"
+  - id: maintenance-3-6
+    name: 3.6 版本更新维护
+    type: maintenance
+    start: "2026-08-20T04:00:00+08:00"
+    end: "2026-08-20T11:00:00+08:00"
+    related: ["3.6"]
+    sources:
+      - "https://www.taptap.cn/moment/836917677271287865"
+  - id: event-3-6-predownload
+    name: 3.6 预下载开启
+    type: event
+    start: "2026-08-18T10:00:00+08:00"
+    related: ["3.6"]
+    sources:
+      - "https://www.taptap.cn/moment/836917677271287865"
   - id: banner-3-5-1
     name: "3.5 第一期卡池「牵翎祈万声」（秧秧·玄翎）"
     type: banner
@@ -51,22 +78,24 @@ events:
     sources:
       - "https://www.taptap.cn/moment/831229702461984338"
   - id: banner-3-6-1
-    name: "3.6 第一期卡池：清宵 + 达妮娅复刻"
+    name: "3.6 第一期卡池「仙风玉影水天清」（清宵 + 达妮娅复刻）"
     type: banner
     start: "2026-08-20T11:00:00+08:00"
     end: "2026-09-09T09:59:00+08:00"
-    note: "阵容已官宣（前瞻通讯：上半 8/20 起）；起止分钟按 3.5 惯例推算，待官方唤取说明"
+    note: "阵容与唤取名已官宣（维护预告+前瞻：清宵为 3.6 新五星）；起止分钟按 3.5 两期各 20 天惯例预估，待官方唤取说明"
     related: ["3.6"]
     sources:
+      - "https://www.taptap.cn/moment/836917677271287865"
       - "https://www.taptap.cn/moment/834851999445944775"
   - id: banner-3-6-2
-    name: "3.6 第二期卡池：景燃 + 绯雪、莫宁复刻"
+    name: "3.6 第二期卡池「身赴三途」（景燃 + 绯雪、莫宁复刻）"
     type: banner
     start: "2026-09-09T10:00:00+08:00"
     end: "2026-09-29T11:59:00+08:00"
-    note: "阵容已官宣（前瞻通讯：下半约 9 月中旬起）；起止分钟按 3.5 两期各 20 天惯例预估，待官方唤取说明"
+    note: "阵容与唤取名已官宣（维护预告+前瞻：景燃为 3.6 新五星）；起止分钟按 3.5 惯例预估，待官方唤取说明"
     related: ["3.6"]
     sources:
+      - "https://www.taptap.cn/moment/836917677271287865"
       - "https://www.taptap.cn/moment/834851999445944775"
   # 3.5 活动
   - id: event-3-5-cixi
@@ -117,6 +146,14 @@ events:
     related: ["3.5"]
     sources:
       - "https://mc.kurogames.com/main/news/detail/5110"
+  - id: event-3-5-shengxian
+    name: "3.5 「声弦涤荡」声骸材料限时双倍"
+    type: event
+    start: "2026-08-12T04:00:00+08:00"
+    end: "2026-08-19T03:59:00+08:00"
+    related: ["3.5"]
+    sources:
+      - "https://www.taptap.cn/moment/836182218576497186"
   - id: event-3-5-miyu
     name: "3.5 「秘玉寻踪记」H5 网页活动"
     type: event
@@ -125,3 +162,4 @@ events:
     related: ["3.5"]
     sources:
       - "https://mc.kurogames.com/main/news/detail/5110"
+```

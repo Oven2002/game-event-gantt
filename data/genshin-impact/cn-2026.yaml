@@ -1,3 +1,4 @@
+```yaml
 game: genshin-impact
 region: cn
 
@@ -29,13 +30,15 @@ versions:
   - id: "7.0"
     name: "7.0 无神怜爱的雪国"
     start: "2026-08-12T06:00:00+08:00"
-    end: "2026-09-23T18:00:00+08:00"
-    note: "预估结束（官方未公布）；佐证：月之八探索奖励截止 09-22 14:59；维护预告 165618"
+    end: "2026-09-22T18:00:00+08:00"
+    note: "预估结束（官方未公布）：按 42 天周期推 8.0 维护日 09-23 06:00，end 取惯例前一天 18:00；佐证：魔神任务时限奖励官方截止 09-22 14:59、超话签到 09-22 23:59、区域探索奖励 09-22 14:59、霜游纪行 09-21 03:59；维护 08/12 06:00 预计 5 小时"
     sources:
       - "https://ys.mihoyo.com/main/news/detail/165618"
+      - "https://ys.mihoyo.com/main/news/detail/165682"
       - "https://ys.mihoyo.com/main/news/detail/165475"
 
 events:
+  # 前瞻直播
   - id: preview-luna-6
     name: 月之六 前瞻直播
     type: preview
@@ -97,35 +100,111 @@ events:
     related: ["luna-8"]
     sources:
       - "https://ys.mihoyo.com/main/news/detail/165315"
-  # 7.0 卡池
+  # 7.0 卡池（上半已官宣，下半未官宣）
   - id: banner-7-0-upper
-    name: "7.0 上半卡池（奥黛塔+阿蕾奇诺 含阿罗夏）"
+    name: "7.0 上半卡池（奥黛塔+阿蕾奇诺，4星阿罗夏/砂糖/琳妮特）"
     type: banner
     start: "2026-08-12T06:00:00+08:00"
     end: "2026-09-01T17:59:00+08:00"
-    note: "阵容来自官方前瞻回顾长图；祈愿预告未发布，end 09-01 为社区估算"
+    note: "祈愿预告第一期官方时间 08/12 版本更新后 ~ 09/01 17:59；起始时刻官方仅写「版本更新后」，取维护开始 06:00"
     related: ["7.0"]
     sources:
-      - "https://ys.mihoyo.com/main/news/detail/165472"
+      - "https://ys.mihoyo.com/main/news/detail/165658"
+      - "https://ys.mihoyo.com/main/news/detail/165690"
+      - "https://ys.mihoyo.com/main/news/detail/165691"
   - id: banner-7-0-upper-weapon
-    name: "7.0 上半武器祈愿「神铸赋形」（白湖冬羽）"
+    name: "7.0 上半武器祈愿「神铸赋形」（白湖冬羽+赤月之形）"
     type: banner
     start: "2026-08-12T06:00:00+08:00"
-    end: "2026-09-23T18:00:00+08:00"
-    note: "官方武器说明 8/12 更新后开启；结束未公布，按 7.0 版本结束估算"
+    end: "2026-09-01T17:59:00+08:00"
+    note: "官方祈愿预告第一期同窗口 08/12 更新后 ~ 09/01 17:59；起始取维护开始 06:00"
     related: ["7.0"]
     sources:
-      - "https://ys.mihoyo.com/main/news/detail/165549"
+      - "https://ys.mihoyo.com/main/news/detail/165658"
+      - "https://ys.mihoyo.com/main/news/detail/165692"
   - id: banner-7-0-lower
     name: "7.0 下半卡池（伊涅芙+菲林斯）"
     type: banner
     start: "2026-09-02T18:00:00+08:00"
-    end: "2026-09-22T17:59:00+08:00"
-    note: "阵容来自官方前瞻回顾长图；精确起止官方未公布，为社区估算"
+    end: "2026-09-22T14:59:00+08:00"
+    note: "阵容来自官方前瞻回顾长图；祈愿预告第二期未发布，起止为社区估算（按惯例第二期=上半结束后次日 18:00 ~ 版本末日 14:59）"
     related: ["7.0"]
     sources:
       - "https://ys.mihoyo.com/main/news/detail/165472"
-  # 月之八 活动
+  # 7.0 活动
+  - id: event-7-0-main
+    name: "7.0 主活动「险境征奇竞锋大赛」"
+    type: event
+    start: "2026-08-12T06:00:00+08:00"
+    end: "2026-09-22T14:59:00+08:00"
+    note: "名称来自官方前瞻回顾长图；活动说明公告未发布，时间按 7.0 版本周期估算（版本更新后 ~ 版本末日）"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165472"
+  - id: event-7-0-chuxue
+    name: "新芽相助·初探雪原：至冬探索行动"
+    type: event
+    start: "2026-08-12T06:00:00+08:00"
+    end: "2026-08-24T03:59:00+08:00"
+    note: "官方活动时间 7.0 版本更新后 ~ 08/24 03:59；起始取维护开始 06:00"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165629"
+  - id: event-7-0-moshou
+    name: "「无神怜爱的雪国」魔神任务限时奖励"
+    type: event
+    start: "2026-08-12T06:00:00+08:00"
+    end: "2026-09-22T14:59:00+08:00"
+    note: "官方时限 7.0 版本更新后 ~ 09/22 14:59；起始取维护开始 06:00"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165626"
+  - id: event-7-0-dongtu
+    name: "「无神怜爱的冻土」探索任务限时奖励"
+    type: event
+    start: "2026-08-12T06:00:00+08:00"
+    end: "2026-11-03T14:59:00+08:00"
+    note: "官方时限 7.0 版本更新后 ~ 11/03 14:59（跨版本至 8.0）；起始取维护开始 06:00"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165627"
+  - id: event-7-0-jixing
+    name: "霜游纪行"
+    type: event
+    start: "2026-08-12T06:00:00+08:00"
+    end: "2026-09-21T03:59:00+08:00"
+    note: "官方时间 7.0 版本更新后 ~ 09/21 03:59；珍珠纪行/珍珠之歌购买 09/21 02:59 关闭；起始取维护开始 06:00"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165633"
+  - id: event-7-0-qisheng
+    name: "七圣召唤·铸境研炼：奕思巧战"
+    type: event
+    start: "2026-08-12T06:00:00+08:00"
+    end: "2026-09-22T18:00:00+08:00"
+    note: "官方仅写「7.0版本期间持续开放」；end 按 7.0 版本结束预估；起始取维护开始 06:00"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165634"
+  - id: event-7-0-manyou
+    name: "「至冬漫游手册」网页活动"
+    type: event
+    start: "2026-08-12T00:00:00+08:00"
+    end: "2026-08-25T23:59:00+08:00"
+    note: "官方时间 2026年8月12日至8月25日 23:59（UTC+8）；起始无分钟，取当日 00:00"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165696"
+  - id: event-7-0-chaohua
+    name: "原神超话 7.0 版本签到互动活动"
+    type: event
+    start: "2026-08-12T10:00:00+08:00"
+    end: "2026-09-22T23:59:00+08:00"
+    note: "官方活动时间 08/12 10:00 ~ 09/22 23:59；兑换码有效期至 10/12 23:59"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165688"
+  # 月之八 活动（既有，未变）
   - id: event-luna-8-main
     name: "映夏！归乡？千灵节！（含夏洛蒂衣装）"
     type: event
@@ -198,15 +277,6 @@ events:
     related: ["7.0"]
     sources:
       - "https://ys.mihoyo.com/main/news/detail/165613"
-  - id: event-7-0-main
-    name: "7.0 主活动「险境征奇竞锋大赛」"
-    type: event
-    start: "2026-08-12T11:00:00+08:00"
-    end: "2026-09-22T17:59:00+08:00"
-    note: "官方前瞻长图列名；精确时间未公布，按 7.0 版本周期估算（8/12 开服 ~ 9/22）"
-    related: ["7.0"]
-    sources:
-      - "https://ys.mihoyo.com/main/news/detail/165472"
   - id: lantern-rite-2026
     name: 海灯节 奔霄颂玉轮
     type: event
@@ -215,3 +285,4 @@ events:
     sources:
       - "https://ys.mihoyo.com/main/news/detail/162404"
       - "https://ys.mihoyo.com/main/news/detail/162387"
+```

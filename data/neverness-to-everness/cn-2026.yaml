@@ -12,9 +12,10 @@ versions:
     name: "1.3 雾中朔望星回"
     start: "2026-08-13T11:00:00+08:00"
     end: "2026-09-24T05:59:00+08:00"
-    note: "8/13 版本更新后开启（官方确认）；start 11:00 按维护惯例推算；end 来自前瞻时间表，待更新公告确认"
+    note: "维护窗口 8/13 06:00-11:00 官方确认，开服按维护结束 11:00；版本 end 官方未直接宣布，按官方活动时间表（全部活动统一 9/24 05:59 结束、环期赏令 9/23 23:59 截止）预估"
     sources:
-      - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
 
 events:
   - id: preview-1-3
@@ -24,6 +25,7 @@ events:
     related: ["1.3"]
     sources:
       - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
+      - "https://www.bilibili.com/opus/1231894558697062425"
   # 1.2 卡池
   - id: banner-1-2-zhenhong
     name: "「破晓前」限定棋盘·真红（1.2 上半）"
@@ -57,7 +59,7 @@ events:
     related: ["1.2"]
     sources:
       - "https://yh.wanmei.com/news/gamebroad/20260722/263234.html"
-  # 1.3 卡池
+  # 1.3 卡池（上半已官宣：8/13 版本更新后 - 9/3 05:59）
   - id: banner-1-3-canji
     name: "「惑心谲影」限定棋盘·残虹（1.3 上半）"
     type: banner
@@ -65,7 +67,9 @@ events:
     end: "2026-09-03T05:59:00+08:00"
     related: ["1.3"]
     sources:
-      - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
+      - "https://www.taptap.cn/moment/835869801250293942"
   - id: banner-1-3-nanali
     name: "「王牌一代目」限定棋盘·娜娜莉复刻（1.3 上半）"
     type: banner
@@ -73,12 +77,25 @@ events:
     end: "2026-09-03T05:59:00+08:00"
     related: ["1.3"]
     sources:
-      - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
+      - "https://www.taptap.cn/moment/835872258634286829"
+  - id: banner-1-3-hupan-1
+    name: "弧盘研募第一期（「摄心特刊」噬心诡刃 + 「猛虎特刊」预备备）"
+    type: banner
+    start: "2026-08-13T11:00:00+08:00"
+    end: "2026-09-03T05:59:00+08:00"
+    related: ["1.3"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
+  # 1.3 卡池（下半：前瞻官宣 9/3 维护后开启，独立卡池公告未发布）
   - id: banner-1-3-lingke
     name: "「全频带漫游中！」限定棋盘·灵可（1.3 下半）"
     type: banner
     start: "2026-09-03T11:00:00+08:00"
     end: "2026-09-24T05:59:00+08:00"
+    note: "9/3 版本更新维护后开启（官方前瞻）；独立卡池公告未发布，start 11:00 按维护惯例推算"
     related: ["1.3"]
     sources:
       - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
@@ -87,14 +104,7 @@ events:
     type: banner
     start: "2026-09-03T11:00:00+08:00"
     end: "2026-09-24T05:59:00+08:00"
-    related: ["1.3"]
-    sources:
-      - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
-  - id: banner-1-3-hupan-1
-    name: "弧盘研募第一期（昼虎+摄心特刊）"
-    type: banner
-    start: "2026-08-13T11:00:00+08:00"
-    end: "2026-09-03T05:59:00+08:00"
+    note: "9/3 版本更新维护后开启（官方前瞻）；独立卡池公告未发布，start 11:00 按维护惯例推算"
     related: ["1.3"]
     sources:
       - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
@@ -103,6 +113,7 @@ events:
     type: banner
     start: "2026-09-03T11:00:00+08:00"
     end: "2026-09-24T05:59:00+08:00"
+    note: "来自官方前瞻回顾长图；独立公告未发布，start 11:00 按维护惯例推算"
     related: ["1.3"]
     sources:
       - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
@@ -219,7 +230,7 @@ events:
     related: ["1.2"]
     sources:
       - "https://yh.wanmei.com/news/gamebroad/20260722/263234.html"
-  # 1.3 活动
+  # 1.3 活动（更新公告官宣，精确时间）
   - id: event-paiqiu
     name: "「排球之星」限时活动（1.3）"
     type: event
@@ -227,7 +238,8 @@ events:
     end: "2026-09-24T05:59:00+08:00"
     related: ["1.3"]
     sources:
-      - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
   - id: event-danqi
     name: "「单骑破浪」限时活动（1.3）"
     type: event
@@ -235,7 +247,8 @@ events:
     end: "2026-09-24T05:59:00+08:00"
     related: ["1.3"]
     sources:
-      - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
   - id: event-zhengfeng
     name: "「争锋赏宴」限时活动（1.3）"
     type: event
@@ -243,7 +256,8 @@ events:
     end: "2026-09-24T05:59:00+08:00"
     related: ["1.3"]
     sources:
-      - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
   - id: event-yige
     name: "「遗舸寻珍」限时活动（1.3）"
     type: event
@@ -251,7 +265,54 @@ events:
     end: "2026-09-24T05:59:00+08:00"
     related: ["1.3"]
     sources:
-      - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
+  - id: event-huili-1-3
+    name: "「活力焕能」双倍都市活力（1.3）"
+    type: event
+    start: "2026-08-17T05:00:00+08:00"
+    end: "2026-08-24T04:59:00+08:00"
+    related: ["1.3"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
+  - id: event-duojin-1-3
+    name: "「夺金大作战」双倍方斯（1.3）"
+    type: event
+    start: "2026-08-24T05:00:00+08:00"
+    end: "2026-09-07T04:59:00+08:00"
+    related: ["1.3"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
+  - id: event-zhuguang
+    name: "「逐光破浪」盲盒（1.3）"
+    type: event
+    start: "2026-08-13T11:00:00+08:00"
+    end: "2026-09-24T05:59:00+08:00"
+    related: ["1.3"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
+  - id: event-huanqi-ling-1-3
+    name: "「环期赏令」1.3 通行证"
+    type: event
+    start: "2026-08-13T11:00:00+08:00"
+    end: "2026-09-23T23:59:00+08:00"
+    related: ["1.3"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
+  - id: event-huanqi-zengli-1-3
+    name: "「环期赠礼」签到（1.3）"
+    type: event
+    start: "2026-08-13T11:00:00+08:00"
+    end: "2026-09-24T05:59:00+08:00"
+    related: ["1.3"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
+      - "https://www.taptap.cn/moment/836615080601715421"
+  # 1.3 活动（官方前瞻回顾时间表；独立活动公告未发布）
   - id: event-guizhu
     name: "「轨外之境·烛天环线」限时活动（1.3）"
     type: event
@@ -265,6 +326,7 @@ events:
     type: event
     start: "2026-09-03T11:00:00+08:00"
     end: "2026-09-24T05:59:00+08:00"
+    note: "9/3 版本更新维护后开启（官方前瞻）；start 11:00 按维护惯例推算"
     related: ["1.3"]
     sources:
       - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
@@ -273,22 +335,6 @@ events:
     type: event
     start: "2026-09-11T10:00:00+08:00"
     end: "2026-09-24T05:59:00+08:00"
-    related: ["1.3"]
-    sources:
-      - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
-  - id: event-huili-1-3
-    name: "「活力焕能」双倍都市活力（1.3）"
-    type: event
-    start: "2026-08-17T05:00:00+08:00"
-    end: "2026-08-24T04:59:00+08:00"
-    related: ["1.3"]
-    sources:
-      - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
-  - id: event-duojin-1-3
-    name: "「夺金大作战」双倍方斯（1.3）"
-    type: event
-    start: "2026-08-24T05:00:00+08:00"
-    end: "2026-09-07T04:59:00+08:00"
     related: ["1.3"]
     sources:
       - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
@@ -305,15 +351,6 @@ events:
     type: event
     start: "2026-09-14T05:00:00+08:00"
     end: "2026-09-21T04:59:00+08:00"
-    related: ["1.3"]
-    sources:
-      - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"
-  - id: event-huanqi-zengli-1-3
-    name: "「环期赠礼」签到（1.3）"
-    type: event
-    start: "2026-08-13T11:00:00+08:00"
-    end: "2026-09-24T05:59:00+08:00"
-    note: "官方前瞻长图仅展示 7 日签到日历；起止按 1.2 同活动惯例推算"
     related: ["1.3"]
     sources:
       - "https://yh.wanmei.com/news/gamenews/20260808/263494.html"

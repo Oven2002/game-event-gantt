@@ -10,8 +10,23 @@ versions:
     sources:
       - "https://sr.mihoyo.com/news/165187"
       - "https://sr.mihoyo.com/news/165210"
+  - id: "4.5"
+    name: "4.5 挥掷千星的筹码"
+    start: "2026-08-26T06:00:00+08:00"
+    end: "2026-10-07T06:00:00+08:00"
+    note: "start 为 4.5 维护开始（4.4 更新说明官方版本持续时间终点 08/26 06:00）；end 按 42 天版本周期推算，4.5 更新公告未发布"
+    sources:
+      - "https://www.miyoushe.com/sr/article/77328417"
+      - "https://sr.mihoyo.com/news/165210"
 
 events:
+  - id: preview-4-5
+    name: "4.5「挥掷千星的筹码」前瞻特别节目"
+    type: preview
+    start: "2026-08-14T19:30:00+08:00"
+    related: ["4.5"]
+    sources:
+      - "https://www.miyoushe.com/sr/article/77328417"
   - id: preview-4-4
     name: 4.4 前瞻特别节目
     type: preview
@@ -28,6 +43,15 @@ events:
     related: ["4.4"]
     sources:
       - "https://sr.mihoyo.com/news/165208"
+  - id: banner-4-4-lc-jizi
+    name: "「流光定影·当一颗星照亮夜空」光锥跃迁"
+    type: banner
+    start: "2026-07-15T11:00:00+08:00"
+    end: "2026-08-25T15:00:00+08:00"
+    note: "起始官方写「4.4版本更新后」，11:00 按维护 5 小时推算"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165506"
   - id: banner-4-4-upper
     name: "4.4 上半返场：火花/丹恒·腾荒/长夜月"
     type: banner
@@ -44,12 +68,29 @@ events:
     related: ["4.4"]
     sources:
       - "https://sr.mihoyo.com/news/165506"
+  - id: banner-4-4-lc-lower
+    name: "「真意之汇」光锥跃迁：金血铭刻的时代/生命当付之一炬/命运从未公平"
+    type: banner
+    start: "2026-08-05T12:00:00+08:00"
+    end: "2026-08-25T15:00:00+08:00"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165506"
   - id: banner-fate
     name: "Fate[UBW] 联动跃迁：远坂凛/吉尔伽美什"
     type: banner
     start: "2026-07-24T12:00:00+08:00"
     end: "2026-08-25T15:00:00+08:00"
-    note: "开始时刻官方确认 12:00；结束按版本跃迁统一 08/25 15:00 推算"
+    note: "开始时刻官方确认 12:00；官方称「长期开放，无关闭时间」，end 按版本跃迁统一 08/25 15:00 推算"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165117"
+  - id: banner-fate-lc
+    name: "Fate[UBW] 光锥联动跃迁：万华骄芒/神代金扉"
+    type: banner
+    start: "2026-07-24T12:00:00+08:00"
+    end: "2026-08-25T15:00:00+08:00"
+    note: "开始时刻官方确认 12:00；官方称「长期开放，无关闭时间」，end 按版本跃迁统一 08/25 15:00 推算"
     related: ["4.4"]
     sources:
       - "https://sr.mihoyo.com/news/165117"
@@ -92,6 +133,40 @@ events:
     start: "2026-07-15T06:00:00+08:00"
     end: "2026-08-26T03:59:00+08:00"
     note: "起止按版本周期推算"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165210"
+  - id: event-huazang
+    name: "「花藏繁生」拟造花萼限时双倍掉落"
+    type: event
+    start: "2026-08-14T04:00:00+08:00"
+    end: "2026-08-24T03:59:00+08:00"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165638"
+  - id: event-hundun
+    name: "「混沌回忆·扫除风暴」"
+    type: event
+    start: "2026-08-17T04:00:00+08:00"
+    end: "2026-09-28T06:00:00+08:00"
+    note: "官方明示持续至 09/28 06:00，跨版本进入 4.5"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165210"
+  - id: event-mori
+    name: "「末日幻影·兵锋骑士」"
+    type: event
+    start: "2026-07-20T04:00:00+08:00"
+    end: "2026-08-31T03:59:00+08:00"
+    related: ["4.4"]
+    sources:
+      - "https://sr.mihoyo.com/news/165210"
+  - id: event-xugou
+    name: "「虚构叙事·构事生意」"
+    type: event
+    start: "2026-08-03T04:00:00+08:00"
+    end: "2026-09-14T03:59:00+08:00"
+    note: "跨版本进入 4.5"
     related: ["4.4"]
     sources:
       - "https://sr.mihoyo.com/news/165210"

@@ -5,41 +5,41 @@ events:
   - id: collab-nier
     name: "自动步兵人形之旅（×尼尔：自动人形联动）"
     type: event
-    start: "2026-07-16T10:00:00+08:00"
+    start: "2026-07-16T15:00:00+08:00"
     end: "2026-07-30T10:00:00+08:00"
-    note: "约：起止为维护开始时刻；2B/A2 任务获取，联动无限时建造池"
+    note: "官方维护窗口 7/16 10:00~15:00；end 约 7/30 维护开始；2B/A2 任务获取，联动无限时建造池"
     sources:
       - "https://wiki.biligame.com/blhx/2026年7月16日10:00港区改建"
   - id: event-paipai
     name: "特别竞拍时刻"
     type: event
-    start: "2026-07-16T10:00:00+08:00"
+    start: "2026-07-16T15:00:00+08:00"
     end: "2026-08-06T10:00:00+08:00"
-    note: "约：起止为维护开始时刻；领取界面保留至 8/12 23:59"
+    note: "官方维护窗口 7/16 10:00~15:00；end 约 8/6 维护开始；领取界面保留至 8/12 23:59"
     sources:
       - "https://wiki.biligame.com/blhx/2026年7月16日10:00港区改建"
   - id: event-guaitan
     name: "怪谈纪实：逃离白夜山庄！"
     type: event
-    start: "2026-07-23T10:00:00+08:00"
+    start: "2026-07-23T16:00:00+08:00"
     end: "2026-08-06T10:00:00+08:00"
-    note: "约：起止为维护开始时刻；格里芬为活动道具获取"
+    note: "官方维护窗口 7/23 10:00~16:00；end 约 8/6 维护开始；格里芬为活动道具获取"
     sources:
       - "https://wiki.biligame.com/blhx/2026年7月23日10:00港区改建"
   - id: banner-guaitan
     name: "怪谈纪实：逃离白夜山庄！限时建造"
     type: banner
-    start: "2026-07-23T10:00:00+08:00"
+    start: "2026-07-23T16:00:00+08:00"
     end: "2026-08-06T10:00:00+08:00"
-    note: "约：起止为维护开始时刻；华丽（超稀有2%）、萨里（超稀有2%）"
+    note: "官方维护窗口 7/23 10:00~16:00；end 约 8/6 维护开始；华丽（超稀有2%）、萨里（超稀有2%）"
     sources:
       - "https://wiki.biligame.com/blhx/2026年7月23日10:00港区改建"
   - id: event-miyu
     name: "密语档案室（新剧情贩售/复刻）"
     type: event
-    start: "2026-07-30T10:00:00+08:00"
+    start: "2026-07-30T14:00:00+08:00"
     end: "2026-08-05T23:59:00+08:00"
-    note: "约：start 为维护开始时刻"
+    note: "官方维护窗口 7/30 10:00~14:00"
     sources:
       - "https://wiki.biligame.com/blhx/2026年7月30日10:00港区改建"
   - id: event-xianjie-shiz
@@ -60,56 +60,110 @@ events:
   - id: event-youke
     name: "有客自来"
     type: event
-    start: "2026-08-06T10:00:00+08:00"
+    start: "2026-08-06T16:00:00+08:00"
     end: "2026-08-27T10:00:00+08:00"
-    note: "约：起止为维护开始时刻；7日任务链，奖励限定装备「名侦探之帽」"
+    note: "官方维护窗口 8/6 10:00~16:00；end 约 8/27 维护开始；7日任务链，奖励限定装备「名侦探之帽」"
     sources:
       - "https://wiki.biligame.com/blhx/2026年8月6日10:00港区改建"
   - id: event-zuozhan-essex
     name: "作战准备：埃塞克斯级"
     type: event
-    start: "2026-08-06T10:00:00+08:00"
+    start: "2026-08-06T16:00:00+08:00"
     end: "2026-09-03T23:59:00+08:00"
-    note: "约：start 为维护开始时刻，end 官方明确 23:59；第二阶段 8/13 起"
+    note: "官方维护窗口 8/6 10:00~16:00；第一阶段 8/6 维护后~8/13 维护，第二阶段 8/13 维护后~9/3 23:59；end 官方明确 23:59"
     sources:
       - "https://wiki.biligame.com/blhx/2026年8月6日10:00港区改建"
   - id: event-fuke-lvdong
     name: "复刻：律动储物间"
     type: event
-    start: "2026-08-06T10:00:00+08:00"
+    start: "2026-08-06T16:00:00+08:00"
     end: "2026-08-27T10:00:00+08:00"
-    note: "约：起止为维护开始时刻；7日签到，埃塞克斯改造道具"
+    note: "官方维护窗口 8/6 10:00~16:00；end 约 8/27 维护开始；7日签到，埃塞克斯改造道具"
     sources:
       - "https://wiki.biligame.com/blhx/2026年8月6日10:00港区改建"
   - id: event-daoyu-iv
     name: "岛屿开发季IV·秋日絮语"
     type: event
-    start: "2026-08-06T10:00:00+08:00"
+    start: "2026-08-06T16:00:00+08:00"
     end: "2026-11-05T10:00:00+08:00"
-    note: "约：起止为维护开始时刻"
+    note: "官方维护窗口 8/6 10:00~16:00；end 约 11/5 维护开始"
     sources:
       - "https://wiki.biligame.com/blhx/2026年8月6日10:00港区改建"
   - id: event-xingcai
     name: "星彩奖（岛屿计划）"
     type: event
-    start: "2026-08-06T10:00:00+08:00"
+    start: "2026-08-06T16:00:00+08:00"
     end: "2026-11-05T10:00:00+08:00"
-    note: "约：起止为维护开始时刻"
+    note: "官方维护窗口 8/6 10:00~16:00；end 约 11/5 维护开始"
     sources:
       - "https://wiki.biligame.com/blhx/2026年8月6日10:00港区改建"
   - id: event-lantu
     name: "蓝图补完计划「大山」"
     type: event
-    start: "2026-08-06T10:00:00+08:00"
+    start: "2026-08-06T16:00:00+08:00"
     end: "2026-09-03T23:59:00+08:00"
-    note: "约：start 为维护开始时刻，end 官方明确 23:59"
+    note: "官方维护窗口 8/6 10:00~16:00；end 官方明确 23:59"
     sources:
       - "https://wiki.biligame.com/blhx/2026年8月6日10:00港区改建"
+  - id: maintenance-0813
+    name: "2026年8月13日港区改建"
+    type: maintenance
+    start: "2026-08-13T10:00:00+08:00"
+    end: "2026-08-13T16:00:00+08:00"
+    note: "官方维护窗口 10:00~16:00；维护后开启大型活动「沉溺于星光之城」"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
+      - "https://www.biligame.com/detail/?id=97&sourceFrom=2000310011#!news/18247"
   - id: event-zuozhan-essex-2
     name: "作战准备：埃塞克斯级 第二阶段"
     type: event
-    start: "2026-08-13T10:00:00+08:00"
+    start: "2026-08-13T16:00:00+08:00"
     end: "2026-09-03T23:59:00+08:00"
-    note: "约：start 按维护惯例预计 10:00；达标领头像框「星光城之梦」"
+    note: "官方明确「8月13日维护后~9月3日23:59」；特别任务达标领头像框「星光城之梦」"
     sources:
       - "https://wiki.biligame.com/blhx/2026年8月6日10:00港区改建"
+  - id: event-xingguang
+    name: "沉溺于星光之城（白鹰大型活动）"
+    type: event
+    start: "2026-08-13T16:00:00+08:00"
+    end: "2026-08-27T10:00:00+08:00"
+    note: "官方维护窗口 8/13 10:00~16:00；end 约 8/27 维护开始；活动海域可打捞柯莱特（超稀有），累积道具可获得约翰·罗杰斯；兑换及奖励领取保留至 9/3 23:59"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
+      - "https://www.biligame.com/detail/?id=97&sourceFrom=2000310011#!news/18247"
+  - id: banner-xingguang
+    name: "沉溺于星光之城限时建造"
+    type: banner
+    start: "2026-08-13T16:00:00+08:00"
+    end: "2026-08-27T10:00:00+08:00"
+    note: "约：end 为 8/27 维护开始；本宁顿（超稀有2.0%）、维克斯堡（超稀有2.0%）、柯莱特（超稀有0.5%）、哈里森（精锐2.5%）"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
+      - "https://www.biligame.com/detail/?id=97&sourceFrom=2000310011#!news/18247"
+  - id: event-shouhu
+    name: "守护航道"
+    type: event
+    start: "2026-08-13T16:00:00+08:00"
+    end: "2026-08-27T10:00:00+08:00"
+    note: "约：end 为 8/27 维护开始；贝尔法斯特专属改造道具「女仆长的坚守」，最快 8/19 获取"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
+      - "https://www.biligame.com/detail/?id=97&sourceFrom=2000310011#!news/18247"
+  - id: event-binhaijisu
+    name: "滨海极速:夏日狂飙"
+    type: event
+    start: "2026-08-13T16:00:00+08:00"
+    end: "2026-08-27T10:00:00+08:00"
+    note: "约：end 为 8/27 维护开始；完成9圈比赛获限定家具「冠军奖杯」与活动勋章「滨海极速纪念勋章」"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
+      - "https://www.biligame.com/detail/?id=97&sourceFrom=2000310011#!news/18247"
+  - id: event-xingguang-exchange
+    name: "沉溺于星光之城 活动兑换与奖励领取"
+    type: event
+    start: "2026-08-13T16:00:00+08:00"
+    end: "2026-09-03T23:59:00+08:00"
+    note: "官方明确「兑换开放时间：8月13日维护后~9月3日23:59」；纪念手册/道具收集奖励领取界面保留至 9/3 23:59"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
+      - "https://www.biligame.com/detail/?id=97&sourceFrom=2000310011#!news/18247"

@@ -76,13 +76,31 @@ events:
     type: event
     start: "2026-08-01T12:00:00+08:00"
     end: "2026-08-29T03:59:00+08:00"
+    note: "活动关卡分三段开放（08-01 12:00 / 08-08 16:00 / 08-15 16:00），关卡均至08-22 03:59；活动干员5★时隙"
     sources:
       - "https://ak.hypergryph.com/news/8571"
   - id: banner-chejigu
-    name: "限定寻访【车辙与风的归所】（予愿安洁莉娜）"
+    name: "限定寻访【车辙与风的归所】（予愿安洁莉娜/珊比/斩业星熊/佩佩/纯烬艾雅法拉/嘉辛塔）"
     type: banner
     start: "2026-08-01T12:00:00+08:00"
     end: "2026-08-15T03:59:00+08:00"
+    note: "限定寻访·夏季；累计300抽额外赠限定干员予愿安洁莉娜"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+      - "https://ak.hypergryph.com/news/6247"
+  - id: banner-chejigu-shop
+    name: "【车辙与风的归所】寻访数据契约交换所"
+    type: event
+    start: "2026-08-01T12:00:00+08:00"
+    end: "2026-08-18T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/8571"
+  - id: banner-daily-free
+    name: "夏日嘉年华 限定寻访每日赠送"
+    type: event
+    start: "2026-08-01T12:00:00+08:00"
+    end: "2026-08-15T03:59:00+08:00"
+    note: "每日04:00刷新，每日可在【车辙与风的归所】免费寻访一次"
     sources:
       - "https://ak.hypergryph.com/news/8571"
   - id: summer-login
@@ -142,7 +160,7 @@ events:
     sources:
       - "https://ak.hypergryph.com/news/8571"
   - id: banner-lianhe
-    name: "【联合行动】特选干员定向寻访"
+    name: "【联合行动】特选干员定向寻访（忍冬/赤刃明霄陈/遥/死芒）"
     type: banner
     start: "2026-08-18T16:00:00+08:00"
     end: "2026-09-01T03:59:00+08:00"
@@ -153,6 +171,7 @@ events:
     type: event
     start: "2026-08-19T04:00:00+08:00"
     end: "2026-09-02T03:59:00+08:00"
+    note: "同期【0011/韵】复刻时装上架（白面鸮/巫恋），同起止"
     sources:
       - "https://ak.hypergryph.com/news/8571"
   - id: banner-zhongjian
@@ -160,5 +179,6 @@ events:
     type: banner
     start: "2026-08-20T04:00:00+08:00"
     end: "2026-09-03T03:59:00+08:00"
+    note: "自选2位六星+3位五星（6★范围：号角/黑键/卡涅利安/帕拉斯/嵯峨/棘刺/瑕光/异客/刻俄柏/闪灵/赫拉格/阿）"
     sources:
       - "https://ak.hypergryph.com/news/8571"
