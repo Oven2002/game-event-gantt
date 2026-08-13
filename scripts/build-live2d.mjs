@@ -18,11 +18,10 @@ execFileSync(process.execPath, [npmCli, "run", "build:runtime"], {
   stdio: "inherit",
 });
 
+// public/ 下不复制 .map：sourcemap 会随静态站点原样发布，白白增加部署体积。
 const artifacts = [
   "waifu-tips.js",
-  "waifu-tips.js.map",
   "chunk/logger.js",
-  "chunk/logger.js.map",
 ];
 
 for (const artifact of artifacts) {

@@ -3,11 +3,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+// public/ 下不再保留 .map（见 build-live2d.mjs）；本地 vendor 构建产物仍保留 .map，
+// 让补丁同步写入 sourcesContent，调试器视图与运行时一致。
 const targets = [
   path.join(root, "public/vendor/live2d-widget/dist/chunk/index.js"),
-  path.join(root, "public/vendor/live2d-widget/dist/chunk/index.js.map"),
   path.join(root, "public/vendor/live2d-widget/dist/chunk/index2.js"),
-  path.join(root, "public/vendor/live2d-widget/dist/chunk/index2.js.map"),
   path.join(root, "vendor/live2d-widget/dist/chunk/index.js"),
   path.join(root, "vendor/live2d-widget/dist/chunk/index.js.map"),
   path.join(root, "vendor/live2d-widget/dist/chunk/index2.js"),
@@ -97,4 +97,23 @@ for (const target of targets) {
   writeFileSync(target, source);
 }
 
-console.log(`Patched ${targets.filter((target) => target.endsWith(".js")).length} Live2D runtime chunk(s).`);
+// 硬校验：本脚本依赖压缩产物的内部结构（压缩器生成的类名、导出标记等），
+// 任何 replaceAll 静默失配都必须在构建期暴露，而不是等运行时才发现。
+const jsTargets = targets.filter((target) => target.endsWith(".js"));
+for (const target of jsTargets) {
+  const source = readFileSync(target, "utf8");
+  const invariants = target.endsWith("index2.js")
+    ? ["function ws(", "antialias:!1", "preserveDrawingBuffer:!1"]
+    : ["pauseDraw(){", "getModel(){return this.model}release(){", "antialias:!1", "preserveDrawingBuffer:!1"];
+  for (const invariant of invariants) {
+    if (!source.includes(invariant)) {
+      throw new Error(
+        `补丁校验失败：${target} 中找不到「${invariant}」。` +
+        "上游 live2d-widget 的压缩产物可能已更新（变量名或导出顺序变化），" +
+        "请同步维护本脚本中的补丁片段与 tests/data.test.ts 中的对应断言。",
+      );
+    }
+  }
+}
+
+console.log(`Patched ${jsTargets.length} Live2D runtime chunk(s).`);
