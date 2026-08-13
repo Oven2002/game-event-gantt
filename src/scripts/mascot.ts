@@ -94,6 +94,11 @@ function makeAccessible(): () => void {
   return stop;
 }
 
+type Live2dConfig = {
+  message: { tapBody?: string[] };
+  models: Array<{ name: string; paths: string[] }>;
+};
+
 async function initializeMascot(): Promise<void> {
   let stopAccessibilityObserver = () => {};
   const refreshAccessibility = () => {
@@ -104,16 +109,16 @@ async function initializeMascot(): Promise<void> {
   try {
     const response = await fetch(assetUrl("vendor/live2d-config.json"));
     if (!response.ok) throw new Error(`配置加载失败：${response.status}`);
-    const config = await response.json() as Record<string, any>;
+    const config = await response.json() as Live2dConfig;
     const bannerCount = ongoingBannerCount();
-    config.message.tapBody = config.message.tapBody.map((text: string) =>
+    config.message.tapBody = (config.message.tapBody ?? []).map((text: string) =>
       text.replace("{{ongoingBanners}}", String(bannerCount))
     );
     const modelPaths: Record<string, string> = {
       "Mao Niziiro": "vendor/live2d-models/mao/mao_pro.model3.json",
       Hibiki: "vendor/live2d-models/hibiki/hibiki.model3.json",
     };
-    config.models.forEach((model: { name: string; paths: string[] }) => {
+    config.models.forEach((model) => {
       const path = modelPaths[model.name];
       if (!path) throw new Error(`未知看板娘模型：${model.name}`);
       model.paths[0] = assetUrl(path);

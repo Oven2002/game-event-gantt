@@ -40,6 +40,11 @@ function savePreferences(): void {
   }
 }
 
+// 与看板娘组件（vendor/live2d-widget）的隐式 localStorage 契约：
+// widget 读到 24 小时内的 waifu-display 时间戳时不会自动显示看板娘，只保留
+// 右下角的唤回按钮（见 vendor/live2d-widget/src/widget.ts 的 initWidget 逻辑）。
+// 因此「隐藏」= 写入当前时间戳，「显示」= 移除两个键让组件恢复自动加载。
+// 改动前请先核对 widget.ts 中的读取条件，两边要保持一致。
 function syncMascotPreference(): void {
   try {
     if (preferences.mascotVisible) {
