@@ -44,7 +44,7 @@
 data/       游戏、服务器、版本和活动 YAML 数据
 src/        Astro 页面、时间轴脚本和数据校验逻辑
 tests/      数据规则与时间轴工具单元测试
-.github/    CI、GitHub Pages、Issue 和 PR 模板
+.github/    CI、Issue 和 PR 模板
 ```
 
 每个游戏拥有独立的 `data/<game-id>/` 目录，数据可以按服务器、年份或版本拆成多个文件，以减少 Pull Request 冲突。
@@ -63,7 +63,12 @@ npm run build          # 数据校验 + 类型检查 + 生产构建
 
 ## 部署
 
-仓库内置 GitHub Pages 工作流。仓库 Settings → Pages → Source 设置为 **GitHub Actions** 后，合并到 `main` 会自动校验、构建并部署。Astro 会根据 `GITHUB_REPOSITORY` 设置 Pages 子路径。
+线上站点由 **Cloudflare Pages** 托管（<https://gameg.site/>）。在 Cloudflare Pages 中关联本仓库后，推送到 `main` 会自动构建并部署：
+
+- 构建命令：`npm run build`（包含数据校验与类型检查）
+- 构建输出目录：`dist`
+
+GitHub 侧的工作流（`.github/workflows/ci.yml`）负责把关：每个 Pull Request 以及推送到 `main` 的提交都会运行数据校验、单元测试与生产构建。站点部署本身由 Cloudflare Pages 完成，GitHub Actions 不参与发布。
 
 ## 技术栈
 
