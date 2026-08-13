@@ -48,6 +48,8 @@ let [domainStart, domainEnd] = domainAroundAnchor(now, INITIAL_SPAN, NOW_POSITIO
 let resizeTimer: number | undefined;
 let restoreScrollFrame: number | undefined;
 let renderFrame: number | undefined;
+let activePointers = 0;
+let renderDeferred = false;
 
 function loadPreferences() {
   try {
@@ -230,6 +232,12 @@ function zoomAt(factor: number, anchor = (domainStart + domainEnd) / 2): void {
 }
 
 function scheduleRender(): void {
+  // 拖拽/捏合期间图表 DOM 正在被手指操作，全量重建会打断手势并丢失
+  // pointer capture。把重建推迟到手势结束后统一执行。
+  if (activePointers > 0) {
+    renderDeferred = true;
+    return;
+  }
   if (renderFrame !== undefined) return;
   renderFrame = window.requestAnimationFrame(() => {
     renderFrame = undefined;
@@ -262,6 +270,7 @@ function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: 
 
   chart.addEventListener("pointerdown", (event) => {
     pointers.set(event.pointerId, event.clientX);
+    activePointers = pointers.size;
     if (pointers.size === 1) {
       dragX = event.clientX;
       dragDomainStart = domainStart;
@@ -308,6 +317,7 @@ function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: 
 
   const finish = (event: PointerEvent) => {
     pointers.delete(event.pointerId);
+    activePointers = pointers.size;
     dragX = undefined;
     chart.classList.remove("is-dragging");
     if (moved && pendingDomain) {
@@ -319,6 +329,10 @@ function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: 
     }
     if (moved) {
       chart.addEventListener("click", (click) => click.stopPropagation(), { capture: true, once: true });
+    }
+    if (renderDeferred && activePointers === 0) {
+      renderDeferred = false;
+      scheduleRender();
     }
   };
   chart.addEventListener("pointerup", finish);
