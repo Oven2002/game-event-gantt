@@ -1,0 +1,6 @@
+id: reverse-1999
+name: 重返未来：1999
+priority: 38
+regions:
+  - id: cn
+    name: 国服

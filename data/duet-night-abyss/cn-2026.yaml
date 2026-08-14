@@ -1,0 +1,602 @@
+game: duet-night-abyss
+region: cn
+
+versions:
+  - id: dage-xia
+    name: 大风歌·下
+    start: "2026-02-10T11:00:00+08:00"
+    end: "2026-04-07T04:00:00+08:00"
+    note: 华胥资料片；维护 02-10 04:00-11:00（11:00 开服）；新角色 止流（2/10）、煜明（3/10 10:00）；end=下版本「皓苍诀」维护开始
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: hao-cang-jue
+    name: 皓苍诀
+    start: "2026-04-07T11:00:00+08:00"
+    end: "2026-06-02T04:00:00+08:00"
+    note: 华胥资料片；维护 04-07 04:00-11:00（11:00 开服）；新角色 苏乙（4/7）、卡米拉（5/5 10:00）；end=下版本「银星奔流」维护开始
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: yin-xing-ben-liu
+    name: 银星奔流
+    start: "2026-06-02T11:00:00+08:00"
+    end: "2026-07-28T04:00:00+08:00"
+    note: 维护 06-02 04:00-11:00（11:00 开服）；新角色 芙罗拉（6/2）、希尔妲（6/30 10:00）；end=下版本「乐园序曲」维护开始
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: le-yuan-xu-qu
+    name: 乐园序曲
+    start: "2026-07-28T11:00:00+08:00"
+    end: "2026-09-22T04:00:00+08:00"
+    note: 维护 07-28 04:00-11:00（11:00 开服）；新角色 艾达（？？）；end 未官宣，按前几版本 56 天（8周）周期推算 09-22（官方活动「绯色梦魇」持续至 09-29 05:00 跨版本）
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+      - https://dna.yingxiong.com/index.html
+
+events:
+  # ===== 维护（maintenance）=====
+  - id: maintenance-2026-02-10
+    name: 2026-02-10 版本维护
+    type: maintenance
+    start: "2026-02-10T04:00:00+08:00"
+    end: "2026-02-10T11:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: maintenance-2026-04-07
+    name: 2026-04-07 版本维护
+    type: maintenance
+    start: "2026-04-07T04:00:00+08:00"
+    end: "2026-04-07T11:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: maintenance-2026-06-02
+    name: 2026-06-02 版本维护
+    type: maintenance
+    start: "2026-06-02T04:00:00+08:00"
+    end: "2026-06-02T11:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: maintenance-2026-07-28
+    name: 2026-07-28 版本维护
+    type: maintenance
+    start: "2026-07-28T04:00:00+08:00"
+    end: "2026-07-28T11:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+
+  # ===== 大风歌·下 活动（2026-02-10 ~ 04-07）=====
+  - id: yuan-heng-li-zhen
+    name: 元亨利贞（累计签到）
+    type: event
+    start: "2026-02-10T11:00:00+08:00"
+    end: "2026-03-10T05:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: shen-ru-shi-ju-zhi-liu
+    name: 沉浸式戏剧·止流
+    type: event
+    start: "2026-02-10T11:00:00+08:00"
+    end: "2026-03-10T10:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: ji-kui-da-luan-dou-feb
+    name: 机傀大乱斗
+    type: event
+    start: "2026-02-10T11:00:00+08:00"
+    end: "2026-04-06T17:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: xing-yao-xun-you-feb
+    name: 星耀巡游
+    type: event
+    start: "2026-02-13T10:00:00+08:00"
+    end: "2026-03-02T05:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: wu-you-lv-xian-qi-tan
+    name: 无由履险奇谭
+    type: event
+    start: "2026-02-27T10:00:00+08:00"
+    end: "2026-03-11T05:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: shou-huo-ri-feb-1
+    name: 收获日第一期
+    type: event
+    start: "2026-02-20T10:00:00+08:00"
+    end: "2026-02-27T05:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: shou-huo-ri-feb-2
+    name: 收获日第二期
+    type: event
+    start: "2026-03-20T10:00:00+08:00"
+    end: "2026-03-27T05:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: qing-ping-yuan
+    name: 清平愿（累计签到）
+    type: event
+    start: "2026-03-10T10:00:00+08:00"
+    end: "2026-04-06T17:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: shen-ru-shi-ju-yu-ming
+    name: 沉浸式戏剧·煜明
+    type: event
+    start: "2026-03-10T10:00:00+08:00"
+    end: "2026-04-07T10:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: wen-ming-bo-yi-mar
+    name: 文明博弈
+    type: event
+    start: "2026-03-13T10:00:00+08:00"
+    end: "2026-03-28T05:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: shou-yue-ren-zhi-jie-mar
+    name: 狩月人之阶
+    type: event
+    start: "2026-03-24T10:00:00+08:00"
+    end: "2026-04-03T05:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+  - id: yan-ye-su-ping-sheng
+    name: 宴夜诉平生（万华）
+    type: event
+    start: "2026-02-10T11:00:00+08:00"
+    end: "2026-04-06T17:00:00+08:00"
+    related: [dage-xia]
+    sources:
+      - https://www.taptap.cn/moment/768119994918634584
+
+  # ===== 皓苍诀 活动（2026-04-07 ~ 06-02）=====
+  - id: hua-xu-xiang-shi-ji-2
+    name: 华胥香识记·贰（皓京区域开放）
+    type: event
+    start: "2026-04-07T11:00:00+08:00"
+    end: "2026-06-01T17:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: ji-qiao-lian-tian-xing
+    name: 机巧连天星（累计签到）
+    type: event
+    start: "2026-04-07T11:00:00+08:00"
+    end: "2026-05-05T05:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: shen-ru-shi-ju-su-yi
+    name: 沉浸式戏剧·苏乙
+    type: event
+    start: "2026-04-07T11:00:00+08:00"
+    end: "2026-05-05T10:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: ding-ge-de-wang-shi
+    name: 定格的往事
+    type: event
+    start: "2026-04-09T10:00:00+08:00"
+    end: "2026-04-21T05:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: shou-huo-ri-apr-1
+    name: 收获日第一期
+    type: event
+    start: "2026-04-16T10:00:00+08:00"
+    end: "2026-04-23T05:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: shou-huo-ri-apr-2
+    name: 收获日第二期
+    type: event
+    start: "2026-05-14T10:00:00+08:00"
+    end: "2026-05-21T05:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: feng-xiang-qun-ying-shi
+    name: 奉香群英试
+    type: event
+    start: "2026-04-23T10:00:00+08:00"
+    end: "2026-06-01T17:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: xing-yao-ji-nian-apr
+    name: 星耀纪念
+    type: event
+    start: "2026-04-30T10:00:00+08:00"
+    end: "2026-05-18T05:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: bei-zhong-lue-ying
+    name: 杯中掠影（累计签到）
+    type: event
+    start: "2026-05-05T10:00:00+08:00"
+    end: "2026-06-01T17:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: shen-ru-shi-ju-ka-mi-la
+    name: 沉浸式戏剧·卡米拉
+    type: event
+    start: "2026-05-05T10:00:00+08:00"
+    end: "2026-06-01T17:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: wang-chuan-ye-hua
+    name: 忘川夜话（菲娜&黎瑟形象）
+    type: event
+    start: "2026-05-05T10:00:00+08:00"
+    end: "2026-06-01T17:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: xing-yao-xun-you-may
+    name: 星耀巡游
+    type: event
+    start: "2026-05-07T10:00:00+08:00"
+    end: "2026-05-24T05:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: shou-yue-ren-zhi-jie-may
+    name: 狩月人之阶
+    type: event
+    start: "2026-05-19T10:00:00+08:00"
+    end: "2026-05-29T00:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: wei-mang-zhen-cang
+    name: 微茫珍藏
+    type: event
+    start: "2026-05-21T10:00:00+08:00"
+    end: "2026-06-01T17:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+  - id: zhi-yu-kou-qing-kong
+    name: 执羽叩青空（万华）
+    type: event
+    start: "2026-04-07T11:00:00+08:00"
+    end: "2026-06-01T17:00:00+08:00"
+    related: [hao-cang-jue]
+    sources:
+      - https://www.taptap.cn/moment/788854489967758968
+
+  # ===== 银星奔流 活动（2026-06-02 ~ 07-28）=====
+  - id: di-guo-de-mai-dong
+    name: 帝国的脉动（百花车站区域）
+    type: event
+    start: "2026-06-02T11:00:00+08:00"
+    end: "2026-07-27T17:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: shen-ru-shi-ju-fu-luo-la
+    name: 沉浸式戏剧·芙罗拉
+    type: event
+    start: "2026-06-02T11:00:00+08:00"
+    end: "2026-06-30T10:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: gong-you-a-te-la-xi-ya
+    name: 共游阿特拉西亚
+    type: event
+    start: "2026-06-02T11:00:00+08:00"
+    end: "2026-07-27T17:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+      - https://www.taptap.cn/moment/810579043790358164
+  - id: qiu-long-zhi-wai
+    name: 囚笼之外（累计签到）
+    type: event
+    start: "2026-06-02T11:00:00+08:00"
+    end: "2026-06-30T05:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: hua-cai-tu-ji
+    name: 华彩图记
+    type: event
+    start: "2026-06-02T11:00:00+08:00"
+    end: "2026-07-27T17:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: jiao-jiao-tie-dao-zhou-you
+    name: 皎皎铁道周游
+    type: event
+    start: "2026-06-04T10:00:00+08:00"
+    end: "2026-06-25T05:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: shen-ru-shi-ju-xi-er-da
+    name: 沉浸式戏剧·希尔妲
+    type: event
+    start: "2026-06-30T10:00:00+08:00"
+    end: "2026-07-27T17:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: shou-huo-ri-jun-1
+    name: 收获日第一期
+    type: event
+    start: "2026-06-11T10:00:00+08:00"
+    end: "2026-06-18T05:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: shou-huo-ri-jun-2
+    name: 收获日第二期
+    type: event
+    start: "2026-07-10T10:00:00+08:00"
+    end: "2026-07-17T05:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: wen-ming-bo-yi-jun
+    name: 文明博弈
+    type: event
+    start: "2026-06-11T10:00:00+08:00"
+    end: "2026-06-26T05:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: shen-ru-shi-ju-lian-mei-jun
+    name: 沉浸式戏剧·联袂演绎
+    type: event
+    start: "2026-06-18T10:00:00+08:00"
+    end: "2026-07-10T05:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: xing-yao-ji-nian-jun
+    name: 星耀纪念
+    type: event
+    start: "2026-06-25T10:00:00+08:00"
+    end: "2026-07-13T05:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: dao-yin-hui-lang
+    name: 祷音回廊（琳恩&妮弗尔夫人形象）
+    type: event
+    start: "2026-06-30T10:00:00+08:00"
+    end: "2026-07-27T17:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: xiu-xi-ri
+    name: 休憩日（累计签到）
+    type: event
+    start: "2026-06-30T10:00:00+08:00"
+    end: "2026-07-27T17:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: xing-yao-xun-you-jul
+    name: 星耀巡游
+    type: event
+    start: "2026-07-09T10:00:00+08:00"
+    end: "2026-07-27T17:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: shou-yue-ren-zhi-jie-jul
+    name: 狩月人之阶
+    type: event
+    start: "2026-07-14T10:00:00+08:00"
+    end: "2026-07-24T00:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: kuan-she-zhe-liang-ye
+    name: 宽赦这良夜（万华）
+    type: event
+    start: "2026-06-02T11:00:00+08:00"
+    end: "2026-07-27T17:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: xia-meng-fen-fei-ji
+    name: 夏梦纷飞集（赛琪万华限时复刻）
+    type: event
+    start: "2026-06-02T11:00:00+08:00"
+    end: "2026-07-27T17:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: yin-you-shi-ji-an-xiang
+    name: 吟游诗集·暗巷爵士
+    type: event
+    start: "2026-06-02T11:00:00+08:00"
+    end: "2026-06-30T04:59:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+  - id: yin-you-shi-ji-shen-kong
+    name: 吟游诗集·深空旋律
+    type: event
+    start: "2026-06-30T05:00:00+08:00"
+    end: "2026-07-27T17:00:00+08:00"
+    related: [yin-xing-ben-liu]
+    sources:
+      - https://www.taptap.cn/moment/809104957499246601
+
+  # ===== 乐园序曲 活动（2026-07-28 ~ 09-22 预估）=====
+  - id: bai-hua-che-zhan-yi-shi
+    name: 百花车站遗事（系列任务）
+    type: event
+    start: "2026-07-28T05:00:00+08:00"
+    end: "2026-09-07T17:00:00+08:00"
+    note: 版本活动一览写 07-27 10:00 起，此处按版本更新说明口径
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+      - https://www.taptap.cn/moment/829745047879551479
+  - id: ye-se-yu-xue-se
+    name: 夜色与雪色（万华）
+    type: event
+    start: "2026-07-28T11:00:00+08:00"
+    end: "2026-09-07T17:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+  - id: chao-yin-qi-tian-mo
+    name: 潮音起天末（扶疏万华限时复刻）
+    type: event
+    start: "2026-07-28T11:00:00+08:00"
+    end: "2026-09-07T17:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+      - https://www.taptap.cn/moment/829742430575136508
+  - id: bai-tu-yao-yue
+    name: 白兔邀约（累计签到）
+    type: event
+    start: "2026-07-28T11:00:00+08:00"
+    end: "2026-09-07T17:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+      - https://www.taptap.cn/moment/830813613483626399
+  - id: shen-ru-shi-ju-ai-da
+    name: 沉浸式戏剧·艾达（？？）
+    type: event
+    start: "2026-07-28T11:00:00+08:00"
+    end: "2026-09-07T17:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+  - id: xun-zhen-yan-lian
+    name: 寻珍演练
+    type: event
+    start: "2026-07-28T11:00:00+08:00"
+    end: "2026-09-08T05:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+      - https://www.taptap.cn/moment/830814314599287110
+  - id: shou-huo-ri-jul-1
+    name: 收获日第一期
+    type: event
+    start: "2026-07-30T10:00:00+08:00"
+    end: "2026-08-06T05:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+      - https://www.taptap.cn/moment/830818363872643511
+  - id: shou-huo-ri-jul-2
+    name: 收获日第二期
+    type: event
+    start: "2026-08-20T10:00:00+08:00"
+    end: "2026-08-27T05:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+  - id: ji-kui-da-luan-dou-jul
+    name: 机傀大乱斗
+    type: event
+    start: "2026-07-30T10:00:00+08:00"
+    end: "2026-09-07T17:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+      - https://www.taptap.cn/moment/830816616445905082
+  - id: shen-ru-shi-ju-lian-mei-aug
+    name: 沉浸式戏剧·联袂演绎
+    type: event
+    start: "2026-08-06T10:00:00+08:00"
+    end: "2026-09-07T05:00:00+08:00"
+    note: 独立活动说明写 09-06 17:00 结束，此处按版本更新说明口径
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+      - https://www.taptap.cn/moment/834088734755389458
+  - id: huang-jin-lv-tu
+    name: 黄金旅途·魔灵竞速
+    type: event
+    start: "2026-08-06T10:00:00+08:00"
+    end: "2026-08-18T05:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+      - https://www.taptap.cn/moment/833291313284647334
+  - id: qie-shi-feng-mang
+    name: 且试锋芒
+    type: event
+    start: "2026-08-13T10:00:00+08:00"
+    end: "2026-09-01T05:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+      - https://www.taptap.cn/moment/835904584193937217
+  - id: fei-se-meng-yan
+    name: 绯色梦魇（卡米拉&希尔妲形象）
+    type: event
+    start: "2026-08-18T10:00:00+08:00"
+    end: "2026-09-29T05:00:00+08:00"
+    note: 官方公告跨下版本持续至 09-29 05:00
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+  - id: xing-yao-xun-you-aug
+    name: 星耀巡游
+    type: event
+    start: "2026-08-20T10:00:00+08:00"
+    end: "2026-09-01T05:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+  - id: xing-yao-ji-nian-2
+    name: 星耀纪念·II
+    type: event
+    start: "2026-08-20T10:00:00+08:00"
+    end: "2026-09-01T05:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+  - id: shou-yue-ren-zhi-jie-aug
+    name: 狩月人之阶
+    type: event
+    start: "2026-08-26T10:00:00+08:00"
+    end: "2026-09-05T00:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+  - id: yin-you-shi-ji-sheng-xia
+    name: 吟游诗集·盛夏节拍
+    type: event
+    start: "2026-07-28T11:00:00+08:00"
+    end: "2026-09-07T17:00:00+08:00"
+    related: [le-yuan-xu-qu]
+    sources:
+      - https://www.taptap.cn/moment/829384951978786861
+      - https://www.taptap.cn/moment/834794743480192816

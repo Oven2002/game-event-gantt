@@ -1,0 +1,156 @@
+game: roco-world
+region: cn
+
+versions:
+  - id: s1
+    name: S1赛季「暗夜拾光」（公测赛季）
+    start: "2026-03-26T08:00:00+08:00"
+    end: "2026-05-21T10:00:00+08:00"
+    note: 公测开服官方口径为「3月26日8:00左右开服，可能提前或延后」；S1活动（为相伴加冕等）官方时间至05/21 04:00结束；end取S2维护开服时刻
+    sources:
+      - https://www.bilibili.com/opus/1199285491912933429
+      - https://www.bilibili.com/opus/1204480637125263362
+  - id: s2
+    name: S2赛季「狂欢怪谈」
+    start: "2026-05-21T10:00:00+08:00"
+    end: "2026-07-16T10:00:00+08:00"
+    note: 官方维护窗口2026年05月20日22:00-05月21日10:00，开服即S2开启；S2活动多至07/16 04:00结束；end取S3维护开服时刻
+    sources:
+      - https://www.bilibili.com/opus/1204480637125263362
+      - https://www.bilibili.com/opus/1225261488451616775
+  - id: s3
+    name: S3赛季「铅字幻梦」
+    start: "2026-07-16T10:00:00+08:00"
+    end: "2026-09-10T10:00:00+08:00"
+    note: 官方维护窗口2026年07月15日22:00-07月16日10:00；S3结束未官宣，end按S2周期56天+官方16周年奖励领取截止9/10 04:00预估
+    sources:
+      - https://www.bilibili.com/opus/1222663810683240612
+      - https://www.bilibili.com/opus/1225261488451616775
+
+events:
+  - id: maintenance-s2
+    name: S2赛季版本停机维护（客户端升至1.101）
+    type: maintenance
+    start: "2026-05-20T22:00:00+08:00"
+    end: "2026-05-21T10:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1204480637125263362
+  - id: maintenance-s3
+    name: S3赛季版本停机维护
+    type: maintenance
+    start: "2026-07-15T22:00:00+08:00"
+    end: "2026-07-16T10:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1225261488451616775
+  - id: event-16zhounian-tongxing
+    name: 16周年，同行快洛！（洛克王国x洛克王国：世界周年联动许愿）
+    type: event
+    start: "2026-07-15T04:00:00+08:00"
+    end: "2026-08-14T04:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1222663810683240612
+  - id: event-haidilao-lianhe
+    name: 一起快洛一起嗨（x海底捞联动）
+    type: event
+    start: "2026-07-10T04:00:00+08:00"
+    end: "2026-08-10T04:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1222663810683240612
+  - id: event-daguancha-0710
+    name: 大世界观察笔记（系别）
+    type: event
+    start: "2026-07-10T04:00:00+08:00"
+    end: "2026-07-17T04:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1222663810683240612
+  - id: event-dudubao-chumo
+    name: 「嘟嘟煲」大量出没
+    type: event
+    start: "2026-07-10T04:00:00+08:00"
+    end: "2026-07-13T04:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1222663810683240612
+  - id: event-xiaohu-anjia
+    name: 精灵调查团第一期「小狐安家记」
+    type: event
+    start: "2026-08-07T04:00:00+08:00"
+    note: 官方仅公告04:00开启，完成全部考察后活动界面于次日04:00关闭，无固定结束时间
+    sources:
+      - https://www.bilibili.com/opus/1233054186949574713
+  - id: event-daguancha-0807
+    name: 大世界观察笔记（血脉）
+    type: event
+    start: "2026-08-07T04:00:00+08:00"
+    end: "2026-08-14T04:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1233054186949574713
+  - id: event-keliji-chumo
+    name: 「可立鸡」大量出没
+    type: event
+    start: "2026-08-07T04:00:00+08:00"
+    end: "2026-08-10T04:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1233054186949574713
+  - id: event-xingguangduijue-0810
+    name: 星光对决（嘉宾：时空摆渡人露西亚）
+    type: event
+    start: "2026-08-10T04:00:00+08:00"
+    end: "2026-08-17T04:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1233054186949574713
+  - id: event-xiegei-xiangyu-de-shi
+    name: 写给相遇的诗
+    type: event
+    start: "2026-08-14T04:00:00+08:00"
+    end: "2026-08-28T04:00:00+08:00"
+    sources:
+      - https://www.taptap.cn/moment/837016662992487834
+  - id: event-pika-chuxin
+    name: 皮卡月刊「初心的继承者」限时上架
+    type: banner
+    start: "2026-08-14T04:00:00+08:00"
+    end: "2026-08-28T04:00:00+08:00"
+    sources:
+      - https://www.taptap.cn/moment/837012386316553009
+  - id: event-banban-chumo
+    name: 「斑斑」大量出没
+    type: event
+    start: "2026-08-14T04:00:00+08:00"
+    end: "2026-08-17T04:00:00+08:00"
+    sources:
+      - https://www.taptap.cn/moment/837048387248327184
+  - id: event-maoxian-buji
+    name: 冒险补给（S2赛季累计登录7天）
+    type: event
+    start: "2026-05-21T04:00:00+08:00"
+    end: "2026-07-16T04:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1204480637125263362
+  - id: event-guagua-shangxueji
+    name: 呱呱上学记
+    type: event
+    start: "2026-05-21T04:00:00+08:00"
+    end: "2026-07-16T04:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1204480637125263362
+  - id: event-sheying-shenhai
+    name: 主题摄影评选赛——深海秘宝失窃案
+    type: event
+    start: "2026-05-23T04:00:00+08:00"
+    end: "2026-07-16T04:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1204480637125263362
+  - id: event-weixiangban-jiamian
+    name: 为相伴加冕（S1赛季羁绊活动）
+    type: event
+    start: "2026-03-26T04:00:00+08:00"
+    end: "2026-05-21T04:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1199285491912933429
+  - id: event-luoke-xinxianshi
+    name: 洛克新鲜事
+    type: event
+    start: "2026-05-04T04:00:00+08:00"
+    end: "2026-05-21T04:00:00+08:00"
+    sources:
+      - https://www.bilibili.com/opus/1199285491912933429

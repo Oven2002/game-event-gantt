@@ -1,0 +1,6 @@
+id: love-and-deepspace
+name: 恋与深空
+priority: 53
+regions:
+  - id: cn
+    name: 国服

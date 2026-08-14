@@ -1,0 +1,6 @@
+id: light-and-night
+name: 光与夜之恋
+priority: 45
+regions:
+  - id: cn
+    name: 国服

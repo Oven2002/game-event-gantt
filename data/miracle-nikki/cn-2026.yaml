@@ -1,0 +1,206 @@
+game: miracle-nikki
+region: cn
+
+events:
+  - id: mnt-12-7-0
+    name: 12.7.0版本更新维护（新春版本「千风赴愿之时」）
+    type: maintenance
+    start: "2026-02-05T00:00:00+08:00"
+    end: "2026-02-05T09:30:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202602/981867.shtml
+  - id: event-xinghui-fumeng
+    name: 繁星夜话·星辉浮梦（过关收集套装）
+    type: event
+    start: "2026-01-24T05:00:00+08:00"
+    end: "2026-01-30T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202601/981069.shtml
+  - id: event-shengge-yin
+    name: 金阙琼音·笙歌引（过关收集套装）
+    type: event
+    start: "2026-02-12T05:00:00+08:00"
+    end: "2026-02-18T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202601/981649.shtml
+  - id: event-he-xin-xi
+    name: 骏贺新禧·贺新禧（马年春节限定套装，登录送）
+    type: event
+    start: "2026-02-17T00:00:00+08:00"
+    end: "2026-02-23T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202601/981541.shtml
+  - id: banner-shengting-zhiye
+    name: 圣庭之谒（万象箴言·动态故事套装感应阁）
+    type: banner
+    start: "2026-02-05T09:30:00+08:00"
+    end: "2026-02-23T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202602/981867.shtml
+  - id: event-yu-ri-xuntian
+    name: 云阶星轨·御日巡天（累计充值馈赠）
+    type: event
+    start: "2026-02-05T09:30:00+08:00"
+    end: "2026-02-23T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202602/981867.shtml
+  - id: event-lan-yun-nafu
+    name: 新春集锦·揽云纳福（缤纷画卷成就套装，每日红包祈福）
+    type: event
+    start: "2026-02-05T09:30:00+08:00"
+    end: "2026-02-23T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202601/981541.shtml
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202602/981867.shtml
+  - id: event-li-ying-fu-guang
+    name: 春节限时制衣·璃影浮光
+    type: event
+    start: "2026-02-05T09:30:00+08:00"
+    end: "2026-03-01T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202602/981867.shtml
+  - id: event-hua-bin-deng-xiao
+    name: 灯映佳联（桃源深处有人家×奇迹暖暖联动·花鬓灯宵）
+    type: event
+    start: "2026-02-24T05:00:00+08:00"
+    end: "2026-03-05T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202601/981650.shtml
+  - id: mnt-12-8-0
+    name: 12.8.0版本更新维护
+    type: maintenance
+    start: "2026-03-25T00:00:00+08:00"
+    end: "2026-03-25T10:00:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202603/983839.shtml
+  - id: event-qi-huan-ju-chang
+    name: 诞幻剧场·绮幻剧场（过关收集套装）
+    type: event
+    start: "2026-03-28T05:00:00+08:00"
+    end: "2026-04-03T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202603/983839.shtml
+  - id: mnt-13-0-0
+    name: 13.0.0版本更新维护（奇迹暖暖十一周年版本）
+    type: maintenance
+    start: "2026-05-13T00:00:00+08:00"
+    end: "2026-05-13T10:00:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202605/985691.shtml
+  - id: banner-yao-ye-meng-tan
+    name: 遥夜梦谭（月隐永无乡·故事套装感应阁）
+    type: banner
+    start: "2026-05-13T10:00:00+08:00"
+    end: "2026-05-29T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202605/985691.shtml
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202605/985722.shtml
+  - id: event-feng-yu-zhi-shi
+    name: 海与风之诗·风羽之誓（十一周年纪念套装，任务免费获取）
+    type: event
+    start: "2026-05-13T10:00:00+08:00"
+    end: "2026-05-29T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202605/985691.shtml
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202605/985517.shtml
+  - id: event-xin-hai-you-lv
+    name: 漫游航旅·每日登录福利（限定头像·心海悠旅）
+    type: event
+    start: "2026-05-13T10:00:00+08:00"
+    end: "2026-05-29T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202605/985691.shtml
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202605/985517.shtml
+  - id: event-xing-yun-zhi-ge
+    name: 时光愿笺·钻石明信片（缤纷画卷套装·幸运之歌）
+    type: event
+    start: "2026-05-13T10:00:00+08:00"
+    end: "2026-05-29T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202605/985691.shtml
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202605/985517.shtml
+  - id: event-liu-hui-huan-hua
+    name: 周年限时制衣·琉辉幻华（十一周年）
+    type: event
+    start: "2026-05-13T10:00:00+08:00"
+    end: "2026-05-29T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202605/985691.shtml
+  - id: event-ni-cai-mo-fa
+    name: 汐梦魔法·霓彩魔法（十一周年庆典福利套装）
+    type: event
+    start: "2026-05-20T00:00:00+08:00"
+    end: "2026-05-29T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202605/985517.shtml
+  - id: event-liu-jin-rong-mian
+    name: 奇渊之屿充值馈赠（鎏金荣冕/素心幽昙等十三周年庆套装）
+    type: event
+    start: "2026-05-13T10:00:00+08:00"
+    end: "2026-06-07T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202605/985691.shtml
+  - id: event-xiao-zhe-gou-li-wu
+    name: 奇迹暖暖×这狗 限时签到·小这狗的礼物（联动套装）
+    type: event
+    start: "2026-07-03T05:00:00+08:00"
+    end: "2026-07-16T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202606/987674.shtml
+  - id: mnt-13-2-0
+    name: 13.2.0版本更新维护
+    type: maintenance
+    start: "2026-07-22T00:00:00+08:00"
+    end: "2026-07-22T08:00:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202607/988734.shtml
+  - id: banner-he-wei-si-te-zhi-yi
+    name: 赫维斯特之遗（空幻之境·故事套装感应阁）
+    type: banner
+    start: "2026-07-22T08:00:00+08:00"
+    end: "2026-08-07T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202607/988734.shtml
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202607/988786.shtml
+  - id: event-hua-ting-chen-feng
+    name: 馨雅回忆·旧梦花庭（花庭晨风，累计感应解锁）
+    type: event
+    start: "2026-07-22T08:00:00+08:00"
+    end: "2026-08-07T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202607/988734.shtml
+  - id: event-long-xi-chun-ye
+    name: 奇渊之屿充值馈赠（龙息与春野/永夜劫烬）
+    type: event
+    start: "2026-07-22T08:00:00+08:00"
+    end: "2026-08-18T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202607/988734.shtml
+  - id: banner-fang-xue-hou-xiao-mai-bu
+    name: 奇妙扭蛋机·放学后小卖部（扭蛋收集套装）
+    type: banner
+    start: "2026-08-03T05:00:00+08:00"
+    end: "2026-08-12T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23147/m14777/202607/989013.shtml
+  - id: banner-qi-ji-de-shan-guang
+    name: 奇迹的闪光 限时复开（故事套装+动态互动套装·奇迹绽放时）
+    type: banner
+    start: "2026-08-03T05:00:00+08:00"
+    end: "2026-08-12T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23147/m14777/202607/989157.shtml
+  - id: event-xin-fei-meng-lv
+    name: 星愿奇旅·心扉梦旅（过关收集套装+溯时之旅特殊任务）
+    type: event
+    start: "2026-08-12T05:00:00+08:00"
+    end: "2026-08-18T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23147/m14777/202608/989621.shtml
+  - id: event-lan-ye-hua-zhao
+    name: 兰夜花朝·巧夕灯韵（七夕节日套装，免费集齐）
+    type: event
+    start: "2026-08-16T05:00:00+08:00"
+    end: "2026-08-25T23:59:00+08:00"
+    sources:
+      - https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23147/m14777/202608/989670.shtml

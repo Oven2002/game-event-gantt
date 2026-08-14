@@ -1,0 +1,133 @@
+game: light-and-night
+region: cn
+
+versions: []
+
+events:
+  - id: maint-2026-04-07
+    name: "4月7日停服维护（5小时）"
+    type: maintenance
+    start: "2026-04-07T00:00:00+08:00"
+    end: "2026-04-07T05:00:00+08:00"
+    note: "维护后开启限时活动「侦探请就位」、限定收信「寂静撞击：2624[复刻Ⅰ]」等"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=7942a7f4-0e1c-4f67-86e4-d73687a7e9a4"
+  - id: maint-2026-07-17
+    name: "7月17日停服维护（5小时）"
+    type: maintenance
+    start: "2026-07-17T02:00:00+08:00"
+    end: "2026-07-17T07:00:00+08:00"
+    note: "维护后开启限时活动「绘梦繁花」二阶段等"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=e988be3c-3bb2-4806-b2f9-5db4e861482d"
+  - id: event-mingxin-shengdian
+    name: "限时活动「铭心盛典」（五周年预热）"
+    type: event
+    start: "2026-06-06T05:00:00+08:00"
+    end: "2026-06-26T04:59:00+08:00"
+    note: "五周年系列活动，含拾珍留忆、逐迹馈礼、扉光扭蛋机等"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=dc5de280-bc21-494a-89f4-24bf44226a08"
+  - id: banner-tonggui-fuzhaoxi
+    name: "限定收信「同轨赴朝夕」（五周年纪念限定收信）"
+    type: banner
+    start: "2026-06-16T05:00:00+08:00"
+    end: "2026-06-26T04:59:00+08:00"
+    note: "萧逸・真爱定律、陆沉・终于此爱、齐司礼・缘深若斯、查理苏・余生天地、夏鸣星・命弦初响"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=36ed4c5c-4b47-442f-b5be-f4b585083274"
+  - id: event-muse-weiman
+    name: "限时活动「暮色未满」"
+    type: event
+    start: "2026-07-12T05:00:00+08:00"
+    end: "2026-07-20T04:59:00+08:00"
+    note: "兑换商店截止7月21日04:59；赠送3星灵犀齐司礼・静默时集"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=89747175-ef37-4de3-b1a9-58245815be1a"
+  - id: banner-zaici-rihuo
+    name: "限定收信「再次日落」（齐司礼・向遥远星）"
+    type: banner
+    start: "2026-07-12T05:00:00+08:00"
+    end: "2026-07-20T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=89747175-ef37-4de3-b1a9-58245815be1a"
+  - id: event-shuse-xunqu
+    name: "限时活动「殊色寻趣」（萧逸・酣然炽恋）"
+    type: event
+    start: "2026-07-29T05:00:00+08:00"
+    end: "2026-08-05T04:59:00+08:00"
+    note: "兑换商店截止8月6日04:59；五星灵犀萧逸・酣然炽恋"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=ba5bd242-5864-44c0-8a6c-2d0fb0184a9f"
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=79ce950d-68cc-4b1d-b1a0-82365a81cdf8"
+  - id: banner-piaoyou-zhenzhongshu
+    name: "限定收信复刻「飘悠枕中书[复刻Ⅰ]」（陆沉・羽梦舞曲）"
+    type: banner
+    start: "2026-07-29T05:00:00+08:00"
+    end: "2026-08-05T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=5ca9f23c-13b9-44e1-9836-cbb99c089ab5"
+  - id: event-jiguang-pianyu-yuying
+    name: "限时活动「羁梦鎏珍/驭影」"
+    type: event
+    start: "2026-08-06T05:00:00+08:00"
+    end: "2026-08-14T04:59:00+08:00"
+    note: "查理苏・驭影；兑换商店截止8月15日04:59；含「吉光片羽」配套小游戏"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=1307afd5-f567-4d74-9d5f-3ca5cda69804"
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=20fec47e-7903-40c4-a81f-c42a209868dd"
+  - id: banner-lanlang-chuanlinhai
+    name: "限定收信复刻「澜声穿林海[复刻Ⅱ]」（萧逸・林野沁色）"
+    type: banner
+    start: "2026-08-06T05:00:00+08:00"
+    end: "2026-08-14T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=0076b833-1447-44e1-a6b0-b2fdb4072d1e"
+  - id: event-juanzao-liuying
+    name: "限时活动「镌光留影」（镜界叠帧系列纪念灵犀）"
+    type: event
+    start: "2026-08-06T05:00:00+08:00"
+    end: "2026-08-17T04:59:00+08:00"
+    note: "转盘活动；清盘可领限定头像框绻梦栖蝶"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=20fec47e-7903-40c4-a81f-c42a209868dd"
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=a5f69846-dcee-4e2a-b008-63b1baf1f67d"
+  - id: event-zhongxia-haomengjie
+    name: "仲夏好梦节（农场季节活动）"
+    type: event
+    start: "2026-08-06T05:00:00+08:00"
+    end: "2026-09-05T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=20fec47e-7903-40c4-a81f-c42a209868dd"
+  - id: banner-jinxiang-renjian
+    name: "限定收信「逆时回响」（查理苏・鎏砂覆吻）"
+    type: banner
+    start: "2026-07-20T05:00:00+08:00"
+    end: "2026-07-28T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=73436a0c-5bfc-4e23-ace6-009f768584f6"
+  - id: event-jinxiao-buyecheng
+    name: "限时活动「金宵不夜城」"
+    type: event
+    start: "2026-08-16T05:00:00+08:00"
+    end: "2026-08-28T04:59:00+08:00"
+    note: "兑换商店截止8月29日04:59；金港往事系列活动主活动"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=f4035273-83db-4e52-bc20-5179d39d3d0a"
+  - id: banner-micheng-wujian
+    name: "限定收信「迷城无间」（金港往事系列限定卡池）"
+    type: banner
+    start: "2026-08-16T05:00:00+08:00"
+    end: "2026-08-28T04:59:00+08:00"
+    note: "萧逸・刀锋本色、陆沉・覆潮归港、齐司礼・业火鉴心、查理苏・逆路重影、夏鸣星・金流暗渡"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=7dcfd730-23e8-4762-9c55-28fc89383ed5"
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=f4035273-83db-4e52-bc20-5179d39d3d0a"
+  - id: event-zhuosha-yuyan
+    name: "限时活动「灼沙寓言」"
+    type: event
+    start: "2026-04-17T05:00:00+08:00"
+    end: "2026-04-25T04:59:00+08:00"
+    note: "兑换商店截止4月26日04:59；3星灵犀查理苏・欲求之音"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=825b5d4d-28a0-4ad7-8a14-eb425b1cebed"

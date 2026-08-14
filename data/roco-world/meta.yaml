@@ -1,0 +1,6 @@
+id: roco-world
+name: 洛克王国：世界
+priority: 50
+regions:
+  - id: cn
+    name: 国服

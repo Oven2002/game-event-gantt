@@ -1,0 +1,141 @@
+game: reverse-1999
+region: cn
+
+versions:
+  - id: v3-3
+    name: 3.3「远征记」
+    start: "2025-12-11T10:00:00+08:00"
+    end: "2026-01-20T05:00:00+08:00"
+    note: 跨年版本；结束=3.4维护开始
+    sources:
+      - "https://re.bluepoch.com/home/detail.html#newsId?81"
+  - id: v3-4
+    name: 3.4「不老春」
+    start: "2026-01-20T10:00:00+08:00"
+    end: "2026-03-05T06:00:00+08:00"
+    note: 强制更新版本，维护 05:00-10:00
+    sources:
+      - "https://re.bluepoch.com/home/detail.html#newsId?83"
+  - id: v3-5
+    name: 3.5「绿松石蛇俱乐部」
+    start: "2026-03-05T10:00:00+08:00"
+    end: "2026-04-09T06:00:00+08:00"
+    sources:
+      - "https://re.bluepoch.com/home/detail.html#newsId?87"
+  - id: v3-6
+    name: 3.6「人们向何处去」
+    start: "2026-04-09T10:00:00+08:00"
+    end: "2026-04-30T05:00:00+08:00"
+    sources:
+      - "https://re.bluepoch.com/home/detail.html#newsId?89"
+  - id: v3-7
+    name: 3.7「他者的悲哀」
+    start: "2026-04-30T10:00:00+08:00"
+    end: "2026-06-11T06:00:00+08:00"
+    note: 三周年特别版本，强制更新，维护 05:00-10:00
+    sources:
+      - "https://re.bluepoch.com/home/detail.html#newsId?92"
+  - id: v3-8
+    name: 3.8「世纪末尺度」
+    start: "2026-06-11T10:00:00+08:00"
+    end: "2026-07-23T05:00:00+08:00"
+    sources:
+      - "https://re.bluepoch.com/home/detail.html#newsId?94"
+  - id: v3-8-5
+    name: 原子之心联动「聚合浪潮」(3.8.5)
+    start: "2026-07-23T10:00:00+08:00"
+    end: "2026-08-13T06:00:00+08:00"
+    note: 21天特殊联动版本，维护提前至 05:00-10:00
+    sources:
+      - "https://re.bluepoch.com/home/detail.html#newsId?95"
+  - id: v3-9
+    name: 3.9「重燃！流金之海」
+    start: "2026-08-13T10:00:00+08:00"
+    end: "2026-09-24T04:59:00+08:00"
+    note: 当前版本；结束时间由官方活动/征集公告锚定（湖的涟漪/箱中数鸭节等均 9/24 04:59 截止）
+    sources:
+      - "https://re.bluepoch.com/home/detail.html#newsId?98"
+      - "https://www.taptap.cn/moment/836567802100842914"
+
+events:
+  - id: maintenance-3-9
+    name: 3.9「重燃！流金之海」版本更新维护
+    type: maintenance
+    start: "2026-08-13T06:00:00+08:00"
+    end: "2026-08-13T10:00:00+08:00"
+    related:
+      - v3-9
+    sources:
+      - "https://re.bluepoch.com/home/detail.html#newsId?98"
+      - "https://www.taptap.cn/moment/836567802100842914"
+  - id: banner-3-9-fire
+    name: 活动征集【烈火悬流无尽】赫多涅UP
+    type: banner
+    start: "2026-08-13T10:00:00+08:00"
+    end: "2026-09-03T04:59:00+08:00"
+    related:
+      - v3-9
+    sources:
+      - "https://www.taptap.cn/moment/836687452667118061"
+  - id: banner-3-9-lake
+    name: 自选征集【湖的涟漪】自选六星UP
+    type: banner
+    start: "2026-08-13T10:00:00+08:00"
+    end: "2026-09-24T04:59:00+08:00"
+    related:
+      - v3-9
+    sources:
+      - "https://www.taptap.cn/moment/836688189249817034"
+  - id: event-3-9-duck
+    name: 「箱中数鸭节」B.Duck 联动活动
+    type: event
+    start: "2026-08-13T10:00:00+08:00"
+    end: "2026-09-24T04:59:00+08:00"
+    related:
+      - v3-9
+    sources:
+      - "https://www.taptap.cn/moment/836200688361931434"
+  - id: event-3-9-aegean
+    name: 荒原主题「爱琴游记」
+    type: event
+    start: "2026-08-13T10:00:00+08:00"
+    end: "2026-09-24T04:59:00+08:00"
+    related:
+      - v3-9
+    sources:
+      - "https://www.taptap.cn/moment/836565174428107155"
+  - id: event-3-9-rose
+    name: 莫莉德尔衣着「玫瑰午睡时」（吼吼点唱机：熔岩不肯蓝）
+    type: event
+    start: "2026-08-13T10:00:00+08:00"
+    end: "2026-09-23T04:59:00+08:00"
+    related:
+      - v3-9
+    sources:
+      - "https://www.taptap.cn/moment/836197451156164254"
+  - id: event-3-9-sports
+    name: 洋葱头衣着「体育快讯」（缪斯碰碰盒）
+    type: event
+    start: "2026-08-15T05:00:00+08:00"
+    end: "2026-09-24T04:59:00+08:00"
+    related:
+      - v3-9
+    sources:
+      - "https://www.taptap.cn/moment/836347589547787832"
+  - id: preview-3-7-anniversary
+    name: 3.7 三周年特别前瞻节目
+    type: preview
+    start: "2026-04-18T19:00:00+08:00"
+    related:
+      - v3-7
+    sources:
+      - "https://www.bilibili.com/opus/1191368986720206921"
+      - "https://re.bluepoch.com/home/detail.html#newsId?91"
+  - id: preview-atomic-heart
+    name: 原子之心联动特别发布会
+    type: preview
+    start: "2026-07-10T20:00:00+08:00"
+    related:
+      - v3-8-5
+    sources:
+      - "https://re.bluepoch.com/home/detail.html#newsId?97"

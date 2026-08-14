@@ -1,0 +1,20 @@
+game: love-and-deepspace
+region: cn
+
+events:
+  - id: banner-qinche-aimao
+    name: "限时卡池「秦彻·爱猫及喵」"
+    type: banner
+    start: "2026-05-22T05:00:00+08:00"
+    end: "2026-05-31T04:59:00+08:00"
+    note: 官方公告原文精确时间 2026-05-22 05:00 ~ 05-31 04:59
+    sources:
+      - "https://deepspace.papegames.com/news/77"
+  - id: banner-xiayizhou-wanlijieyun
+    name: "限时卡池「夏以昼·万里皆予你」（生日活动）"
+    type: banner
+    start: "2026-06-08T05:00:00+08:00"
+    end: "2026-06-15T04:59:00+08:00"
+    note: 夏以昼生日活动；云梦之礼 6/8 5:00~6/15 4:59；视频电话/特别互动 6/13 0:00~6/15 4:59
+    sources:
+      - "https://deepspace.papegames.com/news/78"
