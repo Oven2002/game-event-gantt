@@ -1,6 +1,6 @@
 id: honor-of-kings-world
 name: 王者荣耀世界
-priority: 55
+priority: 28
 regions:
   - id: cn
     name: 国服

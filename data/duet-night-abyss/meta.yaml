@@ -1,6 +1,6 @@
 id: duet-night-abyss
 name: 二重螺旋
-priority: 33
+priority: 18
 regions:
   - id: cn
     name: 国服

@@ -1,6 +1,6 @@
 id: zenless-zone-zero
 name: 绝区零
-priority: 30
+priority: 60
 regions:
   - id: cn
     name: 国服

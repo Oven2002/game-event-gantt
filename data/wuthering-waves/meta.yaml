@@ -1,6 +1,6 @@
 id: wuthering-waves
 name: 鸣潮
-priority: 50
+priority: 80
 regions:
   - id: cn
     name: 国服

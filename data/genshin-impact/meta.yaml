@@ -1,6 +1,6 @@
 id: genshin-impact
 name: 原神
-priority: 70
+priority: 100
 regions:
   - id: cn
     name: 国服

@@ -1,6 +1,6 @@
 id: arknights
 name: 明日方舟
-priority: 20
+priority: 50
 regions:
   - id: cn
     name: 国服

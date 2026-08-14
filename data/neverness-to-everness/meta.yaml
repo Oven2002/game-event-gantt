@@ -1,6 +1,6 @@
 id: neverness-to-everness
 name: 异环
-priority: 10
+priority: 40
 regions:
   - id: cn
     name: 国服

@@ -1,5 +1,6 @@
 id: azur-lane
 name: 碧蓝航线
+priority: 30
 regions:
   - id: cn
     name: 国服

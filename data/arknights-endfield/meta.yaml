@@ -1,6 +1,6 @@
 id: arknights-endfield
 name: 明日方舟：终末地
-priority: 40
+priority: 70
 regions:
   - id: cn
     name: 国服

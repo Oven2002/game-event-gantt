@@ -1,6 +1,6 @@
 id: miracle-nikki
 name: 奇迹暖暖
-priority: 28
+priority: 16
 regions:
   - id: cn
     name: 国服
