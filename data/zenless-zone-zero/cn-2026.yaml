@@ -40,11 +40,11 @@ events:
     name: "下半卡池「直到天空沉落」希格莉德"
     type: banner
     start: "2026-08-19T12:00:00+08:00"
-    end: "2026-09-09T05:59:00+08:00"
-    note: 希格莉德时装官方原文 08/19 12:00 起、09/09 05:59 止，佐证卡池同时间
+    end: "2026-09-08T14:59:00+08:00"
+    note: 官方下期限时频段公告明确代理人与音擎调频时间
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165363"
+      - "https://zenless.hoyoverse.com/zh-cn/news/165737"
   - id: event-zhounian
     name: "玛瑟尔周年馈礼"
     type: event
@@ -124,7 +124,7 @@ events:
     end: "2026-09-08T03:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zenless.hoyoverse.com/zh-cn/news/165740"
   - id: event-kazi
     name: "咔滋酥脆出餐计划"
     type: event
@@ -132,7 +132,7 @@ events:
     end: "2026-09-07T03:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zenless.hoyoverse.com/zh-cn/news/165741"
   - id: event-jixian
     name: "极危通缉与悠游假期"
     type: event
@@ -173,3 +173,41 @@ events:
     related: ["3.1"]
     sources:
       - "https://zenless.hoyoverse.com/zh-cn/news/165388"
+
+  - id: banner-3-1-engine-second
+    name: "下半音擎频段「骁骑礼赞」"
+    type: banner
+    start: "2026-08-19T12:00:00+08:00"
+    end: "2026-09-08T14:59:00+08:00"
+    note: "同期A级音擎为「含羞恶面」「好斗的阿炮」。"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165737"
+
+  - id: banner-3-1-rerun-second
+    name: "下半独家重映频段（琉音/浮波柚叶/浅羽悠真自选）"
+    type: banner
+    start: "2026-08-19T12:00:00+08:00"
+    end: "2026-09-08T14:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165737"
+
+  - id: banner-3-1-engine-rerun-second
+    name: "下半音擎回响频段（昨夜来电/狸法七变化/残心青囊自选）"
+    type: banner
+    start: "2026-08-19T12:00:00+08:00"
+    end: "2026-09-08T14:59:00+08:00"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165737"
+
+  - id: event-taqiantingjing-3-1-second
+    name: "台前试镜（下半试玩关卡）"
+    type: event
+    start: "2026-08-19T12:00:00+08:00"
+    end: "2026-09-08T14:59:00+08:00"
+    note: "可试玩希格莉德、蕾米埃尔、琉音、浮波柚叶、浅羽悠真。"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165737"

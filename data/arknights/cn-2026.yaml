@@ -182,3 +182,35 @@ events:
     note: "自选2位六星+3位五星（6★范围：号角/黑键/卡涅利安/帕拉斯/嵯峨/棘刺/瑕光/异客/刻俄柏/闪灵/赫拉格/阿）"
     sources:
       - "https://ak.hypergryph.com/news/8571"
+
+  - id: side-story-xu-return
+    name: "SideStory「墟」复刻"
+    type: event
+    start: "2026-08-22T04:00:00+08:00"
+    end: "2026-09-05T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/7369"
+
+  - id: side-story-xu-stages
+    name: "SideStory「墟」复刻活动关卡"
+    type: event
+    start: "2026-08-22T04:00:00+08:00"
+    end: "2026-09-01T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/7369"
+
+  - id: side-story-xu-market
+    name: "SideStory「墟」复刻【特典中古市场】"
+    type: event
+    start: "2026-08-22T04:00:00+08:00"
+    end: "2026-09-05T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/7369"
+
+  - id: side-story-xu-outfits
+    name: "SideStory「墟」复刻相关时装限时上架"
+    type: event
+    start: "2026-08-22T04:00:00+08:00"
+    end: "2026-09-05T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/7369"

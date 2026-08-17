@@ -284,3 +284,12 @@ events:
     sources:
       - "https://ys.mihoyo.com/main/news/detail/162404"
       - "https://ys.mihoyo.com/main/news/detail/162387"
+
+  - id: event-7-0-youjing-luanmai
+    name: "「幽境危战」活动：紊乱地脉挑战"
+    type: event
+    start: "2026-08-19T10:00:00+08:00"
+    end: "2026-09-22T03:59:00+08:00"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165757"

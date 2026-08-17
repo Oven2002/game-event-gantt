@@ -167,3 +167,63 @@ events:
     sources:
       - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
       - "https://www.biligame.com/detail/?id=97&sourceFrom=2000310011#!news/18247"
+
+  - id: event-shop-skins-0813-0819
+    name: "换装商店限时上架（8月13日新装）"
+    type: event
+    start: "2026-08-13T16:00:00+08:00"
+    end: "2026-08-19T23:59:00+08:00"
+    note: "本宁顿、不挠、鳄、维克斯堡、菲莉西娅·鲁梅、埃塞克斯、柯莱特、哈里森、约翰·罗杰斯换装"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
+      - "https://www.taptap.cn/moment/836255651763064023"
+
+  - id: event-shop-skins-rerun-0813-0814
+    name: "换装商店限时返场（8月13日批次）"
+    type: event
+    start: "2026-08-13T16:00:00+08:00"
+    end: "2026-08-14T23:59:00+08:00"
+    note: "贝劳森林、安克雷奇、马塞纳、企业、迪盖·特鲁因、貅、海伦娜、迪凯纳、大胆、丹佛换装返场"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
+      - "https://www.taptap.cn/moment/836255651763064023"
+
+  - id: event-shop-skins-0820-0826
+    name: "换装商店限时上架（8月20日批次）"
+    type: event
+    start: "2026-08-20T00:00:00+08:00"
+    end: "2026-08-26T23:59:00+08:00"
+    note: "匹兹堡、腓德雷卡大帝、伴尔维、凯尔圣、印第安纳、法戈、独角兽、鲱鱼、贝尔、优可可洛换装"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
+      - "https://www.taptap.cn/moment/836255651763064023"
+
+  - id: event-furniture-binhaijisu
+    name: "家具商店限时上架：滨海耐力赛"
+    type: event
+    start: "2026-08-13T16:00:00+08:00"
+    end: "2026-08-26T23:59:00+08:00"
+    note: "相关钻石购买家具「耐力赛领奖台」同期上架"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
+      - "https://www.taptap.cn/moment/836255651763064023"
+
+  - id: event-equipment-box-binhaijisu
+    name: "军火商店限时上架：外观装备箱（滨海极速）"
+    type: event
+    start: "2026-08-13T16:00:00+08:00"
+    end: "2026-08-26T23:59:00+08:00"
+    note: "外观装备箱也可通过「沉溺于星光之城」活动兑换获得"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
+      - "https://www.taptap.cn/moment/836255651763064023"
+
+  - id: event-shop-bundles-0813-0826
+    name: "商店限时优惠礼包与滨海极速福袋"
+    type: event
+    start: "2026-08-13T16:00:00+08:00"
+    end: "2026-08-26T23:59:00+08:00"
+    note: "包含限时攻略补给、限时建造补给、家具币礼包、心智单元礼包及滨海极速福袋"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年8月13日10:00港区改建"
+      - "https://www.taptap.cn/moment/836255651763064023"

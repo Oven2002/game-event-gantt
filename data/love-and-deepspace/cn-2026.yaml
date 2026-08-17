@@ -18,3 +18,32 @@ events:
     note: 夏以昼生日活动；云梦之礼 6/8 5:00~6/15 4:59；视频电话/特别互动 6/13 0:00~6/15 4:59
     sources:
       - "https://deepspace.papegames.com/news/78"
+
+  - id: banner-qiyu-pazhenzi
+    name: "限时卡池「破阵子」—祁煜·玄面昭昭、祁煜·玄面无相"
+    type: banner
+    start: "2026-08-17T10:00:00+08:00"
+    end: "2026-08-31T04:59:00+08:00"
+    note: "官方公告原文为“8月17日更新后~8月31日上午4:59”；起始按官方维护预计结束时间10:00记录，实际开服可能提前或延后。"
+    sources:
+      - "https://deepspace.papegames.com/news/82"
+      - "https://www.taptap.cn/moment/837302443191570238"
+
+  - id: event-qiyu-chenfengzhuxiao
+    name: "「沉烽逐霄」福利活动"
+    type: event
+    start: "2026-08-17T10:00:00+08:00"
+    end: "2026-08-31T04:59:00+08:00"
+    note: "官方公告原文为“8月17日更新后~8月31日上午4:59”；起始按官方维护预计结束时间记录，实际开服可能提前或延后。"
+    sources:
+      - "https://deepspace.papegames.com/news/82"
+      - "https://www.taptap.cn/moment/837302936542382367"
+
+  - id: event-qiyu-chenfengzhuxiao-shop
+    name: "「沉烽逐霄」兑换商店"
+    type: event
+    start: "2026-08-17T10:00:00+08:00"
+    end: "2026-09-01T04:59:00+08:00"
+    note: "官方TapTap公告明确兑换商店截止时间为9月1日04:59；起始按维护预计结束时间记录。"
+    sources:
+      - "https://www.taptap.cn/moment/837302936542382367"

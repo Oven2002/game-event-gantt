@@ -76,3 +76,21 @@ events:
     related: ["s1"]
     sources:
       - https://world.qq.com/web202603/newsDetail.html?newsid=18833905
+
+  - id: maintenance-2026-08-13-multiplayer
+    name: "8月13日多人玩法临时维护"
+    type: maintenance
+    start: "2026-08-13T05:00:00+08:00"
+    end: "2026-08-13T08:00:00+08:00"
+    note: "以8月13日不停服更新公告为准；多人玩法维护预计08:00结束，覆盖基线中的08:30预估。"
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18834374"
+
+  - id: dream-tales-super-five-match
+    name: "「梦行奇谭」超凡·五匹配开放"
+    type: event
+    start: "2026-08-20T00:00:00+08:00"
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18834374"

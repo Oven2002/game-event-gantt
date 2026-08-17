@@ -154,3 +154,35 @@ events:
     end: "2026-05-21T04:00:00+08:00"
     sources:
       - https://www.bilibili.com/opus/1199285491912933429
+
+  - id: event-mingding-huazhong-0814
+    name: "限时活动「命定花种」（魔力猫/水灵/火神）"
+    type: event
+    start: "2026-08-14T04:00:00+08:00"
+    end: "2026-08-28T04:00:00+08:00"
+    sources:
+      - "https://www.taptap.cn/moment/837392722493965759"
+
+  - id: event-pika-sheying-0814
+    name: "限时活动「皮卡摄影委托」（魔力猫/水灵/火神）"
+    type: event
+    start: "2026-08-14T04:00:00+08:00"
+    end: "2026-08-28T04:00:00+08:00"
+    sources:
+      - "https://www.taptap.cn/moment/837391091589187258"
+
+  - id: event-xingguangduijue-0817
+    name: "每周「星光对决」（嘉宾：商会老资历「博得」）"
+    type: event
+    start: "2026-08-17T04:00:00+08:00"
+    end: "2026-08-24T04:00:00+08:00"
+    sources:
+      - "https://www.taptap.cn/moment/838440123405175588"
+
+  - id: event-jisu-duijue-0817
+    name: "「极速对决」（精灵3v3：最初的伙伴）"
+    type: event
+    start: "2026-08-17T04:00:00+08:00"
+    end: "2026-08-31T04:00:00+08:00"
+    sources:
+      - "https://www.taptap.cn/app/188212/topic?type=official"
