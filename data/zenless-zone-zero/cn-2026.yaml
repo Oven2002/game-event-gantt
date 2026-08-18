@@ -212,3 +212,32 @@ events:
     related: ["3.1"]
     sources:
       - "https://zenless.hoyoverse.com/zh-cn/news/165737"
+
+  - id: event-shiyu-defense-3-1
+    name: "式舆防卫战（3.1周期）"
+    type: event
+    lifecycle: permanent
+    cadence: rotating
+    start: "2026-07-29T11:00:00+08:00"
+    end: "2026-09-09T06:00:00+08:00"
+    periods:
+      - start: "2026-07-29T11:00:00+08:00"
+        end: "2026-09-09T06:00:00+08:00"
+    note: "3.1更新公告列出剧变节点第一至第三期，增益效果按期轮换"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+  - id: event-dangerous-assault-3-1
+    name: "危局强袭战（3.1周期）"
+    type: event
+    lifecycle: permanent
+    cadence: rotating
+    start: "2026-07-29T11:00:00+08:00"
+    end: "2026-09-09T06:00:00+08:00"
+    periods:
+      - start: "2026-07-29T11:00:00+08:00"
+        end: "2026-09-09T06:00:00+08:00"
+    note: "3.1更新公告列出第一至第三期敌人阵容，具体分期边界未单独公布"
+    related: ["3.1"]
+    sources:
+      - "https://zenless.hoyoverse.com/zh-cn/news/165414"

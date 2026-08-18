@@ -45,6 +45,8 @@ events:
   - id: event-xianjie-shiz
     name: "限界挑战：狮子座"
     type: event
+    lifecycle: permanent
+    cadence: rotating
     start: "2026-08-01T00:00:00+08:00"
     end: "2026-08-31T23:59:00+08:00"
     sources:
@@ -52,6 +54,8 @@ events:
   - id: event-shijie-you
     name: "世界巡游（2026年8月期）"
     type: event
+    lifecycle: limited
+    cadence: recurring
     start: "2026-08-01T00:00:00+08:00"
     end: "2026-09-30T23:59:00+08:00"
     note: "本期基础奖励角色：诺菈·META"

@@ -69,6 +69,8 @@ events:
   - id: event-mojie
     name: "剿灭作战关卡【默祷圣祠】追加"
     type: event
+    lifecycle: permanent
+    cadence: rotating
     start: "2026-07-27T04:00:00+08:00"
     end: "2026-10-26T03:59:00+08:00"
     sources:
@@ -216,3 +218,18 @@ events:
     end: "2026-09-05T03:59:00+08:00"
     sources:
       - "https://ak.hypergryph.com/news/7369"
+
+  - id: event-crisis-contract-4
+    name: "危机合约#4「弧光作战」"
+    type: event
+    lifecycle: limited
+    cadence: recurring
+    start: "2026-08-14T16:00:00+08:00"
+    end: "2026-08-28T03:59:00+08:00"
+    periods:
+      - start: "2026-08-14T16:00:00+08:00"
+        end: "2026-08-28T03:59:00+08:00"
+    note: "危机合约系列周期复开；本期为限时窗口，系列固定复开周期未由本公告明确"
+    sources:
+      - "https://ak.hypergryph.com/news/5133"
+      - "https://ak.hypergryph.com/news/3065"
