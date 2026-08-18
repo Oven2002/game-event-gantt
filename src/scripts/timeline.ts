@@ -365,13 +365,13 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
     const segments = event.periods.length
       ? event.periods.map((period) => ({ ...event, start: period.start, end: period.end, periods: [period] }))
       : [event];
-    const lifecycleLabel = event.lifecycle === "permanent" && event.cadence === "rotating"
-      ? "常驻轮换"
-      : event.lifecycle === "limited" && event.cadence === "recurring"
-        ? "周期重复"
-        : event.lifecycle === "limited"
-          ? "限时活动"
-          : undefined;
+    const lifecycleLabel = event.typeId === "event"
+      ? event.lifecycle === "permanent" && event.cadence === "rotating"
+        ? "常驻轮换"
+        : event.lifecycle === "limited" && event.cadence === "recurring"
+          ? "周期重复"
+          : "限时活动"
+      : undefined;
     rows.push({
       label: event.name,
       type: lifecycleLabel ? `${event.typeName} · ${lifecycleLabel}` : event.typeName,
