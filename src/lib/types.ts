@@ -14,6 +14,9 @@ export interface TimelineItem {
   typeName: string;
   start: number;
   end?: number;
+  periods: Array<{ start: number; end: number }>;
+  lifecycle?: "limited" | "permanent";
+  cadence?: "one_off" | "rotating" | "recurring";
   related: string[];
   url?: string;
   sources: string[];

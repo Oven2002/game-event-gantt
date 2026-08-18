@@ -32,7 +32,6 @@ const eventTypesSchema = z.object({
 const commonItemFields = {
   id: z.string().regex(entryId, "必须以小写字母或数字开头，只能包含小写字母、数字、点、下划线和连字符"),
   name: z.string().trim().min(1),
-  start: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00"),
   url: httpUrl.optional(),
   sources: z.array(httpUrl).min(1, "至少提供一个来源链接"),
   note: z.string().trim().min(1).optional(),
@@ -40,16 +39,32 @@ const commonItemFields = {
 
 const versionSchema = z.object({
   ...commonItemFields,
+  start: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00"),
+  end: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00"),
+}).strict();
+
+const periodSchema = z.object({
+  start: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00"),
   end: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00"),
 }).strict();
 
 const eventSchema = z.object({
   ...commonItemFields,
+  start: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00").optional(),
   type: z.string().regex(machineId),
   priority: z.number().int().optional(),
   end: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00").optional(),
   related: z.array(z.string().regex(entryId)).optional(),
-}).strict();
+  lifecycle: z.enum(["limited", "permanent"]).optional(),
+  cadence: z.enum(["one_off", "rotating", "recurring"]).optional(),
+  periods: z.array(periodSchema).min(1).optional(),
+}).strict().refine(
+  (value) => value.start !== undefined || value.periods !== undefined,
+  { message: "必须提供 start，或提供 periods" },
+).refine(
+  (value) => value.type === "event" || (value.lifecycle === undefined && value.cadence === undefined && value.periods === undefined),
+  { message: "lifecycle、cadence、periods 只允许用于 type: event" },
+);
 
 const dataFileSchema = z.object({
   game: z.string().regex(machineId),
@@ -134,14 +149,43 @@ function normalizeItem(
   eventTypeMap: Map<string, string>,
   issues: string[],
 ): TimelineItem | undefined {
+  const event = kind === "event" ? raw as ParsedEvent : undefined;
+  const rawPeriods = event?.periods;
+  const firstStart = raw.start ?? rawPeriods?.[0]?.start;
+  if (!firstStart) {
+    issues.push(`${sourceFile} [${kind}.${raw.id}]: 缺少 start 或 periods`);
+    return undefined;
+  }
   let start: number;
   let end: number | undefined;
   try {
-    start = parseBeijingTimestamp(raw.start);
+    start = parseBeijingTimestamp(firstStart);
     end = raw.end ? parseBeijingTimestamp(raw.end) : undefined;
   } catch (error) {
     issues.push(`${sourceFile} [${kind}.${raw.id}]: ${error instanceof Error ? error.message : String(error)}`);
     return undefined;
+  }
+  const periods: Array<{ start: number; end: number }> = [];
+  if (rawPeriods) {
+    for (const period of rawPeriods) {
+      try {
+        const periodStart = parseBeijingTimestamp(period.start);
+        const periodEnd = parseBeijingTimestamp(period.end);
+        if (periodEnd <= periodStart) {
+          issues.push(`${sourceFile} [${kind}.${raw.id}.periods]: end 必须晚于 start`);
+        } else {
+          periods.push({ start: periodStart, end: periodEnd });
+        }
+      } catch (error) {
+        issues.push(`${sourceFile} [${kind}.${raw.id}.periods]: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+  } else if (end !== undefined) {
+    periods.push({ start, end });
+  }
+  if (periods.length) {
+    start = Math.min(...periods.map((period) => period.start));
+    end = Math.max(...periods.map((period) => period.end));
   }
   if (end !== undefined && end <= start) {
     issues.push(`${sourceFile} [${kind}.${raw.id}.end]: end 必须晚于 start`);
@@ -160,11 +204,14 @@ function normalizeItem(
     typeName: typeName ?? typeId,
     start,
     end,
-    related: kind === "event" ? ((raw as ParsedEvent).related ?? []) : [],
+    periods,
+    lifecycle: event?.lifecycle,
+    cadence: event?.cadence,
+    related: event?.related ?? [],
     url: raw.url,
     sources: raw.sources,
     note: raw.note,
-    priority: kind === "event" ? (raw as ParsedEvent).priority : undefined,
+    priority: event?.priority,
     sourceFile,
   };
 }

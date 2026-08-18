@@ -160,6 +160,7 @@ events:
   - id: event-migong
     name: "迷宫诡域：贝果计划（常驻玩法开启）"
     type: event
+    lifecycle: permanent
     start: "2026-08-05T10:00:00+08:00"
     note: 常驻玩法，官方仅给开启时刻
     related: ["3.1"]
