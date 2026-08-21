@@ -191,3 +191,18 @@ events:
     related: ["1.4"]
     sources:
       - "https://endfield.hypergryph.com/news/9335"
+  - id: preview-1-5-xuedongyoumeng
+    name: 「雪凇幽梦」版本前瞻特别节目
+    type: preview
+    start: "2026-08-21T19:30:00+08:00"
+    sources:
+      - "https://www.bilibili.com/video/BV1VQ8i6uEr4/"
+    note: 官方B站账号发布的前瞻预告；未将其错误关联到尚未入库的 1.5 版本。
+  - id: event-preview-reward-xuedongyoumeng
+    name: 「雪凇幽梦」版本前瞻感谢奖励领取窗口
+    type: event
+    start: "2026-08-21T19:30:00+08:00"
+    end: "2026-09-04T19:30:00+08:00"
+    sources:
+      - "https://www.bilibili.com/video/BV1VQ8i6uEr4/"
+    note: 官方B站简介写明 09月04日19:30 前登录可领取；邮件有效期14天。

@@ -140,3 +140,65 @@ events:
     note: "官方公告明确为连续五期复刻的第五期；兑换商店截止2026-08-21 04:59。"
     sources:
       - "https://love.qq.com/m/web202106/newsdetail.html?newsid=e988be3c-3bb2-4806-b2f9-5db4e861482d"
+  - id: event-zhengwu-shi
+    name: 查理苏生日活动「正午诗」
+    type: event
+    start: "2026-07-20T05:00:00+08:00"
+    end: "2026-07-28T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=5f353efa-c7f6-4103-a690-8f196367d754"
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=51d7079c-b5e0-4736-a04c-ae9e1dfdc7a5"
+  - id: event-changye-zhenyi
+    name: 倾慕铭章挑战「长夜振翼」
+    type: event
+    start: "2026-07-20T05:00:00+08:00"
+    end: "2026-07-28T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=5f353efa-c7f6-4103-a690-8f196367d754"
+  - id: event-design-column-23
+    name: 设计专栏·第二十三期
+    type: event
+    start: "2026-07-29T05:00:00+08:00"
+    end: "2026-09-12T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=79ce950d-68cc-4b1d-b1a0-82365a81cdf8"
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=10a99a58-2c97-4f35-8189-bc973f7bf37d"
+    note: 奖励领取截止为 2026-09-19 04:59，活动窗口按官方开启/结束时间记录。
+  - id: event-waipo-shop-double-drop-2026-08
+    name: 外婆小铺·双倍掉落
+    type: event
+    start: "2026-08-01T05:00:00+08:00"
+    end: "2026-08-03T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=79ce950d-68cc-4b1d-b1a0-82365a81cdf8"
+  - id: event-huakai-fuguan
+    name: 限时活动「花开富罐」
+    type: event
+    start: "2026-08-06T05:00:00+08:00"
+    end: "2026-08-19T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=20fec47e-7903-40c4-a81f-c42a209868dd"
+  - id: event-suguang-manyou
+    name: 活动商店「溯光漫游」
+    type: event
+    start: "2026-08-06T05:00:00+08:00"
+    end: "2026-08-28T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=213bdaa9-3054-4b6e-8074-631f89926ef1"
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=20fec47e-7903-40c4-a81f-c42a209868dd"
+  - id: event-xinrui-jili
+    name: 「新蕊寄礼」三阶段活动
+    type: event
+    start: "2026-08-06T05:00:00+08:00"
+    end: "2026-08-28T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=213bdaa9-3054-4b6e-8074-631f89926ef1"
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=20fec47e-7903-40c4-a81f-c42a209868dd"
+  - id: event-micheng-yangcheng-fanli
+    name: 「迷城无间」限时养成返利
+    type: event
+    start: "2026-08-16T05:00:00+08:00"
+    end: "2026-08-28T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=7dcfd730-23e8-4762-9c55-28fc89383ed5"
+    note: 返还素材领取窗口另为 8月28日05:00 至 9月10日04:59。
