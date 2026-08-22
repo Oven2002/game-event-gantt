@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { parse } from "yaml";
 import { z } from "zod";
-import type { NamedId, TimelineGroup, TimelineItem, TimelinePayload } from "./types.ts";
+import type { EventSubtype, NamedId, TimeCertainty, TimelineGroup, TimelineItem, TimelinePayload } from "./types.ts";
 
 const machineId = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const entryId = /^[a-z0-9][a-z0-9._-]*$/;
@@ -29,12 +29,18 @@ const eventTypesSchema = z.object({
   types: z.array(namedMachineIdSchema).min(1),
 }).strict();
 
+const timeCertaintySchema = z.object({
+  start: z.enum(["confirmed", "inferred", "estimated", "unknown"]),
+  end: z.enum(["confirmed", "inferred", "estimated", "unknown"]).optional(),
+}).strict();
+
 const commonItemFields = {
   id: z.string().regex(entryId, "必须以小写字母或数字开头，只能包含小写字母、数字、点、下划线和连字符"),
   name: z.string().trim().min(1),
   url: httpUrl.optional(),
   sources: z.array(httpUrl).min(1, "至少提供一个来源链接"),
   note: z.string().trim().min(1).optional(),
+  timeCertainty: timeCertaintySchema.optional(),
 };
 
 const versionSchema = z.object({
@@ -48,6 +54,13 @@ const periodSchema = z.object({
   end: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00"),
 }).strict();
 
+const subtypeSchema = z.enum([
+  "main_event", "login_reward", "web_event", "collaboration", "story", "shop", "exchange",
+  "challenge", "season", "competition", "creator_campaign", "permanent_content",
+  "character", "weapon", "standard", "outfit", "mixed", "scheduled", "hotfix",
+  "non_downtime", "preload", "special_program", "livestream", "pv", "announcement",
+]);
+
 const eventSchema = z.object({
   ...commonItemFields,
   start: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00").optional(),
@@ -58,12 +71,22 @@ const eventSchema = z.object({
   lifecycle: z.enum(["limited", "permanent"]).optional(),
   cadence: z.enum(["one_off", "rotating", "recurring"]).optional(),
   periods: z.array(periodSchema).min(1).optional(),
+  subtype: subtypeSchema.optional(),
 }).strict().refine(
   (value) => value.start !== undefined || value.periods !== undefined,
   { message: "必须提供 start，或提供 periods" },
 ).refine(
   (value) => value.type === "event" || (value.lifecycle === undefined && value.cadence === undefined && value.periods === undefined),
   { message: "lifecycle、cadence、periods 只允许用于 type: event" },
+).refine(
+  (value) => value.timeCertainty?.end === undefined || value.end !== undefined,
+  { message: "timeCertainty.end 只有在提供 end 时才允许使用" },
+).refine(
+  (value) => {
+    const certainty = value.timeCertainty;
+    return !certainty || ![certainty.start, certainty.end].some((item) => item === "inferred" || item === "estimated") || value.note !== undefined;
+  },
+  { message: "inferred 或 estimated 时间必须提供 note 说明依据" },
 );
 
 const dataFileSchema = z.object({
@@ -102,8 +125,8 @@ export function parseBeijingTimestamp(value: string): number {
   const daysInMonth = month >= 1 && month <= 12
     ? new Date(Date.UTC(year, month, 0)).getUTCDate()
     : 0;
-  // JS 会把 0000-0099 年份静默解释为 1900-1999（Date.parse 的世纪回退），
-  // 必须显式拒绝，否则错误数据会通过校验。
+  // JavaScript silently interprets years 0000-0099 as 1900-1999 in Date APIs.
+  // Reject them explicitly so invalid data cannot pass validation.
   if (year < 1970 || day < 1 || day > daysInMonth || hour > 23 || minute > 59) {
     throw new Error("日期或时间数值无效");
   }
@@ -112,8 +135,8 @@ export function parseBeijingTimestamp(value: string): number {
   return timestamp;
 }
 
-// 解析失败时返回 undefined 并把语法错误写入 issues；调用方应跳过 schema 校验，
-// 避免同一个文件同时报「YAML 语法错误」和「expected object」两条重复错误。
+// Return undefined on parse failure and record the syntax error in issues.
+// Callers should skip schema validation to avoid duplicate YAML/object errors.
 function readYaml(file: string, issues: string[]): unknown {
   try {
     return parse(fs.readFileSync(file, "utf8"));
@@ -184,6 +207,9 @@ function normalizeItem(
     periods.push({ start, end });
   }
   if (periods.length) {
+    // Keep the top-level start/end as the envelope around every period so
+    // chart sizing and detail rows stay stable; filtering and status use the
+    // individual periods instead (see statusAt).
     start = Math.min(...periods.map((period) => period.start));
     end = Math.max(...periods.map((period) => period.end));
   }
@@ -207,6 +233,10 @@ function normalizeItem(
     periods,
     lifecycle: event?.lifecycle,
     cadence: event?.cadence,
+    subtype: event?.subtype as EventSubtype | undefined,
+    // Default to "unknown" rather than "confirmed": legacy files were written
+    // before certainty existed, so assuming official confirmation would be wrong.
+    timeCertainty: (raw.timeCertainty ?? { start: "unknown" }) as { start: TimeCertainty; end?: TimeCertainty },
     related: event?.related ?? [],
     url: raw.url,
     sources: raw.sources,

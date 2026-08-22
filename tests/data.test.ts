@@ -89,6 +89,43 @@ describe("状态边界", () => {
     expect(statusAt({ start: 1000 }, 999)).toBe("upcoming");
     expect(statusAt({ start: 1000 }, 1000)).toBe("ended");
   });
+
+  it("按 periods 的实际区段判断状态，不把中间空窗算作进行中", () => {
+    const item = {
+      start: 1000,
+      end: 4000,
+      periods: [{ start: 1000, end: 2000 }, { start: 3000, end: 4000 }],
+    };
+
+    expect(statusAt(item, 2500)).toBe("upcoming");
+    expect(statusAt(item, 3500)).toBe("ongoing");
+    expect(statusAt(item, 4000)).toBe("ended");
+  });
+});
+
+describe("扩展数据语义", () => {
+  it("解析 timeCertainty 和 subtype", () => {
+    const root = fixture("", `events:\n  - id: demo-event\n    name: 示例活动\n    type: event\n    subtype: web_event\n    start: "2026-08-20T04:00:00+08:00"\n    end: "2026-08-21T04:00:00+08:00"\n    timeCertainty:\n      start: inferred\n      end: confirmed\n    note: 开始时间根据官方更新后开放时间推定。\n    sources:\n      - https://example.com/event\n`);
+
+    const event = loadTimelineData(root).groups[0].events[0];
+    expect(event.subtype).toBe("web_event");
+    expect(event.timeCertainty).toEqual({ start: "inferred", end: "confirmed" });
+  });
+
+  it("普通常驻内容拥有 permanent 生命周期但没有 rotating cadence", () => {
+    const root = fixture("", `events:\n  - id: permanent-event\n    name: 常驻内容\n    type: event\n    start: "2026-08-20T04:00:00+08:00"\n    lifecycle: permanent\n    sources:\n      - https://example.com/event\n`);
+
+    const event = loadTimelineData(root).groups[0].events[0];
+    expect(event.lifecycle).toBe("permanent");
+    expect(event.cadence).toBeUndefined();
+  });
+
+  it.each([
+    ["end 可信度没有 end", `events:\n  - id: invalid-end-certainty\n    name: 无效结束可信度\n    type: event\n    start: "2026-08-20T04:00:00+08:00"\n    timeCertainty:\n      start: confirmed\n      end: estimated\n    sources:\n      - https://example.com/event\n`],
+    ["推定时间没有 note", `events:\n  - id: invalid-inferred\n    name: 无说明推定时间\n    type: event\n    start: "2026-08-20T04:00:00+08:00"\n    timeCertainty:\n      start: inferred\n    sources:\n      - https://example.com/event\n`],
+  ])("拒绝%s", (_label, eventBlock) => {
+    expect(() => loadTimelineData(fixture("", eventBlock))).toThrow(DataValidationError);
+  });
 });
 
 describe("时间轴当前时间定位", () => {

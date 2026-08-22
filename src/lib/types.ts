@@ -1,10 +1,21 @@
 export type TimelineStatus = "upcoming" | "ongoing" | "ended";
+export type TimeCertainty = "confirmed" | "inferred" | "estimated" | "unknown";
+export type EventSubtype =
+  | "main_event" | "login_reward" | "web_event" | "collaboration" | "story"
+  | "shop" | "exchange" | "challenge" | "season" | "competition"
+  | "creator_campaign" | "permanent_content"
+  | "character" | "weapon" | "standard" | "outfit" | "mixed"
+  | "scheduled" | "hotfix" | "non_downtime" | "preload"
+  | "special_program" | "livestream" | "pv" | "announcement";
 
 export interface NamedId {
   id: string;
   name: string;
 }
 
+// All timestamps are Unix milliseconds. Intervals are half-open: a period
+// includes its start and excludes its end, matching maintenance/release
+// boundaries (e.g. "until 04:00" means 03:59 is still active).
 export interface TimelineItem {
   key: string;
   id: string;
@@ -17,6 +28,8 @@ export interface TimelineItem {
   periods: Array<{ start: number; end: number }>;
   lifecycle?: "limited" | "permanent";
   cadence?: "one_off" | "rotating" | "recurring";
+  subtype?: EventSubtype;
+  timeCertainty?: { start: TimeCertainty; end?: TimeCertainty };
   related: string[];
   url?: string;
   sources: string[];
@@ -40,7 +53,16 @@ export interface TimelinePayload {
   bounds: { start: number; end: number };
 }
 
-export function statusAt(item: Pick<TimelineItem, "start" | "end">, now: number): TimelineStatus {
+// Status is derived per-period when the item has multiple periods: active
+// inside any period, upcoming while a future period exists (including gaps
+// between periods), and ended only after the last period. Without explicit
+// periods, the single start/end window is treated as the only period.
+export function statusAt(item: Pick<TimelineItem, "start" | "end"> & { periods?: Array<{ start: number; end: number }> }, now: number): TimelineStatus {
+  if (item.periods?.length) {
+    if (item.periods.some((period) => now >= period.start && now < period.end)) return "ongoing";
+    if (item.periods.some((period) => now < period.start)) return "upcoming";
+    return "ended";
+  }
   if (now < item.start) return "upcoming";
   if (item.end === undefined || now >= item.end) return "ended";
   return "ongoing";

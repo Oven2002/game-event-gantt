@@ -27,6 +27,20 @@ const STATUS_NAMES: Record<TimelineStatus, string> = {
   ongoing: "进行中",
   ended: "已结束",
 };
+const TIME_CERTAINTY_NAMES = {
+  confirmed: "官方确认",
+  inferred: "根据官方信息推定",
+  estimated: "估算",
+  unknown: "尚未复核",
+} as const;
+const SUBTYPE_NAMES: Record<string, string> = {
+  main_event: "主活动", login_reward: "登录奖励", web_event: "网页活动", collaboration: "联动",
+  story: "剧情内容", shop: "商店", exchange: "兑换", challenge: "挑战", season: "赛季",
+  competition: "竞赛", creator_campaign: "创作征集", permanent_content: "常驻内容",
+  character: "角色卡池", weapon: "武器卡池", standard: "常驻卡池", outfit: "服装卡池", mixed: "混合卡池",
+  scheduled: "计划维护", hotfix: "热修复", non_downtime: "不停服更新", preload: "资源预载",
+  special_program: "前瞻特别节目", livestream: "直播", pv: "PV", announcement: "公告",
+};
 
 function requiredElement<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -169,6 +183,12 @@ function showDetail(group: TimelineGroup, item: TimelineItem): void {
   addRow("状态", pill);
   addRow("开始", formatBeijingDate(item.start));
   if (item.end !== undefined) addRow("结束", formatBeijingDate(item.end));
+  if (item.subtype) addRow("子类型", SUBTYPE_NAMES[item.subtype] ?? item.subtype);
+  const certaintyInfo = item.timeCertainty ?? { start: "unknown" as const };
+  const certainty = certaintyInfo.start === certaintyInfo.end || certaintyInfo.end === undefined
+    ? TIME_CERTAINTY_NAMES[certaintyInfo.start]
+    : `开始：${TIME_CERTAINTY_NAMES[certaintyInfo.start]}；结束：${TIME_CERTAINTY_NAMES[certaintyInfo.end]}`;
+  if (certaintyInfo.start !== "unknown" || certaintyInfo.end !== undefined && certaintyInfo.end !== "unknown") addRow("时间可信度", certainty);
   if (item.related.length) {
     const names = new Map(group.versions.map((version) => [version.id, version.name]));
     addRow("关联版本", item.related.map((id) => names.get(id) ?? id).join("、"));
@@ -232,8 +252,8 @@ function zoomAt(factor: number, anchor = (domainStart + domainEnd) / 2): void {
 }
 
 function scheduleRender(): void {
-  // 拖拽/捏合期间图表 DOM 正在被手指操作，全量重建会打断手势并丢失
-  // pointer capture。把重建推迟到手势结束后统一执行。
+  // During drag/pinch gestures the chart DOM is being manipulated. Rebuilding it
+  // would interrupt the gesture and lose pointer capture, so defer the rebuild.
   if (activePointers > 0) {
     renderDeferred = true;
     return;
@@ -368,7 +388,9 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
     const lifecycleLabel = event.typeId === "event"
       ? event.lifecycle === "permanent" && event.cadence === "rotating"
         ? "常驻轮换"
-        : event.lifecycle === "limited" && event.cadence === "recurring"
+        : event.lifecycle === "permanent"
+          ? "常驻内容"
+          : event.lifecycle === "limited" && event.cadence === "recurring"
           ? "周期重复"
           : "限时活动"
       : undefined;
@@ -625,13 +647,13 @@ function render(): void {
 
 restoreFilterPreferences();
 
-// ── Hover/focus 增强：筛选菜单鼠标放上去即展开，移开自动关闭 ──────────
-// 仅在精确指针设备（鼠标）上启用；触屏设备保留原生 <details> 点击行为
+// ── Hover/focus enhancement: open filter menus on hover and close on exit ─────
+// Enable this only for fine-pointer devices; touch devices keep native <details> behavior.
 (function enhanceFilterMenus(): void {
   if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
   document.querySelectorAll<HTMLDetailsElement>(".filter-menu").forEach((menu) => {
-    // 接管开关权，避免原生 click toggle 与 hover 状态打架
+    // Take over toggle behavior so native click handling does not fight hover state.
     menu.querySelector("summary")?.addEventListener("click", (e) => e.preventDefault());
 
     let openTimer: number | undefined;

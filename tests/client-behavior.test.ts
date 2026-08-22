@@ -2,9 +2,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TimelinePayload } from "../src/lib/types";
 
-// ── DOM 与浏览器 API 的轻量替身 ────────────────────────────────────────────
-// jsdom 没有布局引擎和指针捕获，这里只补齐时间轴脚本实际用到的能力：
-// matchMedia 返回「非悬停设备」以跳过 hover 菜单增强，rAF 用手动队列精确推进。
+// ── Lightweight DOM and browser API shims ───────────────────────────────────
+// jsdom has no layout engine or pointer capture. These shims cover only the
+// APIs used by the timeline: matchMedia disables hover enhancement and rAF uses
+// a manually controlled queue for deterministic progression.
 
 let rafQueue: FrameRequestCallback[];
 
@@ -67,6 +68,7 @@ function timelinePayloadFixture(): TimelinePayload {
         start: Date.now() + 3_600_000,
         end: Date.now() + 10_800_000,
         periods: [{ start: Date.now() + 3_600_000, end: Date.now() + 10_800_000 }],
+        lifecycle: "permanent",
         related: ["v1"],
         sources: ["https://example.com/e1"],
         sourceFile: "demo/cn.yaml",
@@ -118,6 +120,7 @@ describe("时间轴客户端行为", () => {
 
     expect(document.querySelectorAll(".timeline-group")).toHaveLength(1);
     expect(document.querySelector<SVGSVGElement>(".gantt-svg")).toBeTruthy();
+    expect(document.body.textContent).toContain("常驻内容");
 
     document.querySelector<SVGElement>(".item-shape")!.dispatchEvent(
       new MouseEvent("click", { bubbles: true }),
@@ -132,7 +135,7 @@ describe("时间轴客户端行为", () => {
   it("筛选变化写入偏好并在动画帧合并重渲染", async () => {
     installTimelineFixture(timelinePayloadFixture());
     await import("../src/scripts/timeline");
-    // 排空初始渲染留下的滚动恢复回调，让队列里只剩筛选触发的重渲染
+    // Drain the initial scroll-restoration callback so only the filter render remains.
     flushFrames(1);
 
     const input = document.querySelector<HTMLInputElement>('[data-filter="game"] input')!;
@@ -150,7 +153,7 @@ describe("时间轴客户端行为", () => {
   it("拖拽期间推迟重建，手势结束后补渲染", async () => {
     installTimelineFixture(timelinePayloadFixture());
     await import("../src/scripts/timeline");
-    // 排空初始渲染留下的滚动恢复回调
+    // Drain the initial scroll-restoration callback.
     flushFrames(1);
 
     const chart = document.querySelector<SVGSVGElement>(".gantt-svg")!;
@@ -166,7 +169,7 @@ describe("时间轴客户端行为", () => {
     input.checked = false;
     input.dispatchEvent(new Event("change", { bubbles: true }));
     flushFrames(1);
-    // 手势未结束，图表 DOM 必须保持原样
+    // The chart DOM must remain unchanged while the gesture is active.
     expect(document.querySelector(".gantt-svg")).toBe(chart);
 
     chart.dispatchEvent(pointerEvent("pointerup", 160));
@@ -211,7 +214,8 @@ describe("樱花特效客户端行为", () => {
     flushFrames(3);
 
     expect(drawCalls).toBeGreaterThan(0);
-    // 粒子最多 20 个，渐变按尺寸缓存后新建的 sprite 不会超过粒子数
+    // With at most 20 particles, size-based gradient caching must not create
+    // more sprites than the particle count.
     expect(gradientCalls).toBeLessThanOrEqual(20);
 
     const toggle = document.querySelector<HTMLButtonElement>("[data-effect-toggle]")!;
