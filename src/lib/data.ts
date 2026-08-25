@@ -8,7 +8,7 @@ const machineId = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const entryId = /^[a-z0-9][a-z0-9._-]*$/;
 const beijingTime = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):00\+08:00$/;
 
-const httpUrl = z.url().refine((value) => {
+export const httpUrl = z.url().refine((value) => {
   const protocol = new URL(value).protocol;
   return protocol === "http:" || protocol === "https:";
 }, "必须是 HTTP(S) URL");
@@ -25,7 +25,7 @@ const metaSchema = z.object({
   regions: z.array(namedMachineIdSchema).min(1),
 }).strict();
 
-const eventTypesSchema = z.object({
+export const eventTypesSchema = z.object({
   types: z.array(namedMachineIdSchema).min(1),
 }).strict();
 
@@ -43,7 +43,7 @@ const commonItemFields = {
   timeCertainty: timeCertaintySchema.optional(),
 };
 
-const versionSchema = z.object({
+export const versionSchema = z.object({
   ...commonItemFields,
   start: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00"),
   end: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00"),
@@ -54,14 +54,14 @@ const periodSchema = z.object({
   end: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00"),
 }).strict();
 
-const subtypeSchema = z.enum([
+export const subtypeSchema = z.enum([
   "main_event", "login_reward", "web_event", "collaboration", "story", "shop", "exchange",
   "challenge", "season", "competition", "creator_campaign", "permanent_content",
   "character", "weapon", "standard", "outfit", "mixed", "scheduled", "hotfix",
   "non_downtime", "preload", "special_program", "livestream", "pv", "announcement",
 ]);
 
-const eventSchema = z.object({
+export const eventSchema = z.object({
   ...commonItemFields,
   start: z.string().regex(beijingTime, "必须为带引号的 YYYY-MM-DDTHH:mm:00+08:00").optional(),
   type: z.string().regex(machineId),
@@ -89,7 +89,7 @@ const eventSchema = z.object({
   { message: "inferred 或 estimated 时间必须提供 note 说明依据" },
 );
 
-const dataFileSchema = z.object({
+export const dataFileSchema = z.object({
   game: z.string().regex(machineId),
   region: z.string().regex(machineId),
   versions: z.array(versionSchema).optional(),
@@ -98,6 +98,10 @@ const dataFileSchema = z.object({
   (value) => (value.versions?.length ?? 0) + (value.events?.length ?? 0) > 0,
   { message: "versions 和 events 至少有一个非空集合" },
 );
+
+export type EventYamlValue = z.infer<typeof eventSchema>;
+export type VersionYamlValue = z.infer<typeof versionSchema>;
+export type DataFileYamlValue = z.infer<typeof dataFileSchema>;
 
 type ParsedMeta = z.infer<typeof metaSchema>;
 type ParsedVersion = z.infer<typeof versionSchema>;
