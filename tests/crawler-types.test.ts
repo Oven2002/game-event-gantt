@@ -5,6 +5,9 @@ import {
   NeedsReviewCandidateSchema,
   RawArticleSchema,
   ReadyEventCandidateSchema,
+  ApprovedManifestEntrySchema,
+  EventSelectionPatchSchema,
+  ReadyVersionCandidateSchema,
   sha256Schema,
 } from "../scripts/crawl/types.ts";
 import { eventSchema, eventTypesSchema, versionSchema } from "../src/lib/data.ts";
@@ -132,5 +135,114 @@ describe("crawler runtime schemas", () => {
 
     expect(ReadyEventCandidateSchema.safeParse(event).success).toBe(true);
     expect(ReadyEventCandidateSchema.safeParse({ ...event, subtype: "not-formal" }).success).toBe(false);
+  });
+
+  it("rejects ready candidates without sources", () => {
+    const base = {
+      game: "genshin-impact",
+      region: "cn" as const,
+      candidateKey: "genshin-impact/165690/event-1",
+      sourceId: "165690",
+      semanticSlot: "event-1",
+      rawRef: { runId: "20260825-102452", game: "genshin-impact", sourceId: "165690" },
+      sourceHash: "sha256:" + "b".repeat(64),
+      candidateHash: "sha256:" + "c".repeat(64),
+      name: "Event",
+      sources: [],
+      evidence: [],
+      review: "ready" as const,
+      reviewReasons: [],
+      kind: "event" as const,
+      type: "event",
+      start: "2026-08-25T10:00:00+08:00",
+      timeCertainty: { start: "confirmed" as const },
+    };
+
+    expect(ReadyEventCandidateSchema.safeParse(base).success).toBe(false);
+  });
+
+  it("rejects impossible Beijing timestamps", () => {
+    const candidate = {
+      game: "genshin-impact",
+      region: "cn",
+      candidateKey: "genshin-impact/165690/version-1",
+      sourceId: "165690",
+      semanticSlot: "version-1",
+      rawRef: { runId: "20260825-102452", game: "genshin-impact", sourceId: "165690" },
+      sourceHash: "sha256:" + "b".repeat(64),
+      candidateHash: "sha256:" + "c".repeat(64),
+      name: "Version",
+      sources: ["https://ys.mihoyo.com/main/news/detail/165690"],
+      evidence: [],
+      review: "ready",
+      reviewReasons: [],
+      kind: "version",
+      start: "2026-99-99T99:99:00+08:00",
+      end: "2026-12-31T23:59:00+08:00",
+      timeCertainty: { start: "confirmed" },
+    };
+
+    expect(ReadyVersionCandidateSchema.safeParse(candidate).success).toBe(false);
+  });
+
+  it("rejects patch fields that conflict with the manifest kind", () => {
+    const manifestEntry = {
+      candidateKey: "genshin-impact/165690/version-1",
+      candidateHash: "sha256:" + "a".repeat(64),
+      sourceHash: "sha256:" + "b".repeat(64),
+      game: "genshin-impact",
+      region: "cn",
+      operation: "update",
+      targetFile: "data/genshin-impact/cn-2026.yaml",
+      targetId: "version-1",
+      oldValueHash: "sha256:" + "d".repeat(64),
+      proposalHash: "sha256:" + "e".repeat(64),
+      kind: "version",
+      patch: { kind: "event", set: { priority: 1 }, unset: [] },
+      oldValue: null,
+      yamlValue: {
+        id: "version-1",
+        name: "Version",
+        start: "2026-08-25T00:00:00+08:00",
+        end: "2026-08-26T00:00:00+08:00",
+        sources: ["https://example.com/source"],
+      },
+    };
+
+    expect(ApprovedManifestEntrySchema.safeParse(manifestEntry).success).toBe(false);
+  });
+
+  it("rejects duplicate or overlapping patch fields", () => {
+    expect(EventSelectionPatchSchema.safeParse({
+      kind: "event",
+      set: { priority: 1 },
+      unset: ["priority"],
+    }).success).toBe(false);
+    expect(EventSelectionPatchSchema.safeParse({
+      kind: "event",
+      set: {},
+      unset: ["url", "url"],
+    }).success).toBe(false);
+  });
+
+  it("requires candidateKey and rawRef to match candidate identity", () => {
+    const candidate = {
+      game: "genshin-impact",
+      region: "cn",
+      candidateKey: "star-rail/other-source/event-1",
+      sourceId: "165690",
+      semanticSlot: "event-1",
+      rawRef: { runId: "20260825-102452", game: "star-rail", sourceId: "other-source" },
+      sourceHash: "sha256:" + "b".repeat(64),
+      candidateHash: "sha256:" + "c".repeat(64),
+      name: "Event",
+      sources: ["https://ys.mihoyo.com/main/news/detail/165690"],
+      evidence: [],
+      review: "needs_review",
+      reviewReasons: ["identity mismatch"],
+      kind: "unknown",
+    };
+
+    expect(NeedsReviewCandidateSchema.safeParse(candidate).success).toBe(false);
   });
 });

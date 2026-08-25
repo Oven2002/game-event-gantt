@@ -14,8 +14,27 @@ const entryIdPattern = /^[a-z0-9][a-z0-9._-]*$/;
 const candidateKeyPattern = /^[^/]+\/[^/]+\/[^/]+$/;
 const beijingTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\+08:00$/;
 
-export const sha256Schema = z.string().regex(/^sha256:[0-9a-f]{64}$/);
-const beijingTimestampSchema = z.string().regex(beijingTimestampPattern);
+export type Sha256 = string & { readonly __sha256: unique symbol };
+
+export const sha256Schema = z.string().regex(/^sha256:[0-9a-f]{64}$/).transform((value) => value as Sha256);
+const beijingTimestampSchema = z.string().regex(beijingTimestampPattern).superRefine((value, ctx) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):00\+08:00$/.exec(value);
+  if (!match) return;
+
+  const [, yearText, monthText, dayText, hourText, minuteText] = match;
+  const date = new Date(0);
+  date.setUTCFullYear(Number(yearText), Number(monthText) - 1, Number(dayText));
+  date.setUTCHours(Number(hourText), Number(minuteText), 0, 0);
+  if (
+    date.getUTCFullYear() !== Number(yearText)
+    || date.getUTCMonth() !== Number(monthText) - 1
+    || date.getUTCDate() !== Number(dayText)
+    || date.getUTCHours() !== Number(hourText)
+    || date.getUTCMinutes() !== Number(minuteText)
+  ) {
+    ctx.addIssue({ code: "custom", message: "必须是合法的北京时间" });
+  }
+});
 const readyTimeCertaintySchema = z.object({
   start: z.enum(["confirmed", "inferred", "estimated"]),
   end: z.enum(["confirmed", "inferred", "estimated"]).optional(),
@@ -30,7 +49,7 @@ export interface RawArticle {
   title: string;
   publishedAt: string | null;
   content: string;
-  contentHash: `sha256:${string}`;
+  contentHash: Sha256;
   fetchedAt: string;
 }
 
@@ -46,8 +65,8 @@ export interface CandidateBase {
   sourceId: string;
   semanticSlot: string;
   rawRef: { runId: string; game: string; sourceId: string };
-  sourceHash: `sha256:${string}`;
-  candidateHash: `sha256:${string}`;
+  sourceHash: Sha256;
+  candidateHash: Sha256;
   name: string;
   sources: string[];
   evidence: Evidence[];
@@ -115,46 +134,45 @@ export type EventSelectionPatch = {
 
 type ApprovedManifestEntryBase = {
   candidateKey: string;
-  candidateHash: `sha256:${string}`;
-  sourceHash: `sha256:${string}`;
+  candidateHash: Sha256;
+  sourceHash: Sha256;
   game: string;
   region: "cn";
   operation: "add" | "update";
   targetFile: string;
   targetId: string;
-  oldValueHash: `sha256:${string}` | null;
-  proposalHash: `sha256:${string}`;
-  patch: VersionSelectionPatch | EventSelectionPatch | null;
+  oldValueHash: Sha256 | null;
+  proposalHash: Sha256;
 };
 
 export type ApprovedManifestEntry =
-  | (ApprovedManifestEntryBase & { kind: "version"; oldValue: VersionYamlValue | null; yamlValue: VersionYamlValue })
-  | (ApprovedManifestEntryBase & { kind: "event"; oldValue: EventYamlValue | null; yamlValue: EventYamlValue });
+  | (ApprovedManifestEntryBase & { kind: "version"; patch: VersionSelectionPatch | null; oldValue: VersionYamlValue | null; yamlValue: VersionYamlValue })
+  | (ApprovedManifestEntryBase & { kind: "event"; patch: EventSelectionPatch | null; oldValue: EventYamlValue | null; yamlValue: EventYamlValue });
 
 type SelectionBase = {
   candidateKey: string;
-  candidateHash: `sha256:${string}`;
-  sourceHash: `sha256:${string}`;
+  candidateHash: Sha256;
+  sourceHash: Sha256;
   targetId: string;
   targetFile: string;
 };
 
 export type ApprovalSelectionItem =
   | (SelectionBase & { kind: "version"; operation: "add"; expectedOldValueHash: null; patch?: VersionSelectionPatch })
-  | (SelectionBase & { kind: "version"; operation: "update"; expectedOldValueHash: `sha256:${string}`; patch?: VersionSelectionPatch })
+  | (SelectionBase & { kind: "version"; operation: "update"; expectedOldValueHash: Sha256; patch?: VersionSelectionPatch })
   | (SelectionBase & { kind: "event"; operation: "add"; expectedOldValueHash: null; patch?: EventSelectionPatch })
-  | (SelectionBase & { kind: "event"; operation: "update"; expectedOldValueHash: `sha256:${string}`; patch?: EventSelectionPatch });
+  | (SelectionBase & { kind: "event"; operation: "update"; expectedOldValueHash: Sha256; patch?: EventSelectionPatch });
 
 export interface ApprovalSelectionTemplateItem {
   candidateKey: string;
-  candidateHash: `sha256:${string}`;
-  sourceHash: `sha256:${string}`;
+  candidateHash: Sha256;
+  sourceHash: Sha256;
   kind: "version" | "event";
   suggestedOperation?: "add" | "update";
   targetOptions: Array<{
     targetId: string;
     targetFile: string;
-    expectedOldValueHash: `sha256:${string}`;
+    expectedOldValueHash: Sha256;
     matchReasons: string[];
   }>;
   matchReasons: string[];
@@ -213,16 +231,28 @@ const candidateBaseSchema = z.object({
   reviewReasons: z.array(z.string()),
 }).strict();
 
+const candidateIdentityCheck = (value: z.infer<typeof candidateBaseSchema>, ctx: z.RefinementCtx) => {
+  const [keyGame, keySourceId, keySemanticSlot] = value.candidateKey.split("/");
+  if (keyGame !== value.game || keySourceId !== value.sourceId || keySemanticSlot !== value.semanticSlot) {
+    ctx.addIssue({ code: "custom", message: "candidateKey 必须与 game/sourceId/semanticSlot 一致" });
+  }
+  if (value.rawRef.game !== value.game || value.rawRef.sourceId !== value.sourceId) {
+    ctx.addIssue({ code: "custom", message: "rawRef 必须与 candidate 身份一致" });
+  }
+};
+
 export const ReadyVersionCandidateSchema = candidateBaseSchema.extend({
+  sources: z.array(httpUrl).min(1),
   kind: z.literal("version"),
   review: z.literal("ready"),
   start: beijingTimestampSchema,
   end: beijingTimestampSchema,
   timeCertainty: readyTimeCertaintySchema,
   note: z.string().min(1).optional(),
-}).strict();
+}).strict().superRefine(candidateIdentityCheck);
 
 export const ReadyEventCandidateSchema = candidateBaseSchema.extend({
+  sources: z.array(httpUrl).min(1),
   kind: z.literal("event"),
   review: z.literal("ready"),
   type: z.string().min(1),
@@ -234,13 +264,13 @@ export const ReadyEventCandidateSchema = candidateBaseSchema.extend({
   subtype: subtypeSchema.optional(),
   timeCertainty: readyTimeCertaintySchema,
   note: z.string().min(1).optional(),
-}).strict();
+}).strict().superRefine(candidateIdentityCheck);
 
 export const NeedsReviewCandidateSchema = candidateBaseSchema.extend({
   review: z.literal("needs_review"),
   kind: z.enum(["version", "event", "unknown"]),
   type: z.string().min(1).optional(),
-}).strict();
+}).strict().superRefine(candidateIdentityCheck);
 
 export const CandidateItemSchema = z.union([
   ReadyVersionCandidateSchema,
@@ -266,13 +296,27 @@ export const VersionSelectionPatchSchema = z.object({
   kind: z.literal("version"),
   set: z.object({ url: httpUrl.optional() }).strict(),
   unset: z.array(z.literal("url")),
-}).strict();
+}).strict().superRefine((value, ctx) => {
+  if (new Set(value.unset).size !== value.unset.length) {
+    ctx.addIssue({ code: "custom", message: "unset 不能包含重复字段" });
+  }
+  if (Object.keys(value.set).some((field) => value.unset.includes(field as "url"))) {
+    ctx.addIssue({ code: "custom", message: "set 与 unset 不能有交集" });
+  }
+});
 
 export const EventSelectionPatchSchema = z.object({
   kind: z.literal("event"),
   set: z.object({ url: httpUrl.optional(), priority: z.number().int().optional() }).strict(),
   unset: z.array(z.enum(["url", "priority"])),
-}).strict();
+}).strict().superRefine((value, ctx) => {
+  if (new Set(value.unset).size !== value.unset.length) {
+    ctx.addIssue({ code: "custom", message: "unset 不能包含重复字段" });
+  }
+  if (Object.keys(value.set).some((field) => value.unset.includes(field as "url" | "priority"))) {
+    ctx.addIssue({ code: "custom", message: "set 与 unset 不能有交集" });
+  }
+});
 
 const selectionBaseSchema = {
   candidateKey: z.string().min(1),
@@ -339,12 +383,11 @@ const approvedManifestEntryBaseSchema = {
   targetId: z.string().regex(entryIdPattern),
   oldValueHash: sha256Schema.nullable(),
   proposalHash: sha256Schema,
-  patch: z.union([VersionSelectionPatchSchema, EventSelectionPatchSchema]).nullable(),
 };
 
 export const ApprovedManifestEntrySchema = z.union([
-  z.object({ ...approvedManifestEntryBaseSchema, kind: z.literal("version"), oldValue: versionSchema.nullable(), yamlValue: versionSchema }).strict(),
-  z.object({ ...approvedManifestEntryBaseSchema, kind: z.literal("event"), oldValue: eventSchema.nullable(), yamlValue: eventSchema }).strict(),
+  z.object({ ...approvedManifestEntryBaseSchema, kind: z.literal("version"), patch: VersionSelectionPatchSchema.nullable(), oldValue: versionSchema.nullable(), yamlValue: versionSchema }).strict(),
+  z.object({ ...approvedManifestEntryBaseSchema, kind: z.literal("event"), patch: EventSelectionPatchSchema.nullable(), oldValue: eventSchema.nullable(), yamlValue: eventSchema }).strict(),
 ]);
 
 export const ApprovedManifestSchema = z.object({
