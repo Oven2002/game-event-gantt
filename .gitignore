@@ -3,5 +3,6 @@ dist/
 !/public/vendor/live2d-widget/dist/
 !/public/vendor/live2d-widget/dist/**
 .astro/
+.runtime/
 .DS_Store
 *.log
