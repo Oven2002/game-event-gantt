@@ -1,0 +1,167 @@
+import { describe, expect, it } from "vitest";
+import { canonicalJson, hashCanonicalJson, sha256Utf8, sourceHashProjection, candidateHashProjection, oldValueHashProjection } from "../scripts/crawl/common/hash.ts";
+import { appendJsonl, appendJsonlIfUnique, readJsonl, readJsonAtomic, writeJsonAtomic } from "../scripts/crawl/common/files.ts";
+import { CrawlerHttpError, fetchOfficial } from "../scripts/crawl/common/http.ts";
+import { loadState, writeStateAtomic, type CrawlerState } from "../scripts/crawl/common/state.ts";
+import type { Sha256 } from "../scripts/crawl/types.ts";
+
+const hash = (letter: string): Sha256 => `sha256:${letter.repeat(64)}` as Sha256;
+
+function response(body: string, init: ResponseInit = {}) {
+  return new Response(body, { status: 200, headers: { "content-type": "application/json" }, ...init });
+}
+
+describe("crawler hash and canonical JSON", () => {
+  it("sorts object keys recursively but preserves array order", () => {
+    expect(canonicalJson({ z: 1, a: { d: 2, c: 3 }, list: [{ b: 2, a: 1 }, 1] }))
+      .toBe('{"a":{"c":3,"d":2},"list":[{"a":1,"b":2},1],"z":1}');
+  });
+
+  it("produces stable SHA-256 values from UTF-8", () => {
+    expect(sha256Utf8("穹")).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect(hashCanonicalJson({ b: 2, a: 1 })).toBe(hashCanonicalJson({ a: 1, b: 2 }));
+  });
+
+  it("uses the fixed source projection and excludes fetch-local fields", () => {
+    const raw = {
+      game: "demo",
+      source: "official",
+      region: "cn" as const,
+      sourceId: "1",
+      url: "https://example.com/1",
+      title: "Notice",
+      publishedAt: null,
+      contentHash: hash("a"),
+      fetchedAt: "first",
+    };
+    expect(sourceHashProjection(raw)).not.toHaveProperty("fetchedAt");
+    const changed = { ...raw, fetchedAt: "second" };
+    expect(sourceHashProjection(raw)).toEqual(sourceHashProjection(changed));
+  });
+
+  it("uses the candidate projection without approval fields", () => {
+    const candidate = {
+      kind: "event",
+      game: "demo",
+      region: "cn",
+      candidateKey: "demo/1/event-1",
+      sourceId: "1",
+      semanticSlot: "event-1",
+      name: "Event",
+      type: "event",
+      start: "2026-08-25T10:00:00+08:00",
+      sources: ["https://example.com/1"],
+      relatedCandidateKeys: [],
+      review: "ready",
+      reviewReasons: [],
+      evidence: [{ field: "name", text: "Event" }],
+      candidateHash: hash("a"),
+      targetId: "should-not-be-hashed",
+    };
+    const projection = candidateHashProjection(candidate);
+    expect(projection).not.toHaveProperty("candidateHash");
+    expect(projection).not.toHaveProperty("targetId");
+    expect(hashCanonicalJson(projection)).toMatch(/^sha256:/);
+  });
+
+  it("hashes a formal old YAML value independently of its object key order", () => {
+    const value = { id: "event-1", name: "Event", sources: ["https://example.com/1"] };
+    expect(oldValueHashProjection(value)).toEqual(oldValueHashProjection({ sources: value.sources, name: value.name, id: value.id }));
+  });
+});
+
+describe("crawler files", () => {
+  it("writes and reads JSONL without retaining the whole stream", async () => {
+    const path = "/tmp/gameg-task2-jsonl-test/items.jsonl";
+    await writeJsonAtomic(path, { first: true });
+    await appendJsonl(path, { second: true });
+    await expect(readJsonl(path)).resolves.toEqual([{ first: true }, { second: true }]);
+  });
+
+  it("does not append a duplicate sourceId and contentHash pair", async () => {
+    const path = `/tmp/gameg-task2-jsonl-test/raw-${process.pid}-${Date.now()}.jsonl`;
+    const article = { sourceId: "1", contentHash: hash("a"), title: "first" };
+    await expect(appendJsonlIfUnique(path, article, (value) => `${value.sourceId}:${value.contentHash}`)).resolves.toBe(true);
+    await expect(appendJsonlIfUnique(path, { ...article, title: "duplicate" }, (value) => `${value.sourceId}:${value.contentHash}`)).resolves.toBe(false);
+    await expect(readJsonl(path)).resolves.toEqual([article]);
+  });
+
+  it("keeps the previous file when an atomic replacement is rejected", async () => {
+    const path = "/tmp/gameg-task2-jsonl-test/unchanged.json";
+    await writeJsonAtomic(path, { version: 1 });
+    await expect(writeJsonAtomic(path, { version: 2 }, { rename: async () => { throw new Error("rename failed"); } }))
+      .rejects.toThrow("rename failed");
+    await expect(readJsonAtomic(path)).resolves.toEqual({ version: 1 });
+  });
+});
+
+describe("safe official HTTP client", () => {
+  it("rejects non-HTTPS and hosts outside the allowlist", async () => {
+    await expect(fetchOfficial("http://example.com/a", { allowedHosts: ["example.com"], fetchImpl: async () => response("ok") }))
+      .rejects.toMatchObject({ code: "UNSAFE_URL" });
+    await expect(fetchOfficial("https://other.example/a", { allowedHosts: ["example.com"], fetchImpl: async () => response("ok") }))
+      .rejects.toMatchObject({ code: "UNSAFE_URL" });
+  });
+
+  it("limits content type and response size", async () => {
+    await expect(fetchOfficial("https://example.com/a", {
+      allowedHosts: ["example.com"],
+      allowedContentTypes: ["application/json"],
+      fetchImpl: async () => response("<html>", { headers: { "content-type": "text/html" } }),
+    })).rejects.toMatchObject({ code: "CONTENT_TYPE" });
+
+    await expect(fetchOfficial("https://example.com/a", {
+      allowedHosts: ["example.com"],
+      maxBytes: 3,
+      fetchImpl: async () => response("1234"),
+    })).rejects.toMatchObject({ code: "RESPONSE_TOO_LARGE" });
+  });
+
+  it("returns structured HTTP failures and retries only retryable statuses", async () => {
+    let attempts = 0;
+    await expect(fetchOfficial("https://example.com/a", {
+      allowedHosts: ["example.com"],
+      retryDelaysMs: [0],
+      fetchImpl: async () => {
+        attempts += 1;
+        return response("busy", { status: 503, statusText: "Busy" });
+      },
+    })).rejects.toBeInstanceOf(CrawlerHttpError);
+    expect(attempts).toBe(2);
+  });
+
+  it("revalidates every manual redirect target", async () => {
+    await expect(fetchOfficial("https://example.com/a", {
+      allowedHosts: ["example.com"],
+      fetchImpl: async () => response("", { status: 302, headers: { location: "https://other.example/b" } }),
+    })).rejects.toMatchObject({ code: "UNSAFE_URL" });
+  });
+});
+
+describe("crawler state", () => {
+  const schemas = {
+    page: { kind: "page", schema: { safeParse: (value: unknown) => ({ success: typeof value === "number" && Number.isInteger(value), data: value }) } },
+  };
+  const games = { demo: "page", noCheckpoint: null };
+
+  it("returns an in-memory empty state when the file does not exist", async () => {
+    await expect(loadState("/tmp/gameg-task2-state/missing.json", schemas, games))
+      .resolves.toEqual({ schemaVersion: 1, games: {} });
+  });
+
+  it("fails closed on an unknown game or invalid checkpoint", async () => {
+    const path = "/tmp/gameg-task2-state/invalid.json";
+    await writeJsonAtomic(path, { schemaVersion: 1, games: { unknown: { checkpoint: null, sourceHashes: {} } } });
+    await expect(loadState(path, schemas, games)).rejects.toMatchObject({ code: "INVALID_STATE" });
+
+    await writeJsonAtomic(path, { schemaVersion: 1, games: { demo: { checkpoint: { kind: "page", value: "bad" }, sourceHashes: {} } } });
+    await expect(loadState(path, schemas, games)).rejects.toMatchObject({ code: "INVALID_STATE" });
+  });
+
+  it("writes a valid state atomically", async () => {
+    const path = "/tmp/gameg-task2-state/valid.json";
+    const state: CrawlerState = { schemaVersion: 1, games: { noCheckpoint: { checkpoint: null, sourceHashes: { id: hash("a") } } } };
+    await writeStateAtomic(path, state);
+    await expect(loadState(path, schemas, games)).resolves.toEqual(state);
+  });
+});
