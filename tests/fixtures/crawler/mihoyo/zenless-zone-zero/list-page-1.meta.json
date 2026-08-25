@@ -1,0 +1,20 @@
+{
+  "fixtureKind": "real",
+  "fixtureRole": "list",
+  "game": "zenless-zone-zero",
+  "capturedAt": "2026-08-25T06:52:23+00:00",
+  "request": {
+    "method": "GET",
+    "url": "https://sg-public-api-static.hoyoverse.com/content_v2_user/app/3e9196a4b9274bd7/getContentList",
+    "parameters": {
+      "iChanId": "288",
+      "iPage": "1",
+      "iPageSize": "1",
+      "sLangKey": "zh-cn",
+      "isPreview": "0"
+    }
+  },
+  "pagination": { "kind": "page-number", "termination": "iPage beyond iTotal or empty list" },
+  "urlDerivation": "List sUrl is empty; final official URL is https://zenless.hoyoverse.com/zh-cn/news/{iInfoId}",
+  "blocker": null
+}

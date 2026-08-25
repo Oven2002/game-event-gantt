@@ -1,0 +1,18 @@
+{
+  "fixtureKind": "real",
+  "fixtureRole": "list",
+  "game": "arknights-endfield",
+  "capturedAt": "2026-08-25T06:52:23+00:00",
+  "request": {
+    "method": "GET",
+    "url": "https://web-news.hypergryph.com/api/bulletin",
+    "parameters": {
+      "lang": "zh-cn",
+      "code": "endfield_web",
+      "page": "1",
+      "pageSize": "1"
+    }
+  },
+  "pagination": { "kind": "page-number", "termination": "page beyond total or empty list" },
+  "blocker": null
+}

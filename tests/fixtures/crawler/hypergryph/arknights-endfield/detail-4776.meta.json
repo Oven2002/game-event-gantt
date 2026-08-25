@@ -1,0 +1,13 @@
+{
+  "fixtureKind": "real",
+  "fixtureRole": "detail",
+  "game": "arknights-endfield",
+  "capturedAt": "2026-08-25T06:52:23+00:00",
+  "request": {
+    "method": "GET",
+    "url": "https://endfield.hypergryph.com/news/4776",
+    "parameters": {}
+  },
+  "pagination": null,
+  "blocker": null
+}

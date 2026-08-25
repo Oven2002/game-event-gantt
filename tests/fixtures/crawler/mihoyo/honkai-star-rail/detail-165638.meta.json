@@ -1,0 +1,19 @@
+{
+  "fixtureKind": "real",
+  "fixtureRole": "detail",
+  "game": "honkai-star-rail",
+  "capturedAt": "2026-08-25T06:52:23+00:00",
+  "request": {
+    "method": "GET",
+    "url": "https://act-api-takumi-static.mihoyo.com/content_v2_user/app/1963de8dc19e461c/getContent",
+    "parameters": {
+      "iInfoId": "165638",
+      "iPageSize": "50",
+      "sLangKey": "zh-cn",
+      "isPreview": "0"
+    }
+  },
+  "pagination": null,
+  "urlDerivation": "Final official URL is https://sr.mihoyo.com/news/165638",
+  "blocker": null
+}

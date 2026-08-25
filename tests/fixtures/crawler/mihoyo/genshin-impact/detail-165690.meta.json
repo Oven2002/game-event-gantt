@@ -1,0 +1,19 @@
+{
+  "fixtureKind": "real",
+  "fixtureRole": "detail",
+  "game": "genshin-impact",
+  "capturedAt": "2026-08-25T06:52:23+00:00",
+  "request": {
+    "method": "GET",
+    "url": "https://act-api-takumi-static.mihoyo.com/content_v2_user/app/16471662a82d418a/getContent",
+    "parameters": {
+      "iInfoId": "165690",
+      "iPageSize": "50",
+      "sLangKey": "zh-cn",
+      "isPreview": "0"
+    }
+  },
+  "pagination": null,
+  "urlDerivation": "Final official URL is https://ys.mihoyo.com/main/news/detail/165690",
+  "blocker": null
+}

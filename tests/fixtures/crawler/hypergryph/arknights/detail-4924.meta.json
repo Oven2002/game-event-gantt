@@ -1,0 +1,13 @@
+{
+  "fixtureKind": "real",
+  "fixtureRole": "detail",
+  "game": "arknights",
+  "capturedAt": "2026-08-25T06:52:23+00:00",
+  "request": {
+    "method": "GET",
+    "url": "https://ak.hypergryph.com/news/4924",
+    "parameters": {}
+  },
+  "pagination": null,
+  "blocker": null
+}
