@@ -30,7 +30,12 @@ const detailUrlTemplates: Record<MihoyoGameConfig["game"], string> = {
 };
 
 export function buildMihoyoDetailUrl(game: MihoyoGameConfig["game"], sourceId: string): string {
-  return detailUrlTemplates[game].replace("{sourceId}", encodeURIComponent(sourceId));
+  const url = detailUrlTemplates[game].replace("{sourceId}", encodeURIComponent(sourceId));
+  const parsed = new URL(url);
+  if (parsed.protocol !== "https:" || !mihoyoGames[game].officialHosts.includes(parsed.hostname)) {
+    throw new MihoyoAdapterError("generated URL is outside the configured official host allowlist");
+  }
+  return url;
 }
 
 export interface MihoyoRequest {

@@ -97,7 +97,8 @@ describe("Mihoyo fixture adapter", () => {
 
   it("deduplicates the same source article by sourceId and contentHash", async () => {
     const body = await fixture(`${root}/genshin-impact/list-page-1.json`);
-    const page = parseMihoyoList("genshin-impact", body);
+    const duplicated = { ...body, data: { ...body.data, list: [body.data.list[0], body.data.list[0]] } };
+    const page = parseMihoyoList("genshin-impact", duplicated);
     expect(page.items.filter((item) => item.sourceId === "165690")).toHaveLength(1);
     expect(page.items[0].sourceId).toBe("165690");
   });
