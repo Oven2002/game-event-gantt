@@ -30,6 +30,7 @@ export function parseDateTimeText(text: string, referenceYear?: number): ParsedT
   try {
     const year = full ? Number(full[1]) : referenceYear as number;
     const month = Number(full ? full[2] : short![1] ?? short![3]);
+    if (year < 1970) return { status: "needs_review", text, reason: "year is before the supported timeline" };
     const day = Number(full ? full[3] : short![2] ?? short![4]);
     const hour = Number(full ? full[4] : short![5]);
     const minute = Number(full ? full[5] : short![6]);
@@ -46,7 +47,7 @@ export interface ExplicitInterval {
 }
 
 export function parseExplicitInterval(text: string, referenceYear?: number): ExplicitInterval {
-  const match = text.match(/^\s*(.*?)\s*(?:至|到|—|–|-)\s*(.*?)\s*$/);
+  const match = text.match(/^\s*(.*?)\s*(?:至|到|—|–|\s+-\s+)\s*(.*?)\s*$/);
   if (!match) throw new Error("explicit interval not found");
   const start = parseDateTimeText(match[1], referenceYear);
   const endText = match[2].trim();

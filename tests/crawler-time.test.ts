@@ -4,7 +4,8 @@ import {
   parseExplicitInterval,
   parseDateTimeText,
 } from "../scripts/crawl/common/time.ts";
-import { parseArticleCandidates } from "../scripts/crawl/parsers/article.ts";
+import { parseArticleCandidates, parseArticleCandidate } from "../scripts/crawl/parsers/article.ts";
+import type { Sha256 } from "../scripts/crawl/types.ts";
 import { parseMaintenanceText } from "../scripts/crawl/parsers/maintenance.ts";
 import { parseTimelineText } from "../scripts/crawl/parsers/timeline.ts";
 
@@ -32,6 +33,8 @@ describe("Beijing time parser", () => {
     expect(parseDateTimeText("8月20日 04:00")).toMatchObject({ status: "needs_review" });
     expect(parseDateTimeText("2026年8月20日 04:00:30")).toMatchObject({ status: "needs_review" });
     expect(parseDateTimeText("2026-08-20T04:00:00Z")).toMatchObject({ status: "needs_review" });
+    expect(parseDateTimeText("1970-01-01 00:00")).toMatchObject({ status: "confirmed" });
+    expect(parseDateTimeText("1969-12-31 23:59")).toMatchObject({ status: "needs_review" });
   });
 });
 
@@ -59,11 +62,30 @@ describe("announcement timeline semantics", () => {
   });
 
   it("classifies an article with one explicit interval without guessing", () => {
-    expect(parseArticleCandidates({ title: "活动说明", content: "活动时间：2026年8月20日 04:00 至 11:00" })).toMatchObject({
-      status: "ready",
-      kind: "event",
+    expect(parseArticleCandidates({ title: "活动说明", content: "活动时间：8月20日 04:00 至 11:00", publishedAt: "2026-08-01T00:00:00+08:00" })).toMatchObject({ status: "ready", kind: "event", start: "2026-08-20T04:00:00+08:00", end: "2026-08-20T11:00:00+08:00" });
+  });
+  it("rejects multiple windows instead of collapsing them", () => {
+    expect(parseArticleCandidates({ title: "活动说明", content: "第一期：2026年8月20日 04:00 至 11:00；第二期：2026年8月21日 04:00 至 11:00" })).toMatchObject({ status: "needs_review" });
+  });
+
+  it("parses hyphen-separated calendar dates", () => {
+    expect(parseExplicitInterval("2026-08-20 04:00 - 2026-09-03 05:59")).toMatchObject({
       start: "2026-08-20T04:00:00+08:00",
-      end: "2026-08-20T11:00:00+08:00",
+      end: "2026-09-03T05:59:00+08:00",
     });
+  });
+
+  it("returns needs_review for an invalid maintenance context", () => {
+    expect(parseMaintenanceText("维护结束后开启活动", { maintenanceEnd: "not-a-time" })).toMatchObject({ status: "needs_review" });
+  });
+
+  it("returns the formal CandidateItem boundary for a parsed RawArticle", () => {
+    const candidate = parseArticleCandidate({
+      game: "demo", region: "cn", source: "official", sourceId: "123", url: "https://example.com/news/123",
+      title: "活动说明", publishedAt: "2026-08-01T00:00:00+08:00", content: "活动时间：8月20日 04:00 至 11:00",
+      contentHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" as Sha256,
+      fetchedAt: "2026-08-01T00:00:00+00:00",
+    }, "20260801-000000", "slot-1");
+    expect(candidate).toMatchObject({ game: "demo", region: "cn", candidateKey: "demo/123/slot-1", rawRef: { runId: "20260801-000000", game: "demo", sourceId: "123" }, kind: "event", review: "ready", start: "2026-08-20T04:00:00+08:00", end: "2026-08-20T11:00:00+08:00" });
   });
 });
