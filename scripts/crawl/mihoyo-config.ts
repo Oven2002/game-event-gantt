@@ -1,6 +1,7 @@
 export interface MihoyoGameConfig {
   game: "genshin-impact" | "honkai-star-rail" | "zenless-zone-zero";
   appId: string;
+  listAppId?: string;
   channels: number[];
   officialHosts: string[];
   supportsVersions: true;
@@ -14,6 +15,7 @@ export const mihoyoGames: Record<"genshin-impact" | "honkai-star-rail" | "zenles
   "genshin-impact": {
     game: "genshin-impact",
     appId: "16471662a82d418a",
+    listAppId: "43",
     channels: [719],
     officialHosts: ["act-api-takumi-static.mihoyo.com", "ys.mihoyo.com"],
     supportsVersions: true,
@@ -30,7 +32,7 @@ export const mihoyoGames: Record<"genshin-impact" | "honkai-star-rail" | "zenles
   "zenless-zone-zero": {
     game: "zenless-zone-zero",
     appId: "3e9196a4b9274bd7",
-    channels: [295],
+    channels: [288],
     officialHosts: ["sg-public-api-static.hoyoverse.com", "zenless.hoyoverse.com"],
     supportsVersions: true,
     checkpoint: { checkpointKind: null, defaultLookbackDays: 30 },

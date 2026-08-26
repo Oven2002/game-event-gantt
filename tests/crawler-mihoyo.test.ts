@@ -64,6 +64,11 @@ describe("Mihoyo fixture adapter", () => {
     expect(list.url).toContain("/content_v2_user/app/1963de8dc19e461c/getContentList");
     expect(list.parameters).toMatchObject({ iPage: "2", iPageSize: "50", iChanId: "257", sLangKey: "zh-cn", isPreview: "0" });
 
+    const genshin = buildMihoyoListRequest("genshin-impact", 1, 1);
+    expect(genshin.parameters.iAppId).toBe("43");
+    const zzz = buildMihoyoListRequest("zenless-zone-zero", 1, 1);
+    expect(zzz.parameters.iChanId).toBe("288");
+
     const detail = buildMihoyoDetailRequest("zenless-zone-zero", "165865");
     expect(detail.url).toContain("/content_v2_user/app/3e9196a4b9274bd7/getContent");
     expect(detail.parameters).toMatchObject({ iInfoId: "165865", iPageSize: "50", sLangKey: "zh-cn", isPreview: "0" });
@@ -73,7 +78,16 @@ describe("Mihoyo fixture adapter", () => {
     const body = await fixture(`${root}/honkai-star-rail/list-page-1.json`);
     const page = parseMihoyoList("honkai-star-rail", body);
     expect(page.items[0].content).toBe("");
-    expect(() => parseMihoyoList("honkai-star-rail", { data: { list: "bad" } })).toThrow(/data\.list/);
+    expect(() => parseMihoyoList("honkai-star-rail", { retcode: 0, data: { list: "bad" } })).toThrow(/data\.list/);
+    expect(() => parseMihoyoList("honkai-star-rail", { retcode: -1, message: "failed", data: { list: [] } })).toThrow(/retcode/);
+  });
+
+  it("does not treat dtStartTime as the publication time", async () => {
+    const body = await fixture(`${root}/genshin-impact/list-page-1.json`);
+    const item = { ...body.data.list[0] };
+    delete item.dtCreateTime;
+    const page = parseMihoyoList("genshin-impact", { ...body, data: { ...body.data, list: [item] } });
+    expect(page.items[0].publishedAt).toBe(null);
   });
 
   it("normalizes readable text without changing meaningful order", () => {

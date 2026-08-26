@@ -51,6 +51,7 @@ export function buildMihoyoListRequest(game: MihoyoGameConfig["game"], page: num
     sLangKey: "zh-cn",
     isPreview: "0",
     iChanId: String(mihoyoGames[game].channels[0]),
+    ...(mihoyoGames[game].listAppId === undefined ? {} : { iAppId: mihoyoGames[game].listAppId }),
   };
   return { method: "GET", url: `${buildMihoyoApiUrl(game, "getContentList")}?${new URLSearchParams(parameters)}`, parameters };
 }
@@ -88,7 +89,10 @@ export function normalizeContent(html: string): string {
 }
 
 function getData(body: unknown): Record<string, unknown> {
-  if (typeof body !== "object" || body === null || !("data" in body)) throw new MihoyoAdapterError("missing data envelope");
+  if (typeof body !== "object" || body === null || !("retcode" in body) || (body as { retcode?: unknown }).retcode !== 0) {
+    throw new MihoyoAdapterError("invalid retcode");
+  }
+  if (!("data" in body)) throw new MihoyoAdapterError("missing data envelope");
   const data = (body as { data: unknown }).data;
   if (typeof data !== "object" || data === null) throw new MihoyoAdapterError("invalid data envelope");
   return data as Record<string, unknown>;
@@ -109,7 +113,7 @@ function normalizeItem(game: MihoyoGameConfig["game"], item: Record<string, unkn
     sourceId,
     title,
     url: buildMihoyoDetailUrl(game, sourceId),
-    publishedAt: typeof item.dtCreateTime === "string" ? item.dtCreateTime : typeof item.dtStartTime === "string" ? item.dtStartTime : null,
+    publishedAt: typeof item.dtCreateTime === "string" ? item.dtCreateTime : null,
     content,
     contentHash,
   };
