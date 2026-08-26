@@ -153,14 +153,23 @@ describe("safe official HTTP client", () => {
     })).rejects.toMatchObject({ code: "REDIRECT_LIMIT" });
   });
 
+  it("treats maxRedirects as the exact number of followed redirects", async () => {
+    await expect(fetchOfficial("https://example.com/a", {
+      allowedHosts: ["example.com"],
+      maxRedirects: 0,
+      minHostIntervalMs: 0,
+      fetchImpl: async () => response("", { status: 302, headers: { location: "https://example.com/a" } }),
+    })).rejects.toMatchObject({ code: "REDIRECT_LIMIT" });
+  });
+
   it("rejects private address variants and DNS resolution to private addresses", async () => {
-    for (const host of ["172.16.0.1", "100.64.0.1", "198.18.0.1", "[fe80::1]", "[::ffff:127.0.0.1]"]) {
+    for (const host of ["172.16.0.1", "100.64.0.1", "198.18.0.1", "[fe80::1]", "[::ffff:127.0.0.1]", "[::ffff:7f00:1]"]) {
       await expect(fetchOfficial(`https://${host}/a`, { allowedHosts: [host], fetchImpl: async () => response("ok") }))
         .rejects.toMatchObject({ code: "UNSAFE_URL" });
     }
     await expect(fetchOfficial("https://example.com/a", {
       allowedHosts: ["example.com"],
-      lookup: async () => ["10.0.0.4"],
+      lookup: async () => ["::ffff:7f00:1"],
       fetchImpl: async () => response("ok"),
     })).rejects.toMatchObject({ code: "UNSAFE_URL" });
   });

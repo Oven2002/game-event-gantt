@@ -46,8 +46,13 @@ const retryableStatus = (status: number) => status === 429 || status >= 500;
 
 function isPrivateAddress(rawAddress: string): boolean {
   const address = rawAddress.toLowerCase().replace(/^\[|\]$/g, "");
-  const mappedIpv4 = address.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)?.[1];
-  const ipv4 = mappedIpv4 ?? (isIP(address) === 4 ? address : undefined);
+  const mappedHex = address.match(/^(?:::0:0:0:0:0:ffff|::ffff):([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+  if (mappedHex) {
+    const first = Number.parseInt(mappedHex[1], 16);
+    const second = Number.parseInt(mappedHex[2], 16);
+    return isPrivateAddress(`${first >> 8}.${first & 255}.${second >> 8}.${second & 255}`);
+  }
+  const ipv4 = isIP(address) === 4 ? address : undefined;
   if (ipv4) {
     const octets = ipv4.split(".").map(Number);
     const [first, second] = octets;
@@ -172,6 +177,7 @@ export async function fetchOfficial(rawUrl: string, options: FetchOfficialOption
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get("location");
         if (!location) throw new CrawlerHttpError("REDIRECT", "redirect response has no location", { status: response.status });
+        if (redirects >= maxRedirects) throw new CrawlerHttpError("REDIRECT_LIMIT", `redirect limit exceeded: ${maxRedirects}`);
         await response.body?.cancel().catch(() => undefined);
         redirects += 1;
         url = await assertSafeUrl(new URL(location, url).toString(), options.allowedHosts, options.lookup);
