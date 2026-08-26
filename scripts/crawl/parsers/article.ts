@@ -1,6 +1,7 @@
 import { parseExplicitInterval } from "../common/time.ts";
 import { candidateHashProjection, hashCanonicalJson, sourceHashProjection } from "../common/hash.ts";
 import type { CandidateItem, RawArticle, Sha256 } from "../types.ts";
+import { CandidateItemSchema } from "../types.ts";
 
 export type ArticleKind = "version" | "event";
 export interface ParsedArticleCandidate {
@@ -52,5 +53,12 @@ export function parseArticleCandidate(raw: RawArticle, runId: string, semanticSl
       ? { ...base, kind: "version" as const, review: "ready" as const, start: parsed.start, end: parsed.end!, timeCertainty: { start: "confirmed" as const, end: "confirmed" as const } }
       : { ...base, kind: "event" as const, review: "ready" as const, type: /寻访|祈愿|跃迁|调频/.test(raw.title) ? "banner" : "event", start: parsed.start, ...(parsed.end ? { end: parsed.end } : {}), timeCertainty: { start: "confirmed" as const, ...(parsed.end ? { end: "confirmed" as const } : {}) } }
     : { ...base, kind: parsed.kind ?? "unknown" as const, ...(parsed.kind === "event" ? { type: "event" } : {}), review: "needs_review" as const };
-  return { ...candidate, candidateHash: hashCanonicalJson(candidateHashProjection(candidate)) as Sha256 } as CandidateItem;
+  const withHash = { ...candidate, candidateHash: hashCanonicalJson(candidateHashProjection(candidate)) as Sha256 };
+  try {
+    const checked = CandidateItemSchema.safeParse(withHash);
+    if (!checked.success) throw new Error(checked.error.message);
+    return checked.data as CandidateItem;
+  } catch (error) {
+    throw new Error(`candidate schema validation failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }

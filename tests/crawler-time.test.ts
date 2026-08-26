@@ -88,4 +88,13 @@ describe("announcement timeline semantics", () => {
     }, "20260801-000000", "slot-1");
     expect(candidate).toMatchObject({ game: "demo", region: "cn", candidateKey: "demo/123/slot-1", rawRef: { runId: "20260801-000000", game: "demo", sourceId: "123" }, kind: "event", review: "ready", start: "2026-08-20T04:00:00+08:00", end: "2026-08-20T11:00:00+08:00" });
   });
+
+  it("rejects an invalid formal candidate at the runtime schema boundary", () => {
+    expect(() => parseArticleCandidate({
+      game: "demo", region: "cn", source: "official", sourceId: "123", url: "not-a-url",
+      title: "活动说明", publishedAt: "2026-08-01T00:00:00+08:00", content: "活动时间：2026年8月20日 04:00 至 11:00",
+      contentHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" as Sha256,
+      fetchedAt: "2026-08-01T00:00:00+00:00",
+    }, "20260801-000000", "slot-1")).toThrow(/candidate/i);
+  });
 });
