@@ -23,17 +23,26 @@ it("rejects unknown checkpoint kinds and accepts null checkpoints", async () => 
   const path = "/tmp/gameg-task2-state/checkpoint.json";
   await writeJsonAtomic(path, { schemaVersion: 1, games: { demo: { checkpoint: { kind: "offset", value: 1 }, sourceHashes: {} } } });
   await expect(loadState(path, registry, knownGames)).rejects.toMatchObject({ code: "INVALID_STATE" });
-  await writeStateAtomic(path, state);
+  await writeStateAtomic(path, state, { checkpointSchemas: registry, knownGames });
   await expect(loadState(path, registry, knownGames)).resolves.toEqual(state);
 });
 
 it("preserves the previous state when atomic replacement fails", async () => {
   const path = "/tmp/gameg-task2-state/atomic.json";
-  await writeStateAtomic(path, state);
+  await writeStateAtomic(path, state, { checkpointSchemas: registry, knownGames });
   await expect(writeStateAtomic(path, { schemaVersion: 1, games: {} }, {
+    checkpointSchemas: registry,
+    knownGames,
     rename: async () => { throw new Error("rename failed"); },
   })).rejects.toThrow("rename failed");
   await expect(loadState(path, registry, knownGames)).resolves.toEqual(state);
+});
+
+it("fails closed before writing an unknown game", async () => {
+  await expect(writeStateAtomic("/tmp/gameg-task2-state/rejected.json", {
+    schemaVersion: 1,
+    games: { unknown: { checkpoint: null, sourceHashes: {} } },
+  }, { checkpointSchemas: registry, knownGames })).rejects.toMatchObject({ code: "INVALID_STATE" });
 });
 
 it("rejects mutually exclusive scan modes", () => {

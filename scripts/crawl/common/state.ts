@@ -80,14 +80,14 @@ export async function loadState(
   return validateState(value, checkpointSchemas, knownGames);
 }
 
-export async function writeStateAtomic(
-  statePath: string,
-  state: CrawlerState,
-  options: { rename?: (from: string, to: string) => Promise<void> } = {},
-): Promise<void> {
-  if (state.schemaVersion !== 1 || typeof state.games !== "object" || state.games === null) {
-    throw new CrawlerStateError("INVALID_STATE", "state schema validation failed");
-  }
+export interface StateWriteOptions {
+  checkpointSchemas: CheckpointSchemaRegistry;
+  knownGames: KnownGameCheckpointKinds;
+  rename?: (from: string, to: string) => Promise<void>;
+}
+
+export async function writeStateAtomic(statePath: string, state: CrawlerState, options: StateWriteOptions): Promise<void> {
+  validateState(state, options.checkpointSchemas, options.knownGames);
   await writeJsonAtomic(statePath, state, options);
 }
 

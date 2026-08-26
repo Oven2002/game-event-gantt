@@ -1,5 +1,6 @@
+import { randomUUID } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { mkdir, readFile, rename as fsRename, appendFile, writeFile, stat } from "node:fs/promises";
+import { mkdir, readFile, rename as fsRename, appendFile, writeFile, stat, rm } from "node:fs/promises";
 import { createInterface } from "node:readline";
 import { dirname } from "node:path";
 
@@ -7,31 +8,51 @@ interface AtomicWriteOptions {
   rename?: (from: string, to: string) => Promise<void>;
 }
 
+const fileLocks = new Map<string, Promise<void>>();
+
+async function withFileLock<T>(filePath: string, operation: () => Promise<T>): Promise<T> {
+  const previous = fileLocks.get(filePath) ?? Promise.resolve();
+  let release!: () => void;
+  const queued = new Promise<void>((resolve) => { release = resolve; });
+  fileLocks.set(filePath, queued);
+  await previous;
+  try {
+    return await operation();
+  } finally {
+    release();
+    if (fileLocks.get(filePath) === queued) fileLocks.delete(filePath);
+  }
+}
+
 async function ensureParent(filePath: string): Promise<void> {
   await mkdir(dirname(filePath), { recursive: true });
 }
 
 function tempPath(filePath: string): string {
-  return `${filePath}.tmp-${process.pid}-${Date.now()}`;
+  return `${filePath}.tmp-${process.pid}-${randomUUID()}`;
 }
 
-export async function writeJsonAtomic(filePath: string, value: unknown, options: AtomicWriteOptions = {}): Promise<void> {
+async function writeJsonAtomicUnlocked(filePath: string, value: unknown, options: AtomicWriteOptions = {}): Promise<void> {
   await ensureParent(filePath);
   const temporary = tempPath(filePath);
   try {
     await writeFile(temporary, `${JSON.stringify(value)}\n`, "utf8");
     await (options.rename ?? fsRename)(temporary, filePath);
   } catch (error) {
-    await import("node:fs/promises").then(({ rm }) => rm(temporary, { force: true })).catch(() => undefined);
+    await rm(temporary, { force: true }).catch(() => undefined);
     throw error;
   }
+}
+
+export async function writeJsonAtomic(filePath: string, value: unknown, options: AtomicWriteOptions = {}): Promise<void> {
+  return withFileLock(filePath, () => writeJsonAtomicUnlocked(filePath, value, options));
 }
 
 export async function readJsonAtomic(filePath: string): Promise<unknown> {
   return JSON.parse(await readFile(filePath, "utf8"));
 }
 
-export async function appendJsonl(filePath: string, value: unknown): Promise<void> {
+async function appendJsonlUnlocked(filePath: string, value: unknown): Promise<void> {
   await ensureParent(filePath);
   let prefix = "";
   try {
@@ -42,23 +63,29 @@ export async function appendJsonl(filePath: string, value: unknown): Promise<voi
   await appendFile(filePath, `${prefix}${JSON.stringify(value)}\n`, "utf8");
 }
 
+export async function appendJsonl(filePath: string, value: unknown): Promise<void> {
+  return withFileLock(filePath, () => appendJsonlUnlocked(filePath, value));
+}
+
 export async function appendJsonlIfUnique<T>(filePath: string, value: T, keyOf: (value: T) => string): Promise<boolean> {
-  try {
-    const input = createReadStream(filePath, { encoding: "utf8" });
-    const lines = createInterface({ input, crlfDelay: Infinity });
+  return withFileLock(filePath, async () => {
     try {
-      for await (const line of lines) {
-        if (line.trim().length > 0 && keyOf(JSON.parse(line)) === keyOf(value)) return false;
+      const input = createReadStream(filePath, { encoding: "utf8" });
+      const lines = createInterface({ input, crlfDelay: Infinity });
+      try {
+        for await (const line of lines) {
+          if (line.trim().length > 0 && keyOf(JSON.parse(line)) === keyOf(value)) return false;
+        }
+      } finally {
+        lines.close();
+        input.destroy();
       }
-    } finally {
-      lines.close();
-      input.destroy();
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
     }
-  } catch (error: unknown) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-  }
-  await appendJsonl(filePath, value);
-  return true;
+    await appendJsonlUnlocked(filePath, value);
+    return true;
+  });
 }
 
 export async function readJsonl(filePath: string): Promise<unknown[]> {

@@ -19,7 +19,7 @@ describe("crawler hash and canonical JSON", () => {
 
   it("produces stable SHA-256 values from UTF-8", () => {
     expect(sha256Utf8("穹")).toMatch(/^sha256:[0-9a-f]{64}$/);
-    expect(hashCanonicalJson({ b: 2, a: 1 })).toBe(hashCanonicalJson({ a: 1, b: 2 }));
+    expect(hashCanonicalJson({ b: 2, a: 1 })).toBe("sha256:43258cff783fe7036d8a43033f830adfc60ec037382473548ac742b888292777");
   });
 
   it("uses the fixed source projection and excludes fetch-local fields", () => {
@@ -86,6 +86,14 @@ describe("crawler files", () => {
     await expect(readJsonl(path)).resolves.toEqual([article]);
   });
 
+  it("serializes concurrent duplicate checks for one JSONL path", async () => {
+    const path = `/tmp/gameg-task2-jsonl-test/concurrent-${process.pid}-${Date.now()}.jsonl`;
+    const article = { sourceId: "2", contentHash: hash("b") };
+    const results = await Promise.all(Array.from({ length: 8 }, () => appendJsonlIfUnique(path, article, (value) => `${value.sourceId}:${value.contentHash}`)));
+    expect(results.filter(Boolean)).toHaveLength(1);
+    await expect(readJsonl(path)).resolves.toEqual([article]);
+  });
+
   it("keeps the previous file when an atomic replacement is rejected", async () => {
     const path = "/tmp/gameg-task2-jsonl-test/unchanged.json";
     await writeJsonAtomic(path, { version: 1 });
@@ -136,6 +144,38 @@ describe("safe official HTTP client", () => {
       fetchImpl: async () => response("", { status: 302, headers: { location: "https://other.example/b" } }),
     })).rejects.toMatchObject({ code: "UNSAFE_URL" });
   });
+
+  it("limits redirect chains", async () => {
+    await expect(fetchOfficial("https://example.com/a", {
+      allowedHosts: ["example.com"],
+      maxRedirects: 2,
+      fetchImpl: async () => response("", { status: 302, headers: { location: "https://example.com/a" } }),
+    })).rejects.toMatchObject({ code: "REDIRECT_LIMIT" });
+  });
+
+  it("rejects private address variants and DNS resolution to private addresses", async () => {
+    for (const host of ["172.16.0.1", "100.64.0.1", "198.18.0.1", "[fe80::1]", "[::ffff:127.0.0.1]"]) {
+      await expect(fetchOfficial(`https://${host}/a`, { allowedHosts: [host], fetchImpl: async () => response("ok") }))
+        .rejects.toMatchObject({ code: "UNSAFE_URL" });
+    }
+    await expect(fetchOfficial("https://example.com/a", {
+      allowedHosts: ["example.com"],
+      lookup: async () => ["10.0.0.4"],
+      fetchImpl: async () => response("ok"),
+    })).rejects.toMatchObject({ code: "UNSAFE_URL" });
+  });
+
+  it("times out while the response body is stalled", async () => {
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) { controller.enqueue(new TextEncoder().encode("part")); },
+    });
+    await expect(fetchOfficial("https://example.com/a", {
+      allowedHosts: ["example.com"],
+      timeoutMs: 10,
+      minHostIntervalMs: 0,
+      fetchImpl: async () => new Response(body, { status: 200, headers: { "content-type": "text/plain" } }),
+    })).rejects.toMatchObject({ code: "TIMEOUT" });
+  });
 });
 
 describe("crawler state", () => {
@@ -161,7 +201,7 @@ describe("crawler state", () => {
   it("writes a valid state atomically", async () => {
     const path = "/tmp/gameg-task2-state/valid.json";
     const state: CrawlerState = { schemaVersion: 1, games: { noCheckpoint: { checkpoint: null, sourceHashes: { id: hash("a") } } } };
-    await writeStateAtomic(path, state);
+    await writeStateAtomic(path, state, { checkpointSchemas: schemas, knownGames: games });
     await expect(loadState(path, schemas, games)).resolves.toEqual(state);
   });
 });
