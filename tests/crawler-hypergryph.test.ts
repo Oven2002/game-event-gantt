@@ -1,0 +1,59 @@
+import { describe, expect, it } from "vitest";
+import { readFile } from "node:fs/promises";
+import { hypergryphGames } from "../scripts/crawl/hypergryph-config.ts";
+import {
+  buildHypergryphListRequest,
+  normalizeHypergryphContent,
+  parseHypergryphDetail,
+  parseHypergryphList,
+} from "../scripts/crawl/adapters/hypergryph.ts";
+
+const root = "tests/fixtures/crawler/hypergryph";
+const fixture = async (path: string) => JSON.parse(await readFile(path, "utf8"));
+
+describe("Hypergryph configuration", () => {
+  it("keeps Arknights events-only and Endfield version-capable", () => {
+    expect(hypergryphGames.arknights.supportsVersions).toBe(false);
+    expect(hypergryphGames["arknights-endfield"].supportsVersions).toBe(true);
+    expect(hypergryphGames.arknights.checkpoint.checkpointKind).toBe(null);
+    expect(hypergryphGames["arknights-endfield"].checkpoint.checkpointKind).toBe(null);
+  });
+});
+
+describe("Hypergryph fixture adapter", () => {
+  it("builds the measured bulletin request and parses list metadata", async () => {
+    const request = buildHypergryphListRequest("arknights", 2, 20);
+    expect(request.url).toContain("code=arknights");
+    expect(request.parameters).toMatchObject({ lang: "zh-cn", page: "2", pageSize: "20" });
+    const body = await fixture(`${root}/arknights/list-page-1.json`);
+    const page = parseHypergryphList("arknights", body);
+    expect(page.total).toBe(1214);
+    expect(page.items[0]).toMatchObject({ sourceId: "4924", title: "《明日方舟》制作组通讯#68期", tab: "2" });
+    expect(page.items[0].url).toBe("https://ak.hypergryph.com/news/4924");
+  });
+
+  it("parses both HTML detail fixtures into canonical RawArticle content", async () => {
+    for (const [game, sourceId] of [["arknights", "4924"], ["arknights-endfield", "4776"]] as const) {
+      const body = await fixture(`${root}/${game}/detail-${sourceId}.json`);
+      const article = parseHypergryphDetail(game, sourceId, body, "2026-08-26T00:00:00+00:00");
+      expect(article.game).toBe(game);
+      expect(article.region).toBe("cn");
+      expect(article.sourceId).toBe(sourceId);
+      expect(article.url).toBe(`https://${game === "arknights" ? "ak" : "endfield"}.hypergryph.com/news/${sourceId}`);
+      expect(article.content.length).toBeGreaterThan(20);
+      expect(article.content).not.toMatch(/<[^>]+>/);
+      expect(article.contentHash).toMatch(/^sha256:[0-9a-f]{64}$/);
+    }
+  });
+
+  it("preserves block order while stripping tags and scripts", () => {
+    expect(normalizeHypergryphContent("<p>第一段</p><p><strong>第二段</strong></p><img src=\"x\"><script>x</script>"))
+      .toBe("第一段\n第二段");
+  });
+
+  it("rejects an unknown game or malformed list envelope", async () => {
+    const body = await fixture(`${root}/arknights/list-page-1.json`);
+    expect(() => parseHypergryphList("arknights", { code: 1, data: body.data })).toThrow(/code/);
+    expect(() => parseHypergryphList("arknights", { code: 0, data: { list: "bad" } })).toThrow(/list/);
+  });
+});
