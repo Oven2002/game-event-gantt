@@ -30,6 +30,12 @@ describe("Hypergryph fixture adapter", () => {
     expect(page.total).toBe(1214);
     expect(page.items[0]).toMatchObject({ sourceId: "4924", title: "《明日方舟》制作组通讯#68期", tab: "2" });
     expect(page.items[0].url).toBe("https://ak.hypergryph.com/news/4924");
+
+    const endfieldBody = await fixture(`${root}/arknights-endfield/list-page-1.json`);
+    const endfieldPage = parseHypergryphList("arknights-endfield", endfieldBody);
+    expect(endfieldPage.total).toBe(92);
+    expect(endfieldPage.items[0]).toMatchObject({ sourceId: "4776", title: "「雪凇幽梦」版本研发通讯", tab: "news" });
+    expect(endfieldPage.items[0].url).toBe("https://endfield.hypergryph.com/news/4776");
   });
 
   it("parses both HTML detail fixtures into canonical RawArticle content", async () => {
@@ -40,6 +46,8 @@ describe("Hypergryph fixture adapter", () => {
       expect(article.region).toBe("cn");
       expect(article.sourceId).toBe(sourceId);
       expect(article.url).toBe(`https://${game === "arknights" ? "ak" : "endfield"}.hypergryph.com/news/${sourceId}`);
+      if (game === "arknights-endfield") expect(article.publishedAt).toBe("2026-08-22T18:00:00+08:00");
+      else expect(article.publishedAt).toBe(null);
       expect(article.content.length).toBeGreaterThan(20);
       expect(article.content).not.toMatch(/<[^>]+>/);
       expect(article.contentHash).toMatch(/^sha256:[0-9a-f]{64}$/);
@@ -55,5 +63,12 @@ describe("Hypergryph fixture adapter", () => {
     const body = await fixture(`${root}/arknights/list-page-1.json`);
     expect(() => parseHypergryphList("arknights", { code: 1, data: body.data })).toThrow(/code/);
     expect(() => parseHypergryphList("arknights", { code: 0, data: { list: "bad" } })).toThrow(/list/);
+    expect(() => parseHypergryphList("arknights", { code: 0, data: { list: [], total: -1, current: 1, pageSize: 20 } })).toThrow(/total/);
+    expect(() => parseHypergryphList("arknights", { code: 0, data: { list: [{ cid: "not-numeric", title: "x", tab: "2", displayTime: 1 }] } })).toThrow(/cid/);
+  });
+
+  it("rejects a detail whose embedded article id differs from the requested id", async () => {
+    const body = await fixture(`${root}/arknights/detail-4924.json`);
+    expect(() => parseHypergryphDetail("arknights", "9999", body, "2026-08-26T00:00:00+00:00")).toThrow(/sourceId|cid/);
   });
 });
