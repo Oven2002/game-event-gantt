@@ -48,6 +48,22 @@ export async function writeJsonAtomic(filePath: string, value: unknown, options:
   return withFileLock(filePath, () => writeJsonAtomicUnlocked(filePath, value, options));
 }
 
+async function writeJsonlAtomicUnlocked(filePath: string, values: readonly unknown[], options: AtomicWriteOptions = {}): Promise<void> {
+  await ensureParent(filePath);
+  const temporary = tempPath(filePath);
+  try {
+    await writeFile(temporary, values.map((value) => JSON.stringify(value)).join("\n") + (values.length > 0 ? "\n" : ""), "utf8");
+    await (options.rename ?? fsRename)(temporary, filePath);
+  } catch (error) {
+    await rm(temporary, { force: true }).catch(() => undefined);
+    throw error;
+  }
+}
+
+export async function writeJsonlAtomic(filePath: string, values: readonly unknown[], options: AtomicWriteOptions = {}): Promise<void> {
+  return withFileLock(filePath, () => writeJsonlAtomicUnlocked(filePath, values, options));
+}
+
 export async function readJsonAtomic(filePath: string): Promise<unknown> {
   return JSON.parse(await readFile(filePath, "utf8"));
 }

@@ -36,9 +36,25 @@ const beijingTimestampSchema = z.string().regex(beijingTimestampPattern).superRe
     ctx.addIssue({ code: "custom", message: "必须是合法的北京时间" });
   }
 });
-const auditTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+const auditTimestampPattern = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-]\d{2}:\d{2})$/;
+function isValidAuditTimestamp(value: string): boolean {
+  const match = auditTimestampPattern.exec(value);
+  if (!match) return false;
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText, fractionText, offsetText] = match;
+  const offsetMatch = offsetText === "Z" ? null : /([+-])(\d{2}):(\d{2})/.exec(offsetText);
+  if (offsetMatch && (Number(offsetMatch[2]) > 23 || Number(offsetMatch[3]) > 59)) return false;
+  const date = new Date(0);
+  date.setUTCFullYear(Number(yearText), Number(monthText) - 1, Number(dayText));
+  date.setUTCHours(Number(hourText), Number(minuteText), Number(secondText), fractionText ? Number(`0.${fractionText}`) * 1000 : 0);
+  return date.getUTCFullYear() === Number(yearText)
+    && date.getUTCMonth() === Number(monthText) - 1
+    && date.getUTCDate() === Number(dayText)
+    && date.getUTCHours() === Number(hourText)
+    && date.getUTCMinutes() === Number(minuteText)
+    && date.getUTCSeconds() === Number(secondText);
+}
 const auditTimestampSchema = z.string().regex(auditTimestampPattern).superRefine((value, ctx) => {
-  if (!Number.isFinite(Date.parse(value))) ctx.addIssue({ code: "custom", message: "必须是合法的审计时间" });
+  if (!isValidAuditTimestamp(value)) ctx.addIssue({ code: "custom", message: "必须是合法的审计时间" });
 });
 const httpsUrl = httpUrl.refine((value) => new URL(value).protocol === "https:", "必须是 HTTPS URL");
 const fixtureRequestSchema = z.object({
@@ -84,6 +100,15 @@ export const FixtureMetadataSchema = z.object({
   if (value.checkpoint.kind !== null && !value.checkpoint.reusable) ctx.addIssue({ code: "custom", message: "non-reusable checkpoint must use null kind" });
 });
 export type FixtureMetadata = z.infer<typeof FixtureMetadataSchema>;
+
+export const CrawlerErrorRecordSchema = z.object({
+  runId: z.string().regex(/^\d{8}-\d{6}$/),
+  game: z.string().regex(machineId),
+  code: z.string().min(1),
+  message: z.string().min(1),
+  details: z.record(z.string(), z.unknown()),
+}).strict();
+export type CrawlerErrorRecord = z.infer<typeof CrawlerErrorRecordSchema>;
 
 const readyTimeCertaintySchema = z.object({
   start: z.enum(["confirmed", "inferred", "estimated"]),
@@ -258,7 +283,7 @@ export const RawArticleSchema = z.object({
   publishedAt: z.string().min(1).nullable(),
   content: z.string(),
   contentHash: sha256Schema,
-  fetchedAt: z.string().min(1),
+  fetchedAt: auditTimestampSchema,
   sourceAuthor: z.object({ platform: z.enum(["bilibili", "weibo", "miyoushe", "taptap"]), accountId: z.string().min(1), profileUrl: httpUrl }).strict().optional(),
 }).strict();
 

@@ -1,11 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
-import { fetchOfficial, type OfficialHttpResponse } from "../common/http.ts";
-import { appendJsonlIfUnique } from "../common/files.ts";
+import { fetchOfficial, CrawlerHttpError, type OfficialHttpResponse } from "../common/http.ts";
+import { appendJsonlIfUnique, writeJsonlAtomic } from "../common/files.ts";
 import { artifactPath, assertRuntimePathSafe, assertRuntimeRootSafe, assertRunArtifactsAbsent, assertRunExists, RUN_ARTIFACTS } from "../common/run.ts";
 import { sha256Utf8, canonicalizeUrl } from "../common/hash.ts";
-import { RawArticleSchema, type RawArticle } from "../types.ts";
+import { CrawlerErrorRecordSchema, RawArticleSchema, type RawArticle } from "../types.ts";
 
 export interface FetchListItem {
   sourceId: string;
@@ -16,7 +16,7 @@ export interface FetchListItem {
 export interface FetchAdapter<TPage> {
   list(page: number, pageSize: number, body: unknown): TPage;
   listItems(page: TPage): FetchListItem[];
-  detail(sourceId: string, body: unknown, fetchedAt: string): RawArticle;
+  detail(sourceId: string, body: unknown, fetchedAt: string, publishedAtFallback?: string | null): RawArticle;
   allowedListContentTypes?: readonly string[];
   allowedDetailContentTypes?: readonly string[];
   isCanonicalContent?: (content: string) => boolean;
@@ -125,7 +125,7 @@ export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Pro
         const detailResponse = await get(item.url || options.adapter.detailUrl(item.sourceId), options.adapter.allowedHosts);
         assertResponseContentType(detailResponse, options.adapter.allowedDetailContentTypes, "detail");
         const detailBody = options.adapter.decodeDetailResponse?.(detailResponse) ?? decodeJson(detailResponse);
-        const article = options.adapter.detail(item.sourceId, detailBody, fetchedAt());
+        const article = options.adapter.detail(item.sourceId, detailBody, fetchedAt(), item.publishedAt);
         const checked = RawArticleSchema.safeParse(article);
         if (!checked.success) throw new Error(`RawArticle schema validation failed: ${checked.error.message}`);
         if (sha256Utf8(checked.data.content) !== checked.data.contentHash) throw new Error("RawArticle contentHash does not match content");
@@ -151,8 +151,18 @@ export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Pro
     return { rawPath, count, pages };
   } catch (error) {
     await rm(temporary, { force: true }).catch(() => undefined);
-    await mkdir(dirname(errorPath), { recursive: true });
-    await writeFile(errorPath, `${JSON.stringify({ game: options.game, error: error instanceof Error ? error.message : String(error) })}\n`, "utf8");
+    const errorRecord = CrawlerErrorRecordSchema.parse({
+      runId: options.runId,
+      game: options.game,
+      code: error instanceof CrawlerHttpError ? error.code : "FETCH_FAILED",
+      message: error instanceof Error ? error.message : String(error),
+      details: error instanceof CrawlerHttpError ? error.details : {},
+    });
+    try {
+      await writeJsonlAtomic(errorPath, [errorRecord]);
+    } catch (artifactError) {
+      throw new Error(`fetch failed and errors artifact could not be written: ${artifactError instanceof Error ? artifactError.message : String(artifactError)}`, { cause: error });
+    }
     throw error;
   }
 }

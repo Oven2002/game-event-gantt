@@ -1,4 +1,6 @@
 import { lookup as dnsLookup } from "node:dns/promises";
+import { request as httpsRequest } from "node:https";
+import { Readable } from "node:stream";
 import { isIP } from "node:net";
 
 export type HttpErrorCode =
@@ -29,6 +31,8 @@ export interface OfficialHttpResponse {
   body: string;
 }
 
+export type PinnedFetchImpl = (url: URL, init: RequestInit, address: string) => Promise<Response>;
+
 export interface FetchOfficialOptions {
   allowedHosts: string[];
   allowedContentTypes?: string[];
@@ -39,6 +43,7 @@ export interface FetchOfficialOptions {
   maxRedirects?: number;
   userAgent?: string;
   fetchImpl?: typeof fetch;
+  pinnedFetchImpl?: PinnedFetchImpl;
   lookup?: (hostname: string) => Promise<string[]>;
 }
 
@@ -109,27 +114,32 @@ function isPrivateAddress(rawAddress: string): boolean {
     || (words[0] & 0xff00) === 0xff00;
 }
 
-async function assertResolvedHost(hostname: string, lookup: FetchOfficialOptions["lookup"]): Promise<void> {
+async function assertResolvedHost(hostname: string, lookup: FetchOfficialOptions["lookup"]): Promise<string[]> {
   if (isIP(hostname) !== 0) {
     throw new CrawlerHttpError("UNSAFE_URL", `IP literal is not allowed: ${hostname}`);
   }
-  if (isPrivateAddress(hostname)) {
-    throw new CrawlerHttpError("UNSAFE_URL", `private address is not allowed: ${hostname}`);
+  let addresses: string[];
+  try {
+    addresses = await (lookup ?? (async (host) => (await dnsLookup(host, { all: true })).map(({ address }) => address)))(hostname);
+  } catch (error) {
+    throw new CrawlerHttpError("UNSAFE_URL", `host could not be resolved: ${hostname}`, { cause: (error as Error).message });
   }
-  if (isIP(hostname) === 0) {
-    let addresses: string[];
-    try {
-      addresses = await (lookup ?? (async (host) => (await dnsLookup(host, { all: true })).map(({ address }) => address)))(hostname);
-    } catch (error) {
-      throw new CrawlerHttpError("UNSAFE_URL", `host could not be resolved: ${hostname}`, { cause: (error as Error).message });
-    }
-    if (!Array.isArray(addresses) || addresses.length === 0 || addresses.some((address) => isIP(address) === 0 || isPrivateAddress(address))) {
-      throw new CrawlerHttpError("UNSAFE_URL", `host did not resolve to safe public addresses: ${hostname}`);
-    }
+  if (!Array.isArray(addresses) || addresses.length === 0 || addresses.some((address) => isIP(address) === 0 || isPrivateAddress(address))) {
+    throw new CrawlerHttpError("UNSAFE_URL", `host did not resolve to safe public addresses: ${hostname}`);
+  }
+  return addresses;
+}
+
+function redactedUrl(rawUrl: string, base?: URL): string {
+  try {
+    const url = base ? new URL(rawUrl, base) : new URL(rawUrl);
+    return `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ""}${url.pathname}`;
+  } catch {
+    return "[invalid-url]";
   }
 }
 
-async function assertSafeUrl(rawUrl: string, allowedHosts: string[], lookup: FetchOfficialOptions["lookup"]): Promise<URL> {
+async function assertSafeUrl(rawUrl: string, allowedHosts: string[], lookup: FetchOfficialOptions["lookup"]): Promise<{ url: URL; addresses: string[] }> {
   let url: URL;
   try {
     url = new URL(rawUrl);
@@ -138,10 +148,10 @@ async function assertSafeUrl(rawUrl: string, allowedHosts: string[], lookup: Fet
   }
   const hostname = url.hostname.toLowerCase();
   if (url.protocol !== "https:" || url.username || url.password || !allowedHosts.map((host) => host.toLowerCase()).includes(hostname)) {
-    throw new CrawlerHttpError("UNSAFE_URL", `URL is not an allowed HTTPS official URL: ${rawUrl}`);
+    throw new CrawlerHttpError("UNSAFE_URL", `URL is not an allowed HTTPS official URL: ${redactedUrl(rawUrl)}`);
   }
-  await assertResolvedHost(hostname, lookup);
-  return url;
+  const addresses = await assertResolvedHost(hostname, lookup);
+  return { url, addresses };
 }
 
 async function waitForHost(host: string, intervalMs: number): Promise<void> {
@@ -190,32 +200,90 @@ async function readLimitedBody(response: Response, maxBytes: number, signal: Abo
   return new TextDecoder().decode(body);
 }
 
+function nodeRequestHeaders(init: RequestInit, url: URL): Record<string, string> {
+  const headers: Record<string, string> = {};
+  new Headers(init.headers).forEach((value, name) => { headers[name] = value; });
+  headers.host = url.host;
+  if (!("accept-encoding" in headers)) headers["accept-encoding"] = "identity";
+  return headers;
+}
+
+function fetchPinned(url: URL, init: RequestInit, address: string): Promise<Response> {
+  return new Promise((resolve, reject) => {
+    const signal = init.signal;
+    const abortError = Object.assign(new Error("The operation was aborted"), { name: "AbortError" });
+    let settled = false;
+    const request = httpsRequest({
+      hostname: address,
+      agent: false,
+      port: url.port ? Number(url.port) : 443,
+      method: init.method ?? "GET",
+      path: `${url.pathname}${url.search}`,
+      servername: url.hostname,
+      headers: nodeRequestHeaders(init, url),
+    }, (incoming) => {
+      settled = true;
+      const headers = new Headers();
+      for (const [name, value] of Object.entries(incoming.headers)) {
+        if (value !== undefined) headers.set(name, Array.isArray(value) ? value.join(", ") : value);
+      }
+      resolve(new Response(Readable.toWeb(incoming) as ReadableStream, {
+        status: incoming.statusCode ?? 0,
+        statusText: incoming.statusMessage ?? "",
+        headers,
+      }));
+    });
+    const cleanup = () => signal?.removeEventListener("abort", onAbort);
+    const onAbort = () => {
+      request.destroy();
+      if (!settled) {
+        settled = true;
+        reject(abortError);
+      }
+    };
+    request.once("error", (error) => {
+      cleanup();
+      if (!settled) {
+        settled = true;
+        reject(error);
+      }
+    });
+    request.once("close", cleanup);
+    if (signal?.aborted) onAbort();
+    else signal?.addEventListener("abort", onAbort, { once: true });
+    request.end();
+  });
+}
+
 export async function fetchOfficial(rawUrl: string, options: FetchOfficialOptions): Promise<OfficialHttpResponse> {
   const timeoutMs = options.timeoutMs ?? 30_000;
   const maxBytes = options.maxBytes ?? 5 * 1024 * 1024;
   const intervalMs = options.minHostIntervalMs ?? 1_000;
   const retryDelays = options.retryDelaysMs ?? [1_000, 5_000];
   const maxRedirects = options.maxRedirects ?? 5;
-  const fetchImpl = options.fetchImpl ?? fetch;
-  let url = await assertSafeUrl(rawUrl, options.allowedHosts, options.lookup);
+  let url: string = rawUrl;
   let attempt = 0;
   let redirects = 0;
 
   while (true) {
-    // DNS preflight is best-effort; native fetch may resolve independently, so this is not connection pinning.
-    url = await assertSafeUrl(url.toString(), options.allowedHosts, options.lookup);
+    const validated = await assertSafeUrl(url, options.allowedHosts, options.lookup);
+    const requestUrl = validated.url;
+    const address = validated.addresses[0];
     if (redirects > maxRedirects) throw new CrawlerHttpError("REDIRECT_LIMIT", `redirect limit exceeded: ${maxRedirects}`);
-    await waitForHost(url.hostname, intervalMs);
+    await waitForHost(requestUrl.hostname, intervalMs);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
       let response: Response;
       try {
-        response = await fetchImpl(url, {
+        const init: RequestInit = {
           redirect: "manual",
           signal: controller.signal,
           headers: { accept: "application/json, text/html, text/plain", "user-agent": options.userAgent ?? "game-event-gantt-crawler/phase1" },
-        });
+        };
+        if (options.pinnedFetchImpl) response = await options.pinnedFetchImpl(requestUrl, init, address);
+        else if (options.fetchImpl) response = await options.fetchImpl(requestUrl, init);
+        else response = await fetchPinned(requestUrl, init, address);
       } catch (error) {
         if (error instanceof CrawlerHttpError) throw error;
         if ((error as Error).name === "AbortError") throw new CrawlerHttpError("TIMEOUT", `request timed out after ${timeoutMs}ms`);
@@ -230,11 +298,11 @@ export async function fetchOfficial(rawUrl: string, options: FetchOfficialOption
         redirects += 1;
         let redirectedUrl: string;
         try {
-          redirectedUrl = new URL(location, url).toString();
+          redirectedUrl = new URL(location, requestUrl).toString();
         } catch {
-          throw new CrawlerHttpError("REDIRECT", "redirect location is invalid", { status: response.status, location });
+          throw new CrawlerHttpError("REDIRECT", "redirect location is invalid", { status: response.status, location: redactedUrl(location, requestUrl) });
         }
-        url = await assertSafeUrl(redirectedUrl, options.allowedHosts, options.lookup);
+        url = redirectedUrl;
         continue;
       }
 
@@ -254,7 +322,7 @@ export async function fetchOfficial(rawUrl: string, options: FetchOfficialOption
       if (!contentType || !allowedContentTypes.includes(contentType)) {
         throw new CrawlerHttpError("CONTENT_TYPE", `unsupported content type: ${contentType || "missing"}`, { contentType });
       }
-      return { url: url.toString(), status: response.status, contentType, body: await readLimitedBody(response, maxBytes, controller.signal) };
+      return { url: requestUrl.toString(), status: response.status, contentType, body: await readLimitedBody(response, maxBytes, controller.signal) };
     } finally {
       clearTimeout(timeout);
     }
