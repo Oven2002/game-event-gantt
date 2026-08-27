@@ -35,7 +35,7 @@ const configuredGames: Record<string, { supportsVersions: boolean }> = {
 export interface IndexedTarget {
   key: string;
   game: string;
-  region: "cn";
+  region: string;
   kind: "version" | "event";
   targetId: string;
   targetFile: string;
@@ -59,6 +59,7 @@ export interface ReviewRunOptions {
 
 export interface ReviewFieldChange {
   field: string;
+  currentField?: string;
   current: unknown;
   candidate: unknown;
 }
@@ -73,6 +74,7 @@ export interface ReviewEntry {
     expectedOldValueHash: Sha256;
     matchReasons: string[];
   }>;
+  availableTargetFiles: string[];
   changes: ReviewFieldChange[];
   category: "new_confirmed" | "new_uncertain" | "time_change" | "source_change" | "ambiguous" | "needs_review" | "matched";
   matchReasons: string[];
@@ -140,7 +142,7 @@ export async function buildDataIndex(dataRoot = resolve(process.cwd(), "data")):
           targets.set(key, {
             key,
             game: value.game,
-            region: "cn",
+            region: value.region,
             kind,
             targetId: item.id,
             targetFile,
@@ -182,7 +184,7 @@ function candidateUncertain(candidate: CandidateItem): boolean {
 function candidateField(candidate: CandidateItem, field: string): unknown {
   const value = candidate as unknown as Record<string, unknown>;
   if (field === "sources") return (value.sources as string[]).map(canonicalizeUrl);
-  if (field === "related") return value.relatedCandidateKeys ?? [];
+  if (field === "relatedCandidateKeys") return value.relatedCandidateKeys ?? [];
   return value[field] ?? null;
 }
 
@@ -198,11 +200,15 @@ function sameValue(left: unknown, right: unknown): boolean {
 }
 
 function reviewFields(candidate: CandidateItem, target?: IndexedTarget): ReviewFieldChange[] {
-  const fields = candidate.kind === "event"
-    ? ["name", "type", "start", "end", "sources", "related", "lifecycle", "cadence", "subtype", "note"]
-    : ["name", "start", "end", "sources", "note"];
+  const fields: Array<string | { field: string; currentField: string }> = candidate.kind === "event"
+    ? ["name", "type", "start", "end", "timeCertainty", "sources", { field: "relatedCandidateKeys", currentField: "related" }, "lifecycle", "cadence", "subtype", "note"]
+    : ["name", "start", "end", "timeCertainty", "sources", "note"];
   return fields
-    .map((field) => ({ field, current: target ? targetField(target, field) : null, candidate: candidateField(candidate, field) }))
+    .map((spec) => {
+      const field = typeof spec === "string" ? spec : spec.field;
+      const currentField = typeof spec === "string" ? field : spec.currentField;
+      return { field, currentField: currentField === field ? undefined : currentField, current: target ? targetField(target, currentField) : null, candidate: candidateField(candidate, field) };
+    })
     .filter((change) => !sameValue(change.current, change.candidate));
 }
 
@@ -294,6 +300,11 @@ function jsonValue(value: unknown): string {
   return JSON.stringify(value ?? null, null, 2);
 }
 
+function availableTargetFiles(candidate: CandidateItem, index: DataIndex): string[] {
+  const prefix = `data/${candidate.game}/${candidate.region}-`;
+  return index.files.filter((path) => path.startsWith(prefix));
+}
+
 function entryMarkdown(entry: ReviewEntry): string {
   const lines = [
     `### ${entry.candidate.candidateKey}`,
@@ -301,19 +312,20 @@ function entryMarkdown(entry: ReviewEntry): string {
     `- evidence 原文: ${entry.raw.content}`,
     `- review reason: ${entry.candidate.reviewReasons.length ? entry.candidate.reviewReasons.join("；") : "无"}`,
   ];
+  if (entry.availableTargetFiles.length) lines.push("- 可选 targetFile（同 game/region）:", ...entry.availableTargetFiles.map((path) => `  - ${path}`));
   if (entry.target) lines.push(`- target: ${entry.target.targetFile}#${entry.target.targetId}`);
   if (entry.targetOptions.length) lines.push(`- target options: ${entry.targetOptions.map((option) => `${option.targetFile}#${option.targetId} (${option.matchReasons.join("；")})`).join(", ")}`);
   if (entry.changes.length === 0) {
     lines.push("- field changes: 无");
   } else {
     for (const change of entry.changes) {
-      lines.push(`#### ${change.field}`, `- 当前 YAML 值: \`${jsonValue(change.current)}\``, `- 候选值: \`${jsonValue(change.candidate)}\``);
+      lines.push(`#### ${change.field}${change.currentField ? `（当前 YAML ${change.currentField}）` : ""}`, `- 当前 YAML 值: \`${jsonValue(change.current)}\``, `- 候选值: \`${jsonValue(change.candidate)}\``);
     }
   }
   return lines.join("\n");
 }
 
-function renderReport(entries: ReviewEntry[], runId: string, targetFiles: string[]): string {
+function renderReport(entries: ReviewEntry[], runId: string): string {
   const sections: Array<[string, ReviewEntry[]]> = [
     ["新增 confirmed", entries.filter((entry) => entry.category === "new_confirmed")],
     ["新增 inferred/estimated", entries.filter((entry) => entry.category === "new_uncertain")],
@@ -323,7 +335,7 @@ function renderReport(entries: ReviewEntry[], runId: string, targetFiles: string
     ["重复/无法匹配", entries.filter((entry) => entry.category === "ambiguous")],
     ["需要人工查看", entries.filter((entry) => entry.category === "needs_review")],
   ];
-  const lines = [`# Review diff\n\n- runId: ${runId}`, "\n## 可选 targetFile\n", targetFiles.length ? targetFiles.map((path) => `- ${path}`).join("\n") : "无"];
+  const lines = [`# Review diff\n\n- runId: ${runId}`];
   for (const [title, values] of sections) {
     lines.push(`\n## ${title}\n`);
     lines.push(values.length ? values.map(entryMarkdown).join("\n\n") : "无");
@@ -384,8 +396,9 @@ export async function reviewRun(options: ReviewRunOptions): Promise<ReviewRunRes
   const entries: ReviewEntry[] = [];
   const templateItems: ApprovalSelectionTemplate["items"] = [];
   for (const { candidate, raw } of candidates) {
+    const candidateTargetFiles = availableTargetFiles(candidate, index);
     if (candidate.review !== "ready" || !candidateKind(candidate)) {
-      entries.push({ candidate, raw, targetOptions: [], changes: [], category: "needs_review", matchReasons: candidate.reviewReasons });
+      entries.push({ candidate, raw, targetOptions: [], availableTargetFiles: candidateTargetFiles, changes: [], category: "needs_review", matchReasons: candidate.reviewReasons });
       continue;
     }
     const mapping = mapByCandidate.get(candidate.candidateKey);
@@ -394,7 +407,7 @@ export async function reviewRun(options: ReviewRunOptions): Promise<ReviewRunRes
       const changes = reviewFields(candidate, target);
       const reasons = ["durable applied mapping", ...changes.map((change) => `${change.field} differs`).filter((value, position, values) => values.indexOf(value) === position)];
       const targetOptions = [{ targetId: target.targetId, targetFile: target.targetFile, expectedOldValueHash: target.oldValueHash, matchReasons: reasons }];
-      const entry: ReviewEntry = { candidate, raw, target, targetOptions, changes, category: "matched", matchReasons: reasons };
+      const entry: ReviewEntry = { candidate, raw, target, targetOptions, availableTargetFiles: candidateTargetFiles, changes, category: "matched", matchReasons: reasons };
       entries.push(entry);
       if (changes.some((change) => ["start", "end"].includes(change.field))) entry.category = "time_change";
       else if (changes.some((change) => change.field === "sources")) entry.category = "source_change";
@@ -405,18 +418,18 @@ export async function reviewRun(options: ReviewRunOptions): Promise<ReviewRunRes
     if (suspected.length > 0) {
       const targetOptions = suspected.map(({ target, reasons }) => ({ targetId: target.targetId, targetFile: target.targetFile, expectedOldValueHash: target.oldValueHash, matchReasons: reasons }));
       const reasons = targetOptions.flatMap((option) => option.matchReasons).filter((value, position, values) => values.indexOf(value) === position);
-      entries.push({ candidate, raw, targetOptions, changes: [], category: "ambiguous", matchReasons: reasons });
+      entries.push({ candidate, raw, targetOptions, availableTargetFiles: candidateTargetFiles, changes: [], category: "ambiguous", matchReasons: reasons });
       templateItems.push({ candidateKey: candidate.candidateKey, candidateHash: candidate.candidateHash, sourceHash: candidate.sourceHash, kind: candidate.kind, targetOptions, matchReasons: reasons });
       continue;
     }
     const category = candidateUncertain(candidate) ? "new_uncertain" : "new_confirmed";
-    entries.push({ candidate, raw, targetOptions: [], changes: reviewFields(candidate), category, matchReasons: [] });
+    entries.push({ candidate, raw, targetOptions: [], availableTargetFiles: candidateTargetFiles, changes: reviewFields(candidate), category, matchReasons: [] });
     templateItems.push({ candidateKey: candidate.candidateKey, candidateHash: candidate.candidateHash, sourceHash: candidate.sourceHash, kind: candidate.kind, suggestedOperation: "add", targetOptions: [], matchReasons: [] });
   }
   const template: ApprovalSelectionTemplate = { schemaVersion: 1, runId: options.runId, items: templateItems };
   const checkedTemplate = ApprovalSelectionTemplateSchema.safeParse(template);
   if (!checkedTemplate.success) throw new Error(`review template schema failed: ${checkedTemplate.error.message}`);
-  const report = renderReport(entries, options.runId, index.files);
+  const report = renderReport(entries, options.runId);
   await writeReviewOutputsAtomic(options.runtimeRoot, options.runId, reportPath, templatePath, report, checkedTemplate.data as ApprovalSelectionTemplate, options.rename);
   return { reportPath, templatePath, template: checkedTemplate.data as ApprovalSelectionTemplate, entries };
 }

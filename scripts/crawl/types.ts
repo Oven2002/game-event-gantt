@@ -211,7 +211,20 @@ export type CandidateTargetMapEntry = z.infer<typeof CandidateTargetMapEntrySche
 export const CandidateTargetMapSchema = z.object({
   schemaVersion: z.literal(1),
   entries: z.array(CandidateTargetMapEntrySchema),
-}).strict();
+}).strict().superRefine((value, ctx) => {
+  const seen = new Set<string>();
+  value.entries.forEach((entry, index) => {
+    const [keyGame] = entry.candidateKey.split("/");
+    const targetFilePrefix = `data/${entry.game}/${entry.region}-`;
+    if (keyGame !== entry.game || !entry.targetFile.startsWith(targetFilePrefix)) {
+      ctx.addIssue({ code: "custom", path: ["entries", index], message: "candidateKey、game、region 与 targetFile 必须一致" });
+    }
+    if (seen.has(entry.candidateKey)) {
+      ctx.addIssue({ code: "custom", path: ["entries", index, "candidateKey"], message: "candidateKey 不能重复" });
+    }
+    seen.add(entry.candidateKey);
+  });
+});
 export type CandidateTargetMap = z.infer<typeof CandidateTargetMapSchema>;
 
 export type VersionSelectionPatch = {

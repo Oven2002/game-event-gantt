@@ -60,12 +60,15 @@ describe("crawler review diff", () => {
     const setup = await prepareRun([
       raw("new-1", "全新活动", "活动时间：2026年8月20日 04:00 至 2026年8月20日 11:00"),
     ], { "cn-2026.yaml": existingEvent("existing-event", "旧活动", "old-1") });
+    await mkdir(join(setup.dataRoot, "honkai-star-rail"), { recursive: true });
+    await writeFile(join(setup.dataRoot, "honkai-star-rail", "cn-2026.yaml"), "game: honkai-star-rail\nregion: cn\nevents:\n  - id: other-event\n    name: 其他活动\n    type: event\n    start: \"2026-07-01T04:00:00+08:00\"\n    sources:\n      - \"https://sr.mihoyo.com/news/other\"\n", "utf8");
     const result = await reviewRun({ ...setup });
     expect(result.template.items).toHaveLength(1);
     expect(result.template.items[0]).toMatchObject({ suggestedOperation: "add", targetOptions: [] });
     const report = await readFile(result.reportPath, "utf8");
     expect(report).toContain("新增 confirmed");
     expect(report).toContain("data/genshin-impact/cn-2026.yaml");
+    expect(report).not.toContain("data/honkai-star-rail/cn-2026.yaml");
     expect(report.split("## 已有条目时间变化")[1].split("## 已有条目来源变化")[0]).not.toContain("genshin-impact/new-1/primary");
     expect(report.split("## 已有条目来源变化")[1].split("## 已有条目其他字段变化")[0]).not.toContain("genshin-impact/new-1/primary");
   });
@@ -106,6 +109,22 @@ describe("crawler review diff", () => {
     expect(report.split("## 已有条目来源变化")[1].split("## 重复/无法匹配")[0]).toContain(candidate.candidateKey);
     expect(report).toContain("当前 YAML 值");
     expect(report).toContain("候选值");
+    expect(report).toContain("timeCertainty");
+  });
+
+  it("labels candidate related keys separately from YAML related ids", async () => {
+    const article = raw("new-1", "活动说明", "活动时间：2026年8月20日 05:00 至 2026年8月20日 12:00");
+    const setup = await prepareRun([article], { "cn-2026.yaml": existingEvent("old-event", "活动说明", "old-1", "2026-08-20T05:00:00+08:00", "2026-08-20T12:00:00+08:00") }, {
+      schemaVersion: 1,
+      entries: [{ ...mapEntry, candidateKey: "genshin-impact/new-1/primary", targetId: "old-event" }],
+    });
+    const candidatePath = artifactPath(setup.runtimeRoot, setup.runId, "candidates", "json", "genshin-impact");
+    const candidate = JSON.parse(await readFile(candidatePath, "utf8"))[0] as Record<string, unknown>;
+    const related: Record<string, unknown> = { ...candidate, relatedCandidateKeys: ["genshin-impact/version-1/primary"] };
+    related.candidateHash = hashCanonicalJson(candidateHashProjection(related));
+    await writeFile(candidatePath, `${JSON.stringify([related])}\n`, "utf8");
+    const result = await reviewRun({ ...setup });
+    expect(await readFile(result.reportPath, "utf8")).toContain("relatedCandidateKeys（当前 YAML related）");
   });
 
   it("keeps needs-review candidates out of the selection template", async () => {
