@@ -27,9 +27,12 @@ export type CheckpointSchemaRegistry = Record<string, CheckpointSchemaRegistryEn
 export type KnownGameCheckpointKinds = Record<string, string | null>;
 
 export class CrawlerStateError extends Error {
-  constructor(public readonly code: "INVALID_STATE" | "INVALID_SCAN_MODE", message: string) {
+  public readonly code: "INVALID_STATE" | "INVALID_SCAN_MODE";
+
+  constructor(code: "INVALID_STATE" | "INVALID_SCAN_MODE", message: string) {
     super(message);
     this.name = "CrawlerStateError";
+    this.code = code;
   }
 }
 

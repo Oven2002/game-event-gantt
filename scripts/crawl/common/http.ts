@@ -11,13 +11,14 @@ export type HttpErrorCode =
   | "REDIRECT_LIMIT";
 
 export class CrawlerHttpError extends Error {
-  constructor(
-    public readonly code: HttpErrorCode,
-    message: string,
-    public readonly details: Record<string, unknown> = {},
-  ) {
+  public readonly code: HttpErrorCode;
+  public readonly details: Record<string, unknown>;
+
+  constructor(code: HttpErrorCode, message: string, details: Record<string, unknown> = {}) {
     super(message);
     this.name = "CrawlerHttpError";
+    this.code = code;
+    this.details = details;
   }
 }
 

@@ -64,6 +64,13 @@ describe("announcement timeline semantics", () => {
   it("classifies an article with one explicit interval without guessing", () => {
     expect(parseArticleCandidates({ title: "活动说明", content: "活动时间：8月20日 04:00 至 11:00", publishedAt: "2026-08-01T00:00:00+08:00" })).toMatchObject({ status: "ready", kind: "event", start: "2026-08-20T04:00:00+08:00", end: "2026-08-20T11:00:00+08:00" });
   });
+
+  it("maps maintenance notices to the configured maintenance event type", () => {
+    expect(parseArticleCandidates({
+      title: "停机维护公告",
+      content: "维护时间：2026年8月20日 04:00 至 2026年8月20日 11:00",
+    })).toMatchObject({ status: "ready", kind: "event", type: "maintenance" });
+  });
   it("rejects multiple windows instead of collapsing them", () => {
     expect(parseArticleCandidates({ title: "活动说明", content: "第一期：2026年8月20日 04:00 至 11:00；第二期：2026年8月21日 04:00 至 11:00" })).toMatchObject({ status: "needs_review" });
   });
