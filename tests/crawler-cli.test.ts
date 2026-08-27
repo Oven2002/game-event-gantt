@@ -3,10 +3,11 @@ import { execFile } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rename as fsRename, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { parseCliArgs, createRunId, runCrawlCli, createFetchAdapter } from "../scripts/crawl/cli.ts";
+import { parseCliArgs, createRunId, runCrawlCli, createFetchAdapter, advanceState } from "../scripts/crawl/cli.ts";
 import { parseRun } from "../scripts/crawl/commands/parse.ts";
 import { sha256Utf8 } from "../scripts/crawl/common/hash.ts";
 import { artifactDirectory, artifactPath, runRoot } from "../scripts/crawl/common/run.ts";
+import { beginStateTransaction, markStateTransactionPending, stateTransactionPath, recoverStateTransactions } from "../scripts/crawl/common/state.ts";
 import type { RawArticle, Sha256 } from "../scripts/crawl/types.ts";
 
 const makeRaw = (overrides: Partial<RawArticle> = {}): RawArticle => {
@@ -95,6 +96,69 @@ describe("crawler parse command", () => {
     expect(result).toMatchObject({ ready: 0, needsReview: 0, rejections: 1 });
     expect(JSON.parse(await readFile(result.results[0].candidatesPath, "utf8"))).toEqual([]);
     expect(await readFile(result.results[0].rejectionsPath, "utf8")).toMatch(/canonical content/i);
+  });
+
+  it("revalidates raw content hashes before advancing state", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-state-"));
+    const runId = "20260801-000009";
+    await mkdir(runRoot(root, runId), { recursive: true });
+    const tampered = makeRaw();
+    tampered.content = "tampered after fetch";
+    const rawPath = artifactPath(root, runId, "raw", "jsonl", "genshin-impact");
+    await writeRaw(root, runId, "genshin-impact", [tampered]);
+
+    await expect(advanceState(root, "genshin-impact", rawPath, { schemaVersion: 1, games: {} })).rejects.toThrow(/contentHash/i);
+  });
+
+  it("rolls back raw and transaction marker when state commit fails", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-state-"));
+    const runId = "20260801-000010";
+    await mkdir(runRoot(root, runId), { recursive: true });
+    const rawPath = artifactPath(root, runId, "raw", "jsonl", "genshin-impact");
+    await writeRaw(root, runId, "genshin-impact", [makeRaw()]);
+    const transactionPath = stateTransactionPath(root, runId);
+    await beginStateTransaction(root, runId, "genshin-impact", rawPath);
+
+    await expect(advanceState(root, "genshin-impact", rawPath, { schemaVersion: 1, games: {} }, {
+      runId,
+      transactionPath,
+      writeState: async () => { throw new Error("state write failed"); },
+    })).rejects.toThrow("state write failed");
+    await expect(readFile(rawPath, "utf8")).rejects.toThrow();
+    await expect(readFile(transactionPath, "utf8")).rejects.toThrow();
+  });
+
+  it("rolls back an unfinished state transaction during recovery", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-state-"));
+    const runId = "20260801-000011";
+    await mkdir(runRoot(root, runId), { recursive: true });
+    const rawPath = artifactPath(root, runId, "raw", "jsonl", "genshin-impact");
+    await writeRaw(root, runId, "genshin-impact", [makeRaw()]);
+    const transactionPath = stateTransactionPath(root, runId);
+    await beginStateTransaction(root, runId, "genshin-impact", rawPath);
+
+    await recoverStateTransactions(root, { schemaVersion: 1, games: {} });
+    await expect(readFile(rawPath, "utf8")).rejects.toThrow();
+    await expect(readFile(transactionPath, "utf8")).rejects.toThrow();
+  });
+
+  it("keeps raw when recovery sees that state already contains the transaction hashes", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-state-"));
+    const runId = "20260801-000012";
+    await mkdir(runRoot(root, runId), { recursive: true });
+    const article = makeRaw();
+    const rawPath = artifactPath(root, runId, "raw", "jsonl", "genshin-impact");
+    await writeRaw(root, runId, "genshin-impact", [article]);
+    const transactionPath = stateTransactionPath(root, runId);
+    await beginStateTransaction(root, runId, "genshin-impact", rawPath);
+    await markStateTransactionPending(transactionPath, runId, "genshin-impact", rawPath, { [article.sourceId]: article.contentHash });
+
+    await recoverStateTransactions(root, {
+      schemaVersion: 1,
+      games: { "genshin-impact": { checkpoint: null, sourceHashes: { [article.sourceId]: article.contentHash } } },
+    });
+    await expect(readFile(rawPath, "utf8")).resolves.toContain(article.sourceId);
+    await expect(readFile(transactionPath, "utf8")).rejects.toThrow();
   });
 
   it("keeps events-only version notices in rejection JSONL", async () => {
@@ -333,6 +397,10 @@ describe("crawler parse command", () => {
           : item.game === "zenless-zone-zero" ? "165865"
             : item.game === "arknights" ? "4924" : "4776";
       expect(state.games[item.game].sourceHashes).toHaveProperty(sourceId);
+      if (item.game === "arknights") {
+        const raw = JSON.parse((await readFile(artifactPath(root, "20260801-000000", "raw", "jsonl", item.game), "utf8")).trim()) as { publishedAt: string | null };
+        expect(raw.publishedAt).toBe("2026-08-21T17:00:00+08:00");
+      }
     }
   });
 

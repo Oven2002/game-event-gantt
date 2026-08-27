@@ -44,6 +44,24 @@ describe("crawler runtime schemas", () => {
     expect(RawArticleSchema.safeParse({ ...raw, extra: true }).success).toBe(false);
   });
 
+  it("requires fetchedAt to be a real timezone-aware ISO timestamp", () => {
+    const raw = {
+      game: "genshin-impact",
+      region: "cn",
+      source: "mihoyo",
+      sourceId: "165690",
+      url: "https://ys.mihoyo.com/main/news/detail/165690",
+      title: "Official notice",
+      publishedAt: null,
+      content: "Official content",
+      contentHash: "sha256:" + "a".repeat(64),
+      fetchedAt: "x",
+    };
+    expect(RawArticleSchema.safeParse(raw).success).toBe(false);
+    expect(RawArticleSchema.safeParse({ ...raw, fetchedAt: "2026-02-30T10:24:52+00:00" }).success).toBe(false);
+    expect(RawArticleSchema.safeParse({ ...raw, fetchedAt: "2026-08-25T10:24:52Z" }).success).toBe(true);
+  });
+
   it("allows unknown kind only for needs-review candidates", () => {
     const candidate = {
       game: "genshin-impact",

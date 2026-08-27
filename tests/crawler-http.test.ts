@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canonicalizeUrl, canonicalJson, hashCanonicalJson, sha256Utf8, sourceHashProjection, candidateHashProjection, oldValueHashProjection } from "../scripts/crawl/common/hash.ts";
-import { appendJsonl, appendJsonlIfUnique, readJsonl, readJsonAtomic, writeJsonAtomic } from "../scripts/crawl/common/files.ts";
+import { appendJsonl, appendJsonlIfUnique, readJsonl, readJsonAtomic, writeJsonAtomic, writeJsonlAtomic } from "../scripts/crawl/common/files.ts";
 import { CrawlerHttpError, fetchOfficial } from "../scripts/crawl/common/http.ts";
 import { loadState, writeStateAtomic, type CrawlerState } from "../scripts/crawl/common/state.ts";
 import type { Sha256 } from "../scripts/crawl/types.ts";
@@ -108,7 +108,15 @@ describe("crawler files", () => {
     await expect(readJsonl(path)).resolves.toEqual([article]);
   });
 
-  it("keeps the previous file when an atomic replacement is rejected", async () => {
+  it("keeps the previous JSONL when an atomic replacement is rejected", async () => {
+    const path = `/tmp/gameg-task2-jsonl-test/atomic-${process.pid}-${Date.now()}.jsonl`;
+    await writeJsonlAtomic(path, [{ version: 1 }]);
+    await expect(writeJsonlAtomic(path, [{ version: 2 }], { rename: async () => { throw new Error("rename failed"); } }))
+      .rejects.toThrow("rename failed");
+    await expect(readJsonl(path)).resolves.toEqual([{ version: 1 }]);
+  });
+
+  it("preserves the previous file when an atomic replacement is rejected", async () => {
     const path = "/tmp/gameg-task2-jsonl-test/unchanged.json";
     await writeJsonAtomic(path, { version: 1 });
     await expect(writeJsonAtomic(path, { version: 2 }, { rename: async () => { throw new Error("rename failed"); } }))
@@ -185,12 +193,27 @@ describe("safe official HTTP client", () => {
     })).rejects.toMatchObject({ code: "UNSAFE_URL" });
   });
 
+  it("passes the validated DNS address to the pinned transport", async () => {
+    let capturedAddress = "";
+    const result = await fetchOfficial("https://example.com/pinned", {
+      allowedHosts: ["example.com"],
+      lookup: async () => ["93.184.216.34"],
+      fetchImpl: async () => response("unpinned"),
+      pinnedFetchImpl: async (_url, _init, address) => {
+        capturedAddress = address;
+        return response("pinned");
+      },
+    });
+    expect(result.body).toBe("pinned");
+    expect(capturedAddress).toBe("93.184.216.34");
+  });
+
   it("revalidates DNS before retrying an official request", async () => {
     let lookups = 0;
     let attempts = 0;
     await expect(fetchOfficial("https://example.com/a", {
       allowedHosts: ["example.com"],
-      retryDelaysMs: [0],
+      retryDelaysMs: [0, 0],
       minHostIntervalMs: 0,
       lookup: async () => {
         lookups += 1;
@@ -201,7 +224,7 @@ describe("safe official HTTP client", () => {
         return response("busy", { status: 503 });
       },
     })).rejects.toMatchObject({ code: "UNSAFE_URL" });
-    expect(attempts).toBe(1);
+    expect(attempts).toBe(2);
     expect(lookups).toBeGreaterThanOrEqual(3);
   });
 

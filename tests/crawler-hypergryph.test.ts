@@ -64,6 +64,12 @@ describe("Hypergryph fixture adapter", () => {
     }
   });
 
+  it("uses a validated list displayTime when detail has no publication date", async () => {
+    const body = await fixture(`${root}/arknights/detail-4924.json`);
+    const article = parseHypergryphDetail("arknights", "4924", body, "2026-08-26T00:00:00+00:00", "2026-08-21T17:00:00+08:00");
+    expect(article.publishedAt).toBe("2026-08-21T17:00:00+08:00");
+  });
+
   it("preserves block order while stripping tags and scripts", () => {
     expect(normalizeHypergryphContent("<p>第一段</p><p><strong>第二段</strong></p><img src=\"x\"><script>x</script>"))
       .toBe("第一段\n第二段");

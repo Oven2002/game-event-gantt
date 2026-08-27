@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { writeJsonAtomic } from "../scripts/crawl/common/files.ts";
-import { assertScanMode, loadState, writeStateAtomic, type CrawlerState } from "../scripts/crawl/common/state.ts";
+import { assertScanMode, loadState, stateTransactionPath, writeStateAtomic, type CrawlerState } from "../scripts/crawl/common/state.ts";
 
 const registry = {
   page: {
@@ -10,6 +10,10 @@ const registry = {
 };
 const knownGames = { demo: "page", noCheckpoint: null };
 const state: CrawlerState = { schemaVersion: 1, games: { noCheckpoint: { checkpoint: null, sourceHashes: {} } } };
+
+it("rejects traversal in transaction run ids", () => {
+  expect(() => stateTransactionPath("/tmp/runtime", "../escape")).toThrow(/run-id/i);
+});
 
 it("fails closed for malformed JSON and wrong schema versions", async () => {
   const path = "/tmp/gameg-task2-state/malformed.json";

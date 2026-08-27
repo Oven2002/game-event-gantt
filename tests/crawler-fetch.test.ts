@@ -4,6 +4,7 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fetchGame } from "../scripts/crawl/commands/fetch.ts";
+import { CrawlerHttpError } from "../scripts/crawl/common/http.ts";
 import { sha256Utf8 } from "../scripts/crawl/common/hash.ts";
 import { createRun, artifactPath } from "../scripts/crawl/common/run.ts";
 import type { RawArticle, Sha256 } from "../scripts/crawl/types.ts";
@@ -104,6 +105,26 @@ describe("fetch command", () => {
     })).rejects.toThrow(/pagination|maxPages/i);
     await expect(access(artifactPath(root, runId, "raw", "jsonl", "demo"))).rejects.toThrow();
     expect(await readFile(artifactPath(root, runId, "errors"), "utf8")).toMatch(/pagination|maxPages/i);
+  });
+
+  it("writes structured error records with the run context", async () => {
+    const { root, runId } = await newRun();
+    await expect(fetchGame({
+      runtimeRoot: root,
+      runId,
+      game: "demo",
+      fetcher: async () => { throw new CrawlerHttpError("CONTENT_TYPE", "unsupported", { contentType: "application/octet-stream" }); },
+      adapter: {
+        allowedHosts: ["demo.example"],
+        listUrl: () => "list:1",
+        detailUrl: (id) => `detail:${id}`,
+        list: (_page, _size, body) => body as { items: Array<{ sourceId: string; url: string }> },
+        listItems: (page) => page.items,
+        detail: (id, _body, fetchedAt) => ({ ...article(id), fetchedAt }),
+      },
+    })).rejects.toMatchObject({ code: "CONTENT_TYPE" });
+    const record = JSON.parse((await readFile(artifactPath(root, runId, "errors"), "utf8")).trim());
+    expect(record).toMatchObject({ runId, game: "demo", code: "CONTENT_TYPE", message: "unsupported", details: { contentType: "application/octet-stream" } });
   });
 
   it("writes an empty raw artifact when the first page has no items", async () => {
