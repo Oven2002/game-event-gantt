@@ -3,10 +3,12 @@ import { evaluateSource, isDiscoveryOnlySource } from "../scripts/crawl/common/s
 import { officialSourceAccounts } from "../scripts/crawl/source-accounts.ts";
 
 describe("crawler source policy", () => {
-  it("allows configured CN official hosts", () => {
+  it("allows configured CN official article hosts but not API endpoints as candidate sources", () => {
     expect(evaluateSource("genshin-impact", "https://ys.mihoyo.com/main/news/detail/1")).toMatchObject({ allowed: true, role: "official" });
     expect(evaluateSource("arknights", "https://ak.hypergryph.com/news/4924")).toMatchObject({ allowed: true, role: "official" });
     expect(evaluateSource("arknights", "https://ak.hypergryph.com:8443/news/4924")).toMatchObject({ allowed: false, role: "rejected" });
+    expect(evaluateSource("genshin-impact", "https://act-api-takumi-static.mihoyo.com/content_v2_user/app/id/getContent")).toMatchObject({ allowed: false, role: "rejected" });
+    expect(evaluateSource("zenless-zone-zero", "https://sg-public-api-static.hoyoverse.com/content")).toMatchObject({ allowed: false, role: "rejected" });
   });
 
   it("rejects insecure, foreign-server, and third-party URLs", () => {
@@ -15,6 +17,7 @@ describe("crawler source policy", () => {
       "https://genshin.hoyoverse.com/zh-tw/news/1",
       "https://forum.gamer.com.tw/C.php?bsn=36730&snA=1",
       "https://news.17173.com/content/1.shtml",
+      "https://m.facebook.com/game/posts/1",
     ]) {
       expect(evaluateSource("genshin-impact", url)).toMatchObject({ allowed: false, role: "rejected" });
     }
