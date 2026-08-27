@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { mkdtemp, mkdir, readFile, rename as fsRename, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rename as fsRename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { type RawArticle, type Sha256 } from "../scripts/crawl/types.ts";
+import { type CandidateRejection, type RawArticle, type Sha256 } from "../scripts/crawl/types.ts";
 import { reviewRun, buildDataIndex } from "../scripts/crawl/common/diff.ts";
 import { createRun, artifactPath } from "../scripts/crawl/common/run.ts";
 import { parseArticleCandidate } from "../scripts/crawl/parsers/article.ts";
@@ -35,7 +35,7 @@ function raw(sourceId: string, title: string, content: string): RawArticle {
   };
 }
 
-async function prepareRun(rawArticles: RawArticle[], dataFiles: Record<string, string>, map: { schemaVersion: 1; entries: Array<Record<string, unknown>> } = { schemaVersion: 1, entries: [] }) {
+async function prepareRun(rawArticles: RawArticle[], dataFiles: Record<string, string>, map: { schemaVersion: 1; entries: Array<Record<string, unknown>> } = { schemaVersion: 1, entries: [] }, rejections: CandidateRejection[] = []) {
   const runtimeRoot = await mkdtemp(join(tmpdir(), "crawler-review-runtime-"));
   const dataRoot = await mkdtemp(join(tmpdir(), "crawler-review-data-"));
   const gameRoot = join(dataRoot, "genshin-impact");
@@ -48,6 +48,8 @@ async function prepareRun(rawArticles: RawArticle[], dataFiles: Record<string, s
   await writeFile(artifactPath(runtimeRoot, runId, "raw", "jsonl", "genshin-impact"), `${rawArticles.map((value) => JSON.stringify(value)).join("\n")}\n`, "utf8");
   const candidates = rawArticles.map((value) => parseArticleCandidate(value, runId, "primary"));
   await writeFile(artifactPath(runtimeRoot, runId, "candidates", "json", "genshin-impact"), `${JSON.stringify(candidates)}\n`, "utf8");
+  await mkdir(join(runtimeRoot, "rejections"), { recursive: true });
+  await writeFile(artifactPath(runtimeRoot, runId, "rejections"), rejections.map((value) => JSON.stringify(value)).join("\n") + (rejections.length ? "\n" : ""), "utf8");
   const mapPath = join(runtimeRoot, "candidate-target-map.json");
   await writeFile(mapPath, `${JSON.stringify(map)}\n`, "utf8");
   return { runtimeRoot, dataRoot, targetMapPath: mapPath, runId };
@@ -91,7 +93,11 @@ describe("crawler review diff", () => {
     const result = await reviewRun({ ...setup });
     expect(result.template.items[0]).toMatchObject({ targetOptions: [{ targetId: "old-event" }] });
     expect(result.template.items[0]).not.toHaveProperty("suggestedOperation");
-    expect(await readFile(result.reportPath, "utf8")).toContain("重复/无法匹配");
+    const report = await readFile(result.reportPath, "utf8");
+    expect(report).toContain("重复/无法匹配");
+    expect(report).toContain("当前 YAML 值");
+    expect(report).toContain("候选值");
+    expect(report).toContain("candidate evidence");
   });
 
   it("uses an applied mapping for a deterministic update and reports field changes", async () => {
@@ -134,6 +140,21 @@ describe("crawler review diff", () => {
     expect(await readFile(result.reportPath, "utf8")).toContain("需要人工查看");
   });
 
+  it("reports rejection counts by reason code without adding them to selections", async () => {
+    const rejection: CandidateRejection = {
+      rawRef: { runId: "20260827-000001", game: "genshin-impact", sourceId: "rejected-1" },
+      reasonCode: "supports_versions_disabled",
+      detail: "version candidate was rejected",
+    };
+    const setup = await prepareRun([raw("new-1", "全新活动", "活动时间：2026年8月20日 04:00 至 2026年8月20日 11:00")], { "cn-2026.yaml": existingEvent("existing-event", "旧活动", "old-1") }, { schemaVersion: 1, entries: [] }, [rejection]);
+    const result = await reviewRun({ ...setup });
+    expect(result.rejections).toEqual([rejection]);
+    const report = await readFile(result.reportPath, "utf8");
+    expect(report).toContain("候选拒绝（按 reasonCode）");
+    expect(report).toContain("supports_versions_disabled: 1");
+    expect(report).not.toContain("version candidate was rejected");
+  });
+
   it("revalidates candidate source policy instead of trusting a recomputed hash", async () => {
     const setup = await prepareRun([raw("new-1", "全新活动", "活动时间：2026年8月20日 04:00 至 2026年8月20日 11:00")], { "cn-2026.yaml": existingEvent("existing-event", "旧活动", "old-1") });
     const candidatePath = artifactPath(setup.runtimeRoot, setup.runId, "candidates", "json", "genshin-impact");
@@ -165,6 +186,26 @@ describe("crawler review diff", () => {
       entries: [{ ...mapEntry, candidateKey: candidate.candidateKey, targetId: "missing-event" }],
     });
     await expect(reviewRun({ ...setup })).rejects.toThrow(/mapping is stale/i);
+  });
+
+  it("rejects a review runtime root inside its injected data root", async () => {
+    const setup = await prepareRun([raw("new-1", "全新活动", "活动时间：2026年8月20日 04:00 至 2026年8月20日 11:00")], { "cn-2026.yaml": existingEvent("existing-event", "旧活动", "old-1") });
+    const unsafeRuntimeRoot = join(setup.dataRoot, ".runtime", "crawl");
+    await createRun(unsafeRuntimeRoot, setup.runId);
+    await expect(reviewRun({ ...setup, runtimeRoot: unsafeRuntimeRoot })).rejects.toThrow(/protected|data|runtime/i);
+  });
+
+  it("rejects symlinked raw artifact directories and lock directories", async () => {
+    const setup = await prepareRun([raw("new-1", "全新活动", "活动时间：2026年8月20日 04:00 至 2026年8月20日 11:00")], { "cn-2026.yaml": existingEvent("existing-event", "旧活动", "old-1") });
+    const externalRoot = await mkdtemp(join(tmpdir(), "crawler-review-external-runtime-"));
+    await rm(join(setup.runtimeRoot, "raw", setup.runId), { recursive: true, force: true });
+    await symlink(externalRoot, join(setup.runtimeRoot, "raw", setup.runId), "dir");
+    await expect(reviewRun({ ...setup })).rejects.toThrow(/symlink|runtime|escape/i);
+
+    const second = await prepareRun([raw("new-2", "全新活动", "活动时间：2026年8月20日 04:00 至 2026年8月20日 11:00")], { "cn-2026.yaml": existingEvent("existing-event", "旧活动", "old-1") });
+    const secondExternal = await mkdtemp(join(tmpdir(), "crawler-review-external-lock-"));
+    await symlink(secondExternal, join(second.runtimeRoot, "review-locks"), "dir");
+    await expect(reviewRun({ ...second })).rejects.toThrow(/symlink|runtime|escape/i);
   });
 
   it("rejects a second review for the same run without overwriting outputs", async () => {

@@ -14,14 +14,16 @@ import {
   CandidateItemSchema,
   CandidateTargetMapSchema,
   RawArticleSchema,
+  CandidateRejectionSchema,
   type ApprovalSelectionTemplate,
   type CandidateItem,
+  type CandidateRejection,
   type CandidateTargetMapEntry,
   type RawArticle,
   type Sha256,
 } from "../types.ts";
 import { candidateHashProjection, canonicalizeUrl, hashCanonicalJson, oldValueHashProjection, sourceHashProjection } from "./hash.ts";
-import { assertRunId, assertRuntimePathSafe, assertRuntimeRootSafe, assertRunArtifactsAbsent, assertRunExists, artifactDirectory, artifactPath } from "./run.ts";
+import { assertRunId, assertRuntimePathSafe, assertRuntimeRootSafe, assertRunArtifactsAbsent, assertRunExists, artifactDirectory, artifactPath, runRoot } from "./run.ts";
 import { withFileLock } from "./files.ts";
 import { loadEventTypeIds, validateCandidate } from "./candidate-validation.ts";
 import { mihoyoGames } from "../mihoyo-config.ts";
@@ -46,6 +48,7 @@ export interface IndexedTarget {
 export interface DataIndex {
   targets: Map<string, IndexedTarget>;
   files: string[];
+  filesByGameRegion: Map<string, string[]>;
 }
 
 export interface ReviewRunOptions {
@@ -64,6 +67,12 @@ export interface ReviewFieldChange {
   candidate: unknown;
 }
 
+export interface ReviewTargetDiff {
+  targetId: string;
+  targetFile: string;
+  changes: ReviewFieldChange[];
+}
+
 export interface ReviewEntry {
   candidate: CandidateItem;
   raw: RawArticle;
@@ -74,6 +83,7 @@ export interface ReviewEntry {
     expectedOldValueHash: Sha256;
     matchReasons: string[];
   }>;
+  targetDiffs: ReviewTargetDiff[];
   availableTargetFiles: string[];
   changes: ReviewFieldChange[];
   category: "new_confirmed" | "new_uncertain" | "time_change" | "source_change" | "ambiguous" | "needs_review" | "matched";
@@ -85,6 +95,7 @@ export interface ReviewRunResult {
   templatePath: string;
   template: ApprovalSelectionTemplate;
   entries: ReviewEntry[];
+  rejections: CandidateRejection[];
 }
 
 function isWithin(root: string, candidate: string): boolean {
@@ -109,17 +120,20 @@ export async function buildDataIndex(dataRoot = resolve(process.cwd(), "data")):
   const rootReal = await realpath(resolvedRoot);
   const targets = new Map<string, IndexedTarget>();
   const files: string[] = [];
+  const filesByGameRegion = new Map<string, string[]>();
   const gameEntries = (await readdir(resolvedRoot, { withFileTypes: true }))
-    .filter((entry) => entry.isDirectory())
     .sort((left, right) => left.name < right.name ? -1 : left.name > right.name ? 1 : 0);
   for (const gameEntry of gameEntries) {
+    if (gameEntry.isSymbolicLink()) throw new Error(`data entry must not be a symlink: ${gameEntry.name}`);
+    if (!gameEntry.isDirectory()) continue;
     const gameDirectory = join(resolvedRoot, gameEntry.name);
     const gameReal = await realpath(gameDirectory);
     if (!isWithin(rootReal, gameReal)) throw new Error(`data game directory escapes data root: ${gameDirectory}`);
     const dataEntries = (await readdir(gameDirectory, { withFileTypes: true }))
-      .filter((entry) => entry.isFile() && entry.name !== "meta.yaml" && /\.ya?ml$/i.test(entry.name))
       .sort((left, right) => left.name < right.name ? -1 : left.name > right.name ? 1 : 0);
     for (const dataEntry of dataEntries) {
+      if (dataEntry.isSymbolicLink()) throw new Error(`data file must not be a symlink: ${join(gameDirectory, dataEntry.name)}`);
+      if (!dataEntry.isFile() || dataEntry.name === "meta.yaml" || !/\.ya?ml$/i.test(dataEntry.name)) continue;
       const filePath = join(gameDirectory, dataEntry.name);
       const fileReal = await realpath(filePath);
       if (!isWithin(rootReal, fileReal)) throw new Error(`data file escapes data root: ${filePath}`);
@@ -135,6 +149,9 @@ export async function buildDataIndex(dataRoot = resolve(process.cwd(), "data")):
       if (value.game !== gameEntry.name) throw new Error(`data game mismatch ${filePath}: ${value.game}`);
       const targetFile = targetFileFor(gameEntry.name, dataEntry.name);
       files.push(targetFile);
+      const regionFiles = filesByGameRegion.get(`${value.game}/${value.region}`) ?? [];
+      regionFiles.push(targetFile);
+      filesByGameRegion.set(`${value.game}/${value.region}`, regionFiles);
       for (const [kind, values] of [["version", value.versions ?? []], ["event", value.events ?? []]] as const) {
         for (const item of values) {
           const key = targetKey(value.game, value.region, kind, item.id);
@@ -153,7 +170,7 @@ export async function buildDataIndex(dataRoot = resolve(process.cwd(), "data")):
       }
     }
   }
-  return { targets, files };
+  return { targets, files, filesByGameRegion };
 }
 
 export async function loadCandidateTargetMap(path = resolve(process.cwd(), "scripts/crawl/candidate-target-map.json")): Promise<CandidateTargetMapEntry[]> {
@@ -250,8 +267,9 @@ function mappingTarget(candidate: CandidateItem, mapping: CandidateTargetMapEntr
   return target;
 }
 
-async function readRawArticles(runtimeRoot: string, runId: string, game: string): Promise<Map<string, RawArticle>> {
+async function readRawArticles(runtimeRoot: string, runId: string, game: string, protectedRoot: string): Promise<Map<string, RawArticle>> {
   const rawPath = artifactPath(runtimeRoot, runId, "raw", "jsonl", game);
+  await assertRuntimePathSafe(runtimeRoot, rawPath, protectedRoot);
   const raw = new Map<string, RawArticle>();
   const lines = (await readFile(rawPath, "utf8")).split(/\r?\n/);
   for (const line of lines) {
@@ -264,19 +282,44 @@ async function readRawArticles(runtimeRoot: string, runId: string, game: string)
   return raw;
 }
 
-async function readCandidates(runtimeRoot: string, runId: string, eventTypeIds: string[]): Promise<Array<{ candidate: CandidateItem; raw: RawArticle }>> {
+async function readRejections(runtimeRoot: string, runId: string, protectedRoot: string): Promise<CandidateRejection[]> {
+  const rejectionPath = artifactPath(runtimeRoot, runId, "rejections");
+  await assertRuntimePathSafe(runtimeRoot, rejectionPath, protectedRoot);
+  const lines = (await readFile(rejectionPath, "utf8")).split(/\r?\n/);
+  const rejections: CandidateRejection[] = [];
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    let value: unknown;
+    try {
+      value = JSON.parse(line);
+    } catch {
+      throw new Error(`rejection JSONL contains invalid JSON: ${rejectionPath}`);
+    }
+    const parsed = CandidateRejectionSchema.safeParse(value);
+    if (!parsed.success) throw new Error(`rejection schema failed: ${parsed.error.message}`);
+    if (parsed.data.rawRef.runId !== runId) throw new Error(`rejection runId mismatch: ${rejectionPath}`);
+    rejections.push(parsed.data as CandidateRejection);
+  }
+  return rejections;
+}
+
+async function readCandidates(runtimeRoot: string, runId: string, eventTypeIds: string[], protectedRoot: string): Promise<Array<{ candidate: CandidateItem; raw: RawArticle }>> {
   const directory = artifactDirectory(runtimeRoot, runId, "candidates");
+  await assertRuntimePathSafe(runtimeRoot, directory, protectedRoot);
   const entries = (await readdir(directory, { withFileTypes: true }))
-    .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
     .sort((left, right) => left.name < right.name ? -1 : left.name > right.name ? 1 : 0);
   const result: Array<{ candidate: CandidateItem; raw: RawArticle }> = [];
   const keys = new Set<string>();
   for (const entry of entries) {
+    if (entry.isSymbolicLink()) throw new Error(`candidate artifact entry must not be a symlink: ${entry.name}`);
+    if (!entry.isFile() || !entry.name.endsWith(".json")) continue;
+    const candidatePath = join(directory, entry.name);
+    await assertRuntimePathSafe(runtimeRoot, candidatePath, protectedRoot);
     const game = basename(entry.name, ".json");
     const config = configuredGames[game];
     if (!config) throw new Error(`unknown candidate game: ${game}`);
-    const raws = await readRawArticles(runtimeRoot, runId, game);
-    const parsed = JSON.parse(await readFile(join(directory, entry.name), "utf8")) as unknown;
+    const raws = await readRawArticles(runtimeRoot, runId, game, protectedRoot);
+    const parsed = JSON.parse(await readFile(candidatePath, "utf8")) as unknown;
     if (!Array.isArray(parsed)) throw new Error(`candidate artifact must be an array: ${entry.name}`);
     for (const item of parsed) {
       const candidateResult = CandidateItemSchema.safeParse(item);
@@ -301,8 +344,30 @@ function jsonValue(value: unknown): string {
 }
 
 function availableTargetFiles(candidate: CandidateItem, index: DataIndex): string[] {
-  const prefix = `data/${candidate.game}/${candidate.region}-`;
-  return index.files.filter((path) => path.startsWith(prefix));
+  return index.filesByGameRegion.get(`${candidate.game}/${candidate.region}`) ?? [];
+}
+
+function reviewReasonText(entry: ReviewEntry): string {
+  const reasons = [...entry.candidate.reviewReasons, ...entry.matchReasons].filter((value, index, values) => value.length > 0 && values.indexOf(value) === index);
+  return reasons.length ? reasons.join("；") : "无";
+}
+
+function evidenceText(entry: ReviewEntry, change: ReviewFieldChange): string {
+  const fields = change.field === "timeCertainty"
+    ? ["start", "end"]
+    : [change.field === "relatedCandidateKeys" ? "related" : change.field];
+  const evidence = entry.candidate.evidence.filter((item) => fields.includes(item.field)).map((item) => `${item.field}: ${item.text}`);
+  return evidence.length ? evidence.join("；") : entry.raw.content;
+}
+
+function appendFieldChanges(lines: string[], entry: ReviewEntry, changes: ReviewFieldChange[], heading = "####"): void {
+  for (const change of changes) {
+    lines.push(`${heading} ${change.field}${change.currentField ? `（当前 YAML ${change.currentField}）` : ""}`);
+    lines.push(`- source URL: ${entry.candidate.sources.join(", ")}`);
+    lines.push(`- evidence 原文: ${evidenceText(entry, change)}`);
+    lines.push(`- review reason: ${reviewReasonText(entry)}`);
+    lines.push(`- 当前 YAML 值: \`${jsonValue(change.current)}\``, `- 候选值: \`${jsonValue(change.candidate)}\``);
+  }
 }
 
 function entryMarkdown(entry: ReviewEntry): string {
@@ -310,22 +375,37 @@ function entryMarkdown(entry: ReviewEntry): string {
     `### ${entry.candidate.candidateKey}`,
     `- source URL: ${entry.candidate.sources.join(", ")}`,
     `- evidence 原文: ${entry.raw.content}`,
-    `- review reason: ${entry.candidate.reviewReasons.length ? entry.candidate.reviewReasons.join("；") : "无"}`,
+    `- candidate evidence: ${entry.candidate.evidence.length ? entry.candidate.evidence.map((item) => `${item.field}: ${item.text}`).join("；") : "无"}`,
+    `- review reason: ${reviewReasonText(entry)}`,
   ];
   if (entry.availableTargetFiles.length) lines.push("- 可选 targetFile（同 game/region）:", ...entry.availableTargetFiles.map((path) => `  - ${path}`));
   if (entry.target) lines.push(`- target: ${entry.target.targetFile}#${entry.target.targetId}`);
   if (entry.targetOptions.length) lines.push(`- target options: ${entry.targetOptions.map((option) => `${option.targetFile}#${option.targetId} (${option.matchReasons.join("；")})`).join(", ")}`);
-  if (entry.changes.length === 0) {
+  if (entry.targetDiffs.length && !entry.target) {
+    lines.push("#### 各 target option 字段变化");
+    for (const targetDiff of entry.targetDiffs) {
+      lines.push(`##### ${targetDiff.targetFile}#${targetDiff.targetId}`);
+      if (targetDiff.changes.length === 0) lines.push("- field changes: 无");
+      else appendFieldChanges(lines, entry, targetDiff.changes, "######");
+    }
+  } else if (entry.changes.length === 0) {
     lines.push("- field changes: 无");
   } else {
-    for (const change of entry.changes) {
-      lines.push(`#### ${change.field}${change.currentField ? `（当前 YAML ${change.currentField}）` : ""}`, `- 当前 YAML 值: \`${jsonValue(change.current)}\``, `- 候选值: \`${jsonValue(change.candidate)}\``);
-    }
+    appendFieldChanges(lines, entry, entry.changes);
   }
   return lines.join("\n");
 }
 
-function renderReport(entries: ReviewEntry[], runId: string): string {
+function renderRejectionSummary(rejections: CandidateRejection[]): string[] {
+  const counts = new Map<string, number>();
+  for (const rejection of rejections) counts.set(rejection.reasonCode, (counts.get(rejection.reasonCode) ?? 0) + 1);
+  const lines = ["\n## 候选拒绝（按 reasonCode）\n"];
+  if (counts.size === 0) return [...lines, "无"];
+  for (const [reasonCode, count] of [...counts.entries()].sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0)) lines.push(`- ${reasonCode}: ${count}`);
+  return lines;
+}
+
+function renderReport(entries: ReviewEntry[], runId: string, rejections: CandidateRejection[]): string {
   const sections: Array<[string, ReviewEntry[]]> = [
     ["新增 confirmed", entries.filter((entry) => entry.category === "new_confirmed")],
     ["新增 inferred/estimated", entries.filter((entry) => entry.category === "new_uncertain")],
@@ -336,6 +416,7 @@ function renderReport(entries: ReviewEntry[], runId: string): string {
     ["需要人工查看", entries.filter((entry) => entry.category === "needs_review")],
   ];
   const lines = [`# Review diff\n\n- runId: ${runId}`];
+  lines.push(...renderRejectionSummary(rejections));
   for (const [title, values] of sections) {
     lines.push(`\n## ${title}\n`);
     lines.push(values.length ? values.map(entryMarkdown).join("\n\n") : "无");
@@ -353,8 +434,9 @@ async function exists(path: string): Promise<boolean> {
   }
 }
 
-async function writeReviewOutputsAtomic(runtimeRoot: string, runId: string, reportPath: string, templatePath: string, report: string, template: ApprovalSelectionTemplate, renameOutput?: (from: string, to: string) => Promise<void>): Promise<void> {
+async function writeReviewOutputsAtomic(runtimeRoot: string, runId: string, reportPath: string, templatePath: string, report: string, template: ApprovalSelectionTemplate, protectedRoot: string, renameOutput?: (from: string, to: string) => Promise<void>): Promise<void> {
   const lockPath = join(runtimeRoot, "review-locks", runId);
+  await assertRuntimePathSafe(runtimeRoot, lockPath, protectedRoot);
   await withFileLock(lockPath, async () => {
     if (await exists(reportPath) || await exists(templatePath)) throw new Error(`review output already exists for run: ${runId}`);
     const reportTemporary = `${reportPath}.tmp-${process.pid}-${randomUUID()}`;
@@ -381,24 +463,30 @@ async function writeReviewOutputsAtomic(runtimeRoot: string, runId: string, repo
 
 export async function reviewRun(options: ReviewRunOptions): Promise<ReviewRunResult> {
   assertRunId(options.runId);
-  await assertRuntimeRootSafe(options.runtimeRoot);
+  const dataRoot = resolve(options.dataRoot ?? resolve(process.cwd(), "data"));
+  await assertRuntimeRootSafe(options.runtimeRoot, dataRoot);
+  await assertRuntimePathSafe(options.runtimeRoot, runRoot(options.runtimeRoot, options.runId), dataRoot);
   await assertRunExists(options.runtimeRoot, options.runId);
   await assertRunArtifactsAbsent(options.runtimeRoot, options.runId, ["reports", "selections"]);
   const reportPath = artifactPath(options.runtimeRoot, options.runId, "reports", "md");
   const templatePath = artifactPath(options.runtimeRoot, options.runId, "selections", "json");
-  await assertRuntimePathSafe(options.runtimeRoot, reportPath);
-  await assertRuntimePathSafe(options.runtimeRoot, templatePath);
-  const index = await buildDataIndex(options.dataRoot ?? resolve(process.cwd(), "data"));
+  await assertRuntimePathSafe(options.runtimeRoot, reportPath, dataRoot);
+  await assertRuntimePathSafe(options.runtimeRoot, templatePath, dataRoot);
+  await assertRuntimePathSafe(options.runtimeRoot, artifactDirectory(options.runtimeRoot, options.runId, "raw"), dataRoot);
+  await assertRuntimePathSafe(options.runtimeRoot, artifactDirectory(options.runtimeRoot, options.runId, "candidates"), dataRoot);
+  await assertRuntimePathSafe(options.runtimeRoot, artifactPath(options.runtimeRoot, options.runId, "rejections"), dataRoot);
+  const index = await buildDataIndex(dataRoot);
   const mapEntries = await loadCandidateTargetMap(options.targetMapPath ?? resolve(process.cwd(), "scripts/crawl/candidate-target-map.json"));
   const eventTypeIds = await loadEventTypeIds(options.eventTypesPath ?? resolve(process.cwd(), "data/event-types.yaml"));
   const mapByCandidate = new Map(mapEntries.map((entry) => [entry.candidateKey, entry]));
-  const candidates = await readCandidates(options.runtimeRoot, options.runId, eventTypeIds);
+  const rejections = await readRejections(options.runtimeRoot, options.runId, dataRoot);
+  const candidates = await readCandidates(options.runtimeRoot, options.runId, eventTypeIds, dataRoot);
   const entries: ReviewEntry[] = [];
   const templateItems: ApprovalSelectionTemplate["items"] = [];
   for (const { candidate, raw } of candidates) {
     const candidateTargetFiles = availableTargetFiles(candidate, index);
     if (candidate.review !== "ready" || !candidateKind(candidate)) {
-      entries.push({ candidate, raw, targetOptions: [], availableTargetFiles: candidateTargetFiles, changes: [], category: "needs_review", matchReasons: candidate.reviewReasons });
+      entries.push({ candidate, raw, targetOptions: [], targetDiffs: [], availableTargetFiles: candidateTargetFiles, changes: [], category: "needs_review", matchReasons: candidate.reviewReasons });
       continue;
     }
     const mapping = mapByCandidate.get(candidate.candidateKey);
@@ -407,7 +495,8 @@ export async function reviewRun(options: ReviewRunOptions): Promise<ReviewRunRes
       const changes = reviewFields(candidate, target);
       const reasons = ["durable applied mapping", ...changes.map((change) => `${change.field} differs`).filter((value, position, values) => values.indexOf(value) === position)];
       const targetOptions = [{ targetId: target.targetId, targetFile: target.targetFile, expectedOldValueHash: target.oldValueHash, matchReasons: reasons }];
-      const entry: ReviewEntry = { candidate, raw, target, targetOptions, availableTargetFiles: candidateTargetFiles, changes, category: "matched", matchReasons: reasons };
+      const targetDiffs = [{ targetId: target.targetId, targetFile: target.targetFile, changes }];
+      const entry: ReviewEntry = { candidate, raw, target, targetOptions, targetDiffs, availableTargetFiles: candidateTargetFiles, changes, category: "matched", matchReasons: reasons };
       entries.push(entry);
       if (changes.some((change) => ["start", "end"].includes(change.field))) entry.category = "time_change";
       else if (changes.some((change) => change.field === "sources")) entry.category = "source_change";
@@ -418,18 +507,19 @@ export async function reviewRun(options: ReviewRunOptions): Promise<ReviewRunRes
     if (suspected.length > 0) {
       const targetOptions = suspected.map(({ target, reasons }) => ({ targetId: target.targetId, targetFile: target.targetFile, expectedOldValueHash: target.oldValueHash, matchReasons: reasons }));
       const reasons = targetOptions.flatMap((option) => option.matchReasons).filter((value, position, values) => values.indexOf(value) === position);
-      entries.push({ candidate, raw, targetOptions, availableTargetFiles: candidateTargetFiles, changes: [], category: "ambiguous", matchReasons: reasons });
+      const targetDiffs = suspected.map(({ target }) => ({ targetId: target.targetId, targetFile: target.targetFile, changes: reviewFields(candidate, target) }));
+      entries.push({ candidate, raw, targetOptions, targetDiffs, availableTargetFiles: candidateTargetFiles, changes: [], category: "ambiguous", matchReasons: reasons });
       templateItems.push({ candidateKey: candidate.candidateKey, candidateHash: candidate.candidateHash, sourceHash: candidate.sourceHash, kind: candidate.kind, targetOptions, matchReasons: reasons });
       continue;
     }
     const category = candidateUncertain(candidate) ? "new_uncertain" : "new_confirmed";
-    entries.push({ candidate, raw, targetOptions: [], availableTargetFiles: candidateTargetFiles, changes: reviewFields(candidate), category, matchReasons: [] });
+    entries.push({ candidate, raw, targetOptions: [], targetDiffs: [], availableTargetFiles: candidateTargetFiles, changes: reviewFields(candidate), category, matchReasons: [] });
     templateItems.push({ candidateKey: candidate.candidateKey, candidateHash: candidate.candidateHash, sourceHash: candidate.sourceHash, kind: candidate.kind, suggestedOperation: "add", targetOptions: [], matchReasons: [] });
   }
   const template: ApprovalSelectionTemplate = { schemaVersion: 1, runId: options.runId, items: templateItems };
   const checkedTemplate = ApprovalSelectionTemplateSchema.safeParse(template);
   if (!checkedTemplate.success) throw new Error(`review template schema failed: ${checkedTemplate.error.message}`);
-  const report = renderReport(entries, options.runId);
-  await writeReviewOutputsAtomic(options.runtimeRoot, options.runId, reportPath, templatePath, report, checkedTemplate.data as ApprovalSelectionTemplate, options.rename);
-  return { reportPath, templatePath, template: checkedTemplate.data as ApprovalSelectionTemplate, entries };
+  const report = renderReport(entries, options.runId, rejections);
+  await writeReviewOutputsAtomic(options.runtimeRoot, options.runId, reportPath, templatePath, report, checkedTemplate.data as ApprovalSelectionTemplate, dataRoot, options.rename);
+  return { reportPath, templatePath, template: checkedTemplate.data as ApprovalSelectionTemplate, entries, rejections };
 }

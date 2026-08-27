@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, symlink, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CandidateTargetMapSchema } from "../scripts/crawl/types.ts";
@@ -38,9 +38,22 @@ describe("crawler target map", () => {
     const dataRoot = await mkdtemp(join(tmpdir(), "crawler-review-region-data-"));
     const gameRoot = join(dataRoot, "genshin-impact");
     await mkdir(gameRoot, { recursive: true });
-    await writeFile(join(gameRoot, "tw-2026.yaml"), "game: genshin-impact\nregion: tw\nevents:\n  - id: tw-event\n    name: 台服活动\n    type: event\n    start: \"2026-07-01T04:00:00+08:00\"\n    sources:\n      - \"https://ys.mihoyo.com/main/news/detail/tw\"\n", "utf8");
+    await writeFile(join(gameRoot, "cn-2026.yaml"), "game: genshin-impact\nregion: tw\nevents:\n  - id: tw-event\n    name: 台服活动\n    type: event\n    start: \"2026-07-01T04:00:00+08:00\"\n    sources:\n      - \"https://ys.mihoyo.com/main/news/detail/tw\"\n", "utf8");
     const index = await buildDataIndex(dataRoot);
     expect(index.targets.get("genshin-impact/tw/event/tw-event")?.region).toBe("tw");
+    expect(index.filesByGameRegion.get("genshin-impact/tw")).toEqual(["data/genshin-impact/cn-2026.yaml"]);
+    expect(index.filesByGameRegion.get("genshin-impact/cn")).toBeUndefined();
+  });
+
+  it("rejects symlinked data files instead of silently omitting them", async () => {
+    const dataRoot = await mkdtemp(join(tmpdir(), "crawler-review-symlink-data-"));
+    const externalRoot = await mkdtemp(join(tmpdir(), "crawler-review-external-data-"));
+    const gameRoot = join(dataRoot, "genshin-impact");
+    await mkdir(gameRoot, { recursive: true });
+    const externalFile = join(externalRoot, "cn-2026.yaml");
+    await writeFile(externalFile, "game: genshin-impact\nregion: cn\nevents:\n  - id: external-event\n    name: 外部活动\n    type: event\n    start: \"2026-07-01T04:00:00+08:00\"\n    sources:\n      - \"https://ys.mihoyo.com/main/news/detail/external\"\n", "utf8");
+    await symlink(externalFile, join(gameRoot, "cn-2026.yaml"));
+    await expect(buildDataIndex(dataRoot)).rejects.toThrow(/symlink|escape|data/i);
   });
 
   it("rejects a candidate remapping while allowing shared targets", async () => {

@@ -1,5 +1,5 @@
 import { access, lstat, mkdir, readdir, realpath } from "node:fs/promises";
-import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { dirname, isAbsolute, join, parse, relative, resolve, sep } from "node:path";
 
 export const RUN_ARTIFACTS = ["raw", "errors", "rejections", "candidates", "reports", "selections", "approved"] as const;
 export type RunArtifact = typeof RUN_ARTIFACTS[number];
@@ -27,32 +27,45 @@ async function nearestExisting(path: string): Promise<string> {
   }
 }
 
+async function assertNoSymlinkComponents(path: string, label: string): Promise<void> {
+  const resolved = resolve(path);
+  const root = parse(resolved).root;
+  const components: string[] = [];
+  let current = resolved;
+  while (true) {
+    components.push(current);
+    if (current === root) break;
+    const parent = dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+  for (const component of components.reverse()) {
+    try {
+      if ((await lstat(component)).isSymbolicLink()) throw new Error(`${label} must not contain a symlink: ${component}`);
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+  }
+}
+
 export async function assertRuntimeRootSafe(runtimeRoot: string, protectedRoot = resolve(process.cwd(), "data")): Promise<void> {
   const resolvedRoot = resolve(runtimeRoot);
+  await assertNoSymlinkComponents(resolvedRoot, "runtime root");
   const protectedReal = await realpath(await nearestExisting(protectedRoot));
   const rootExisting = await nearestExisting(resolvedRoot);
   const rootReal = await realpath(rootExisting);
-  try {
-    if ((await lstat(resolvedRoot)).isSymbolicLink()) throw new Error(`runtime root must not be a symlink: ${resolvedRoot}`);
-  } catch (error: unknown) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-  }
   if (isWithin(protectedReal, rootReal)) throw new Error(`runtime root is inside protected data: ${resolvedRoot}`);
 }
 
-export async function assertRuntimePathSafe(runtimeRoot: string, targetPath: string): Promise<void> {
-  await assertRuntimeRootSafe(runtimeRoot);
+export async function assertRuntimePathSafe(runtimeRoot: string, targetPath: string, protectedRoot = resolve(process.cwd(), "data")): Promise<void> {
+  await assertRuntimeRootSafe(runtimeRoot, protectedRoot);
   const resolvedRoot = resolve(runtimeRoot);
   const resolvedTarget = resolve(targetPath);
   if (!isWithin(resolvedRoot, resolvedTarget)) throw new Error(`runtime path is outside runtime root: ${resolvedTarget}`);
-  try {
-    if ((await lstat(resolvedTarget)).isSymbolicLink()) throw new Error(`runtime path must not be a symlink: ${resolvedTarget}`);
-  } catch (error: unknown) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-  }
+  await assertNoSymlinkComponents(resolvedTarget, "runtime path");
   const rootReal = await realpath(await nearestExisting(resolvedRoot));
-  const parentReal = await realpath(await nearestExisting(dirname(resolvedTarget)));
-  if (!isWithin(rootReal, parentReal)) throw new Error(`runtime path escapes runtime root: ${resolvedTarget}`);
+  const targetReal = await realpath(await nearestExisting(resolvedTarget));
+  if (!isWithin(rootReal, targetReal)) throw new Error(`runtime path escapes runtime root: ${resolvedTarget}`);
 }
 
 export function assertRunId(runId: string): void {

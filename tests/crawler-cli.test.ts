@@ -282,6 +282,8 @@ describe("crawler parse command", () => {
     await writeRaw(root, runId, article.game, [article]);
     await mkdir(artifactDirectory(root, runId, "candidates"), { recursive: true });
     await writeFile(artifactPath(root, runId, "candidates", "json", article.game), `${JSON.stringify([parseArticleCandidate(article, runId, "primary")])}\n`, "utf8");
+    await mkdir(artifactDirectory(root, runId, "rejections"), { recursive: true });
+    await writeFile(artifactPath(root, runId, "rejections"), "", "utf8");
     const output: string[] = [];
     await expect(runCrawlCli(["review", "--run", runId], { runtimeRoot: root, print: (line: string) => output.push(line) })).resolves.toBe(0);
     await expect(readFile(artifactPath(root, runId, "reports", "md"), "utf8")).resolves.toContain("Review diff");

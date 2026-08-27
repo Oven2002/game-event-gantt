@@ -57,6 +57,21 @@ describe("crawler run lifecycle", () => {
     await expect(assertRuntimeRootSafe(link)).rejects.toThrow(/data|runtime/i);
   });
 
+  it("rejects runtime roots reached through an ancestor symlink", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
+    const outside = await mkdtemp(join(tmpdir(), "crawler-run-outside-"));
+    const linkedParent = join(root, "linked-parent");
+    await symlink(outside, linkedParent, "dir");
+    await expect(assertRuntimeRootSafe(join(linkedParent, "runtime"))).rejects.toThrow(/symlink|runtime/i);
+  });
+
+  it("rejects runtime roots inside an injected protected tree", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
+    const protectedRoot = join(root, "custom-data");
+    await mkdir(protectedRoot, { recursive: true });
+    await expect(assertRuntimeRootSafe(join(protectedRoot, ".runtime", "crawl"), protectedRoot)).rejects.toThrow(/protected|data|runtime/i);
+  });
+
   it("rejects artifact paths whose existing parent escapes the runtime root", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
     const dataRoot = join(process.cwd(), "data");
