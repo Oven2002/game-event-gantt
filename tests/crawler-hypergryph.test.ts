@@ -38,6 +38,11 @@ describe("Hypergryph fixture adapter", () => {
     expect(endfieldPage.items[0].url).toBe("https://endfield.hypergryph.com/news/4776");
   });
 
+  it("deduplicates repeated bulletin entries by source id", async () => {
+    const body = await fixture(`${root}/arknights/list-page-1.json`);
+    const duplicated = { ...body, data: { ...body.data, list: [body.data.list[0], body.data.list[0]] } };
+    expect(parseHypergryphList("arknights", duplicated).items).toHaveLength(1);
+  });
   it("parses both HTML detail fixtures into canonical RawArticle content", async () => {
     for (const [game, sourceId] of [["arknights", "4924"], ["arknights-endfield", "4776"]] as const) {
       const body = await fixture(`${root}/${game}/detail-${sourceId}.json`);

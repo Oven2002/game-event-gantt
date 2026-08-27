@@ -43,7 +43,7 @@ export function parseHypergryphList(game: HypergryphGameConfig["game"], body: un
     const displayTime = item.displayTime;
     if (typeof displayTime !== "number" || !Number.isInteger(displayTime) || displayTime <= 0) throw new HypergryphAdapterError("invalid displayTime");
     return { sourceId, title: stringField(item, "title"), tab: stringField(item, "tab"), displayTime, url: `https://${hypergryphGames[game].officialHost}/news/${encodeURIComponent(sourceId)}`, brief: typeof item.brief === "string" ? item.brief : "" };
-  });
+  }).filter((item, index, all) => all.findIndex((candidate) => candidate.sourceId === item.sourceId) === index);
   const total = positiveIntegerField(data, "total", true);
   const current = positiveIntegerField(data, "current");
   const pageSizeValue = positiveIntegerField(data, "pageSize");

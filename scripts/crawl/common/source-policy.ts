@@ -21,7 +21,7 @@ export function evaluateSource(game: string, rawUrl: string, context: { authorId
   try { url = new URL(rawUrl); } catch { return { allowed: false, role: "rejected", reason: "invalid URL" }; }
   const host = url.hostname.toLowerCase();
   if (isDiscoveryOnlySource(rawUrl)) return { allowed: false, role: "discovery", reason: "Zhihu is discovery-only" };
-  if (url.protocol !== "https:") return { allowed: false, role: "rejected", reason: "HTTPS is required" };
+  if (url.protocol !== "https:" || (url.port !== "" && url.port !== "443")) return { allowed: false, role: "rejected", reason: "HTTPS on the default port is required" };
   if (rejectedHosts.has(host) || host.endsWith("gamer.com.tw") || /(^|\/)zh-tw(?:\/|$)/i.test(url.pathname)) return { allowed: false, role: "rejected", reason: "foreign-server or third-party source" };
   const configured = officialHosts[game] ?? [];
   if (configured.includes(host)) return { allowed: true, role: "official", reason: "configured CN official host" };

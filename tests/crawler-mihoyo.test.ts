@@ -49,13 +49,18 @@ describe("Mihoyo fixture adapter", () => {
     ] as const;
     for (const [game, file, sourceId] of cases) {
       const body = await fixture(`${root}/${game}/${file}`);
-      const article = parseMihoyoDetail(game, body, "2026-08-25T10:00:00+00:00");
+      const article = parseMihoyoDetail(game, sourceId, body, "2026-08-25T10:00:00+00:00");
       expect(article.sourceId).toBe(sourceId);
       expect(article.region).toBe("cn");
       expect(article.url).toBe(buildMihoyoDetailUrl(game, sourceId));
       expect(article.content).not.toMatch(/<[^>]+>/);
       expect(article.contentHash).toMatch(/^sha256:[0-9a-f]{64}$/);
     }
+  });
+
+  it("rejects a detail response whose id differs from the requested id", async () => {
+    const body = await fixture(`${root}/genshin-impact/detail-165690.json`);
+    expect(() => parseMihoyoDetail("genshin-impact", "999999", body, "2026-08-25T10:00:00+00:00")).toThrow(/sourceId|iInfoId/);
   });
 
   it("builds the measured list and detail requests", () => {

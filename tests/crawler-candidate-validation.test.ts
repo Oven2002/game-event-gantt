@@ -1,15 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { parseArticleCandidate } from "../scripts/crawl/parsers/article.ts";
+import { sha256Utf8 } from "../scripts/crawl/common/hash.ts";
 import { validateCandidate, validateCandidateFromConfig, loadEventTypeIds } from "../scripts/crawl/common/candidate-validation.ts";
 import type { RawArticle, Sha256 } from "../scripts/crawl/types.ts";
 
-const raw = (overrides: Partial<RawArticle> = {}): RawArticle => ({
-  game: "genshin-impact", region: "cn", source: "mihoyo", sourceId: "123",
-  url: "https://ys.mihoyo.com/main/news/detail/123", title: "活动说明",
-  publishedAt: "2026-08-01T00:00:00+08:00", content: "活动时间：8月20日 04:00 至 11:00",
-  contentHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" as Sha256,
-  fetchedAt: "2026-08-01T00:00:00+00:00", ...overrides,
-});
+const raw = (overrides: Partial<RawArticle> = {}): RawArticle => {
+  const value: RawArticle = {
+    game: "genshin-impact", region: "cn", source: "mihoyo", sourceId: "123",
+    url: "https://ys.mihoyo.com/main/news/detail/123", title: "活动说明",
+    publishedAt: "2026-08-01T00:00:00+08:00", content: "活动时间：8月20日 04:00 至 11:00",
+    contentHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" as Sha256,
+    fetchedAt: "2026-08-01T00:00:00+00:00", ...overrides,
+  };
+  return { ...value, contentHash: sha256Utf8(value.content) as Sha256 };
+};
 
 describe("candidate validation", () => {
   it("loads event type ids from the official data config", async () => {
@@ -37,6 +41,11 @@ describe("candidate validation", () => {
     const candidate = parseArticleCandidate(raw(), "20260801-000000", "slot-1");
     expect(validateCandidate({ ...candidate, evidence: [] } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false });
     expect(validateCandidate({ ...candidate, evidence: [{ field: "start", text: "forged" }, { field: "end", text: ("end" in candidate ? candidate.end : "") }] } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false });
+  });
+
+  it("rejects a candidate when raw content was changed without changing its stale hash", () => {
+    const candidate = parseArticleCandidate(raw(), "20260801-000000", "slot-1");
+    expect(validateCandidate(candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw({ content: "tampered" }) })).toMatchObject({ ok: false, rejection: { reasonCode: "invalid_source_identity" } });
   });
 
   it("rejects a candidate whose raw article or source hash does not match", () => {

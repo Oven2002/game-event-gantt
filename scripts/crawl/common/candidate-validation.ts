@@ -1,8 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { parse as parseYaml } from "yaml";
+import { eventTypesSchema } from "../../../src/lib/data.ts";
 import { CandidateItemSchema } from "../types.ts";
 import type { CandidateItem, CandidateRejection, RawArticle, Sha256 } from "../types.ts";
-import { candidateHashProjection, hashCanonicalJson, sourceHashProjection } from "./hash.ts";
+import { candidateHashProjection, hashCanonicalJson, sha256Utf8, sourceHashProjection } from "./hash.ts";
 import { evaluateSource } from "./source-policy.ts";
 
 export interface CandidateValidationOptions {
@@ -18,12 +19,10 @@ export interface CandidateConfigValidationOptions {
 export type CandidateValidationResult = { ok: true; candidate: CandidateItem } | { ok: false; rejection: CandidateRejection };
 
 export async function loadEventTypeIds(path: string): Promise<string[]> {
-  const value: unknown = parseYaml(await readFile(path, "utf8"));
-  if (typeof value !== "object" || value === null || !Array.isArray((value as { types?: unknown }).types)) throw new Error("invalid event types config");
-  return (value as { types: unknown[] }).types.map((item) => {
-    if (typeof item !== "object" || item === null || typeof (item as { id?: unknown }).id !== "string" || !(item as { id: string }).id) throw new Error("invalid event type entry");
-    return (item as { id: string }).id;
-  });
+  const parsed = eventTypesSchema.parse(parseYaml(await readFile(path, "utf8")));
+  const ids = parsed.types.map(({ id }) => id);
+  if (new Set(ids).size !== ids.length) throw new Error("duplicate event type id");
+  return ids;
 }
 
 function rejection(candidate: Partial<CandidateItem>, reasonCode: CandidateRejection["reasonCode"], detail: string): CandidateValidationResult {
@@ -45,6 +44,7 @@ export function validateCandidate(input: unknown, options: CandidateValidationOp
     return rejection((input ?? {}) as Partial<CandidateItem>, "candidate_validation_failed", error instanceof Error ? error.message : String(error));
   }
   if (parsed.game !== options.rawArticle.game || parsed.region !== options.rawArticle.region || parsed.sourceId !== options.rawArticle.sourceId) return rejection(parsed, "invalid_source_identity", "candidate identity does not match raw article");
+  if (sha256Utf8(options.rawArticle.content) !== options.rawArticle.contentHash) return rejection(parsed, "invalid_source_identity", "raw contentHash does not match content");
   const expectedSourceHash = hashCanonicalJson(sourceHashProjection(options.rawArticle)) as Sha256;
   if (parsed.sourceHash !== expectedSourceHash) return rejection(parsed, "invalid_source_identity", "sourceHash does not match raw article");
   const expectedCandidateHash = hashCanonicalJson(candidateHashProjection(parsed)) as Sha256;

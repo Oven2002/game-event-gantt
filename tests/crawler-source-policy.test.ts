@@ -6,6 +6,7 @@ describe("crawler source policy", () => {
   it("allows configured CN official hosts", () => {
     expect(evaluateSource("genshin-impact", "https://ys.mihoyo.com/main/news/detail/1")).toMatchObject({ allowed: true, role: "official" });
     expect(evaluateSource("arknights", "https://ak.hypergryph.com/news/4924")).toMatchObject({ allowed: true, role: "official" });
+    expect(evaluateSource("arknights", "https://ak.hypergryph.com:8443/news/4924")).toMatchObject({ allowed: false, role: "rejected" });
   });
 
   it("rejects insecure, foreign-server, and third-party URLs", () => {

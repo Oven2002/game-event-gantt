@@ -154,8 +154,11 @@ export function parseMihoyoList(game: MihoyoGameConfig["game"], body: unknown): 
   return { total: typeof data.iTotal === "number" ? data.iTotal : items.length, items };
 }
 
-export function parseMihoyoDetail(game: MihoyoGameConfig["game"], body: unknown, fetchedAt: string): RawArticle {
-  return normalizeItem(game, getData(body), fetchedAt) as RawArticle;
+export function parseMihoyoDetail(game: MihoyoGameConfig["game"], requestedSourceId: string, body: unknown, fetchedAt: string): RawArticle {
+  if (!/^\d+$/.test(requestedSourceId)) throw new MihoyoAdapterError("invalid sourceId");
+  const data = getData(body);
+  if (String(data.iInfoId ?? "") !== requestedSourceId) throw new MihoyoAdapterError("detail sourceId mismatch");
+  return normalizeItem(game, data, fetchedAt) as RawArticle;
 }
 
 export function getMihoyoConfig(game: MihoyoGameConfig["game"]): MihoyoGameConfig {
