@@ -22,10 +22,12 @@ describe("crawler source policy", () => {
   it("treats Zhihu as discovery-only even when the URL is public", () => {
     expect(isDiscoveryOnlySource("https://www.zhihu.com/question/123")).toBe(true);
     expect(evaluateSource("genshin-impact", "https://www.zhihu.com/question/123")).toMatchObject({ allowed: false, role: "discovery" });
+    expect(isDiscoveryOnlySource("https://evilzhihu.com/question/123")).toBe(false);
   });
 
   it("requires configured official account identity for platform URLs", () => {
     expect(officialSourceAccounts.some((account) => account.platform === "bilibili")).toBe(true);
     expect(evaluateSource("arknights-endfield", "https://www.bilibili.com/opus/123")).toMatchObject({ allowed: false, role: "rejected" });
+    expect(evaluateSource("arknights-endfield", "https://www.bilibili.com/opus/123", { authorId: "1265652806", authorProfileUrl: "https://space.bilibili.com/1265652806" })).toMatchObject({ allowed: true, role: "official" });
   });
 });

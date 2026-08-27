@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseArticleCandidate } from "../scripts/crawl/parsers/article.ts";
-import { validateCandidate, loadEventTypeIds } from "../scripts/crawl/common/candidate-validation.ts";
+import { validateCandidate, validateCandidateFromConfig, loadEventTypeIds } from "../scripts/crawl/common/candidate-validation.ts";
 import type { RawArticle, Sha256 } from "../scripts/crawl/types.ts";
 
 const raw = (overrides: Partial<RawArticle> = {}): RawArticle => ({
@@ -16,24 +16,32 @@ describe("candidate validation", () => {
     await expect(loadEventTypeIds("data/event-types.yaml")).resolves.toEqual(["event", "banner", "preview", "maintenance"]);
   });
 
-  it("accepts a ready candidate with evidence and an allowed source", () => {
+  it("accepts a ready candidate with evidence and an allowed source", async () => {
     const candidate = parseArticleCandidate(raw(), "20260801-000000", "slot-1");
-    expect(validateCandidate(candidate, { supportsVersions: true, eventTypeIds: ["event", "banner", "preview", "maintenance"] })).toMatchObject({ ok: true });
+    expect(validateCandidate(candidate, { supportsVersions: true, eventTypeIds: ["event", "banner", "preview", "maintenance"], rawArticle: raw() })).toMatchObject({ ok: true });
+    await expect(validateCandidateFromConfig(candidate, { supportsVersions: true, eventTypesPath: "data/event-types.yaml", rawArticle: raw() })).resolves.toMatchObject({ ok: true });
   });
 
   it("rejects version candidates for an events-only game", () => {
     const candidate = parseArticleCandidate(raw({ title: "7.0版本更新说明", content: "版本时间：2026年8月20日 04:00 至 2026年9月30日 04:00" }), "20260801-000000", "version");
-    expect(validateCandidate(candidate, { supportsVersions: false, eventTypeIds: ["event"] })).toMatchObject({ ok: false, rejection: { reasonCode: "supports_versions_disabled" } });
+    expect(validateCandidate(candidate, { supportsVersions: false, eventTypeIds: ["event"], rawArticle: raw({ title: "7.0版本更新说明", content: "版本时间：2026年8月20日 04:00 至 2026年9月30日 04:00" }) })).toMatchObject({ ok: false, rejection: { reasonCode: "supports_versions_disabled" } });
   });
 
   it("rejects unknown event types and sources that are discovery-only", () => {
     const candidate = parseArticleCandidate(raw(), "20260801-000000", "slot-1");
-    expect(validateCandidate({ ...candidate, type: "unknown" } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"] })).toMatchObject({ ok: false, rejection: { reasonCode: "candidate_validation_failed" } });
-    expect(validateCandidate({ ...candidate, sources: ["https://www.zhihu.com/question/123"] } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"] })).toMatchObject({ ok: false, rejection: { reasonCode: "candidate_validation_failed" } });
+    expect(validateCandidate({ ...candidate, type: "unknown" } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false, rejection: { reasonCode: "candidate_validation_failed" } });
+    expect(validateCandidate({ ...candidate, sources: ["https://www.zhihu.com/question/123"] } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false, rejection: { reasonCode: "candidate_validation_failed" } });
   });
 
   it("requires evidence for confirmed times and note for estimated times", () => {
     const candidate = parseArticleCandidate(raw(), "20260801-000000", "slot-1");
-    expect(validateCandidate({ ...candidate, evidence: [] } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"] })).toMatchObject({ ok: false });
+    expect(validateCandidate({ ...candidate, evidence: [] } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false });
+    expect(validateCandidate({ ...candidate, evidence: [{ field: "start", text: "forged" }, { field: "end", text: ("end" in candidate ? candidate.end : "") }] } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false });
+  });
+
+  it("rejects a candidate whose raw article or source hash does not match", () => {
+    const candidate = parseArticleCandidate(raw(), "20260801-000000", "slot-1");
+    expect(validateCandidate(candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw({ title: "另一篇公告" }) })).toMatchObject({ ok: false });
+    expect(validateCandidate({ ...candidate, sourceHash: "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false });
   });
 });

@@ -1,9 +1,20 @@
 import { readFile } from "node:fs/promises";
 import { parse as parseYaml } from "yaml";
-import { CandidateItemSchema, type CandidateItem, type CandidateRejection } from "../types.ts";
+import { CandidateItemSchema } from "../types.ts";
+import type { CandidateItem, CandidateRejection, RawArticle, Sha256 } from "../types.ts";
+import { candidateHashProjection, hashCanonicalJson, sourceHashProjection } from "./hash.ts";
 import { evaluateSource } from "./source-policy.ts";
 
-export interface CandidateValidationOptions { supportsVersions: boolean; eventTypeIds: string[]; }
+export interface CandidateValidationOptions {
+  supportsVersions: boolean;
+  eventTypeIds: string[];
+  rawArticle: RawArticle;
+}
+export interface CandidateConfigValidationOptions {
+  supportsVersions: boolean;
+  eventTypesPath: string;
+  rawArticle: RawArticle;
+}
 export type CandidateValidationResult = { ok: true; candidate: CandidateItem } | { ok: false; rejection: CandidateRejection };
 
 export async function loadEventTypeIds(path: string): Promise<string[]> {
@@ -20,6 +31,10 @@ function rejection(candidate: Partial<CandidateItem>, reasonCode: CandidateRejec
   return { ok: false, rejection: { rawRef, candidateKey: candidate.candidateKey, attemptedKind: candidate.kind === "version" || candidate.kind === "event" ? candidate.kind : undefined, reasonCode, detail } };
 }
 
+export async function validateCandidateFromConfig(input: unknown, options: CandidateConfigValidationOptions): Promise<CandidateValidationResult> {
+  return validateCandidate(input, { supportsVersions: options.supportsVersions, eventTypeIds: await loadEventTypeIds(options.eventTypesPath), rawArticle: options.rawArticle });
+}
+
 export function validateCandidate(input: unknown, options: CandidateValidationOptions): CandidateValidationResult {
   let parsed: CandidateItem;
   try {
@@ -29,15 +44,23 @@ export function validateCandidate(input: unknown, options: CandidateValidationOp
   } catch (error) {
     return rejection((input ?? {}) as Partial<CandidateItem>, "candidate_validation_failed", error instanceof Error ? error.message : String(error));
   }
+  if (parsed.game !== options.rawArticle.game || parsed.region !== options.rawArticle.region || parsed.sourceId !== options.rawArticle.sourceId) return rejection(parsed, "invalid_source_identity", "candidate identity does not match raw article");
+  const expectedSourceHash = hashCanonicalJson(sourceHashProjection(options.rawArticle)) as Sha256;
+  if (parsed.sourceHash !== expectedSourceHash) return rejection(parsed, "invalid_source_identity", "sourceHash does not match raw article");
+  const expectedCandidateHash = hashCanonicalJson(candidateHashProjection(parsed)) as Sha256;
+  if (parsed.candidateHash !== expectedCandidateHash) return rejection(parsed, "candidate_validation_failed", "candidateHash does not match candidate content");
+  if (!parsed.sources.includes(options.rawArticle.url)) return rejection(parsed, "invalid_source_identity", "candidate sources do not include raw article URL");
   if (parsed.kind === "version" && !options.supportsVersions) return rejection(parsed, "supports_versions_disabled", "this game does not support versions");
   if (parsed.kind === "event" && parsed.review === "ready" && !options.eventTypeIds.includes(parsed.type)) return rejection(parsed, "candidate_validation_failed", `event type is not configured: ${parsed.type}`);
   for (const source of parsed.sources) {
-    const decision = evaluateSource(parsed.game, source);
+    const author = options.rawArticle.sourceAuthor;
+    const decision = evaluateSource(parsed.game, source, author ? { authorId: author.accountId, authorProfileUrl: author.profileUrl } : undefined);
     if (!decision.allowed) return rejection(parsed, "candidate_validation_failed", decision.reason);
   }
   if (parsed.review === "ready") {
     const evidenceFields = new Set(parsed.evidence.map((item) => item.field));
-    if (!evidenceFields.has("start") || ("end" in parsed && parsed.end !== undefined && !evidenceFields.has("end"))) return rejection(parsed, "candidate_validation_failed", "confirmed times require evidence");
+    const startEvidence = parsed.evidence.find((item) => item.field === "start");
+    if (!evidenceFields.has("start") || !startEvidence || startEvidence.text !== parsed.start || ("end" in parsed && parsed.end !== undefined && (!evidenceFields.has("end") || parsed.evidence.find((item) => item.field === "end")?.text !== parsed.end))) return rejection(parsed, "candidate_validation_failed", "confirmed times require matching evidence");
     if (parsed.timeCertainty.start !== "confirmed" && !("note" in parsed && parsed.note)) return rejection(parsed, "candidate_validation_failed", "inferred or estimated times require note");
     if ("end" in parsed && parsed.end !== undefined && parsed.timeCertainty.end !== "confirmed" && !("note" in parsed && parsed.note)) return rejection(parsed, "candidate_validation_failed", "inferred or estimated times require note");
   }

@@ -51,6 +51,7 @@ export interface RawArticle {
   content: string;
   contentHash: Sha256;
   fetchedAt: string;
+  sourceAuthor?: { platform: "bilibili" | "weibo" | "miyoushe" | "taptap"; accountId: string; profileUrl: string };
 }
 
 export interface Evidence {
@@ -208,6 +209,7 @@ export const RawArticleSchema = z.object({
   content: z.string(),
   contentHash: sha256Schema,
   fetchedAt: z.string().min(1),
+  sourceAuthor: z.object({ platform: z.enum(["bilibili", "weibo", "miyoushe", "taptap"]), accountId: z.string().min(1), profileUrl: httpUrl }).strict().optional(),
 }).strict();
 
 export const EvidenceSchema = z.object({

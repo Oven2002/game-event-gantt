@@ -13,7 +13,7 @@ const officialHosts: Record<string, string[]> = {
 const rejectedHosts = new Set(["forum.gamer.com.tw", "news.17173.com", "m.ali213.net", "www.gamersky.com", "facebook.com", "www.facebook.com"]);
 
 export function isDiscoveryOnlySource(rawUrl: string): boolean {
-  try { return new URL(rawUrl).hostname.toLowerCase().endsWith("zhihu.com"); } catch { return false; }
+  try { return new URL(rawUrl).hostname.toLowerCase().split(".").slice(-2).join(".") === "zhihu.com"; } catch { return false; }
 }
 
 export function evaluateSource(game: string, rawUrl: string, context: { authorId?: string; authorProfileUrl?: string } = {}): SourceDecision {
