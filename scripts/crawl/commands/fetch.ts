@@ -1,6 +1,6 @@
 import { rename } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import { fetchOfficial, type OfficialHttpResponse } from "../common/http.ts";
 import { artifactPath } from "../common/run.ts";
