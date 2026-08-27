@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { access, mkdir, rename, rm, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { mkdir, rename, rm, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import { fetchOfficial, type OfficialHttpResponse } from "../common/http.ts";
 import { appendJsonlIfUnique } from "../common/files.ts";
-import { assertRunExists, runRoot } from "../common/run.ts";
+import { artifactPath, assertRunArtifactsAbsent, assertRunExists, RUN_ARTIFACTS } from "../common/run.ts";
 import { sha256Utf8 } from "../common/hash.ts";
 import { RawArticleSchema, type RawArticle } from "../types.ts";
 
@@ -19,6 +19,7 @@ export interface FetchAdapter<TPage> {
   detail(sourceId: string, body: unknown, fetchedAt: string): RawArticle;
   listUrl(page: number, pageSize: number): string;
   detailUrl(sourceId: string): string;
+  hasMore?: (page: TPage, pageNumber: number, requestedPageSize: number, itemCount: number) => boolean;
   allowedHosts: string[];
   decodeListResponse?: (response: OfficialHttpResponse) => unknown;
   decodeDetailResponse?: (response: OfficialHttpResponse) => unknown;
@@ -39,34 +40,34 @@ export interface FetchCommandOptions<TPage> {
 
 export interface FetchCommandResult { rawPath: string; count: number; pages: number; }
 
-async function assertAbsent(paths: string[]): Promise<void> {
-  const present: string[] = [];
-  for (const path of paths) {
-    try {
-      await access(path);
-      present.push(path);
-    } catch (error: unknown) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-    }
-  }
-  if (present.length > 0) throw new Error(`fetch artifacts already exist: ${present.join(", ")}`);
-}
-
 function decodeJson(response: OfficialHttpResponse): unknown {
   return JSON.parse(response.body);
 }
 
-function parseSince(value: string): number {
-  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00+08:00` : value;
+function parseTimestamp(value: string): number {
+  const trimmed = value.trim();
+  let normalized = trimmed;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    normalized = `${trimmed}T00:00:00+08:00`;
+  } else if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/.test(trimmed)) {
+    normalized = `${trimmed.replace(" ", "T")}+08:00`;
+  }
   const timestamp = Date.parse(normalized);
   if (!Number.isFinite(timestamp)) throw new Error(`invalid --since value: ${value}`);
   return timestamp;
 }
 
+function parseSince(value: string): number {
+  return parseTimestamp(value);
+}
+
 function publishedTimestamp(value: string | null | undefined): number | undefined {
   if (!value) return undefined;
-  const timestamp = Date.parse(value);
-  return Number.isFinite(timestamp) ? timestamp : undefined;
+  try {
+    return parseTimestamp(value);
+  } catch {
+    return undefined;
+  }
 }
 
 export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Promise<FetchCommandResult> {
@@ -74,10 +75,9 @@ export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Pro
   await assertRunExists(options.runtimeRoot, options.runId);
   const pageSize = options.pageSize ?? 20;
   const maxPages = options.maxPages ?? 500;
-  const root = runRoot(options.runtimeRoot, options.runId);
-  const rawPath = join(root, "raw", `${options.game}.jsonl`);
-  const errorPath = join(root, "errors.jsonl");
-  await assertAbsent([rawPath, errorPath]);
+  const rawPath = artifactPath(options.runtimeRoot, options.runId, "raw", "jsonl", options.game);
+  const errorPath = artifactPath(options.runtimeRoot, options.runId, "errors");
+  await assertRunArtifactsAbsent(options.runtimeRoot, options.runId, RUN_ARTIFACTS);
   await mkdir(dirname(rawPath), { recursive: true });
   const temporary = `${rawPath}.tmp-${process.pid}-${randomUUID()}`;
   const writeRaw = options.writeRaw ?? ((article: RawArticle) => appendJsonlIfUnique(temporary, article, (value) => `${value.game}/${value.sourceId}/${value.contentHash}`));
@@ -115,7 +115,10 @@ export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Pro
         const timestamp = publishedTimestamp(item.publishedAt);
         return timestamp !== undefined && timestamp < sinceMs;
       });
-      if (pageBeforeSince || listedItems.length < pageSize) break;
+      const continuePaging = options.adapter.hasMore
+        ? options.adapter.hasMore(parsed, pageNumber, pageSize, listedItems.length)
+        : listedItems.length >= pageSize;
+      if (pageBeforeSince || !continuePaging) break;
     }
     await rename(temporary, rawPath);
     return { rawPath, count, pages };

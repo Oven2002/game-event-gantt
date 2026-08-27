@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rename as fsRename, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseCliArgs, createRunId, runCrawlCli, createFetchAdapter } from "../scripts/crawl/cli.ts";
@@ -8,7 +8,7 @@ import { buildHypergryphListRequest } from "../scripts/crawl/adapters/hypergryph
 import { buildMihoyoDetailRequest, buildMihoyoListRequest } from "../scripts/crawl/adapters/mihoyo.ts";
 import { parseRun } from "../scripts/crawl/commands/parse.ts";
 import { sha256Utf8 } from "../scripts/crawl/common/hash.ts";
-import { runRoot } from "../scripts/crawl/common/run.ts";
+import { artifactDirectory, artifactPath, runRoot } from "../scripts/crawl/common/run.ts";
 import type { RawArticle, Sha256 } from "../scripts/crawl/types.ts";
 
 const makeRaw = (overrides: Partial<RawArticle> = {}): RawArticle => {
@@ -29,9 +29,9 @@ const makeRaw = (overrides: Partial<RawArticle> = {}): RawArticle => {
 };
 
 async function writeRaw(root: string, runId: string, game: string, articles: RawArticle[]): Promise<void> {
-  const directory = join(runRoot(root, runId), "raw");
-  await mkdir(directory, { recursive: true });
-  await writeFile(join(directory, `${game}.jsonl`), `${articles.map((article) => JSON.stringify(article)).join("\n")}\n`, "utf8");
+  const path = artifactPath(root, runId, "raw", "jsonl", game);
+  await mkdir(artifactDirectory(root, runId, "raw"), { recursive: true });
+  await writeFile(path, `${articles.map((article) => JSON.stringify(article)).join("\n")}\n`, "utf8");
 }
 
 describe("crawler CLI argument contract", () => {
@@ -112,10 +112,10 @@ describe("crawler parse command", () => {
   it("refuses to overwrite an existing parse artifact", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-parse-"));
     const runId = "20260801-000002";
-    await mkdir(join(runRoot(root, runId), "raw"), { recursive: true });
+    await mkdir(runRoot(root, runId), { recursive: true });
     await writeRaw(root, runId, "genshin-impact", [makeRaw()]);
-    const candidatesPath = join(runRoot(root, runId), "candidates", "genshin-impact.json");
-    await mkdir(join(runRoot(root, runId), "candidates"), { recursive: true });
+    const candidatesPath = artifactPath(root, runId, "candidates", "json", "genshin-impact");
+    await mkdir(join(root, "candidates", runId), { recursive: true });
     await writeFile(candidatesPath, "sentinel\n", "utf8");
 
     await expect(parseRun({
@@ -124,6 +124,29 @@ describe("crawler parse command", () => {
       eventTypesPath: resolve("data/event-types.yaml"),
     })).rejects.toThrow(/artifacts already exist/);
     expect(await readFile(candidatesPath, "utf8")).toBe("sentinel\n");
+  });
+
+  it("removes all parse outputs when an atomic output commit fails", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-parse-"));
+    const runId = "20260801-000004";
+    await mkdir(runRoot(root, runId), { recursive: true });
+    await writeRaw(root, runId, "genshin-impact", [makeRaw()]);
+    const candidatesPath = artifactPath(root, runId, "candidates", "json", "genshin-impact");
+    const rejectionsPath = artifactPath(root, runId, "rejections");
+    let renameCalls = 0;
+
+    await expect(parseRun({
+      runtimeRoot: root,
+      runId,
+      eventTypesPath: resolve("data/event-types.yaml"),
+      rename: async (from: string, to: string) => {
+        renameCalls += 1;
+        if (renameCalls === 2) throw new Error("rename failed");
+        await fsRename(from, to);
+      },
+    })).rejects.toThrow("rename failed");
+    await expect(readFile(candidatesPath, "utf8")).rejects.toThrow();
+    await expect(readFile(rejectionsPath, "utf8")).rejects.toThrow();
   });
 
   it("routes parse through the executable CLI and reports its output", async () => {
@@ -154,11 +177,29 @@ describe("crawler parse command", () => {
         detailBody: async (path: string) => await readFile(path, "utf8"),
       },
       {
+        game: "zenless-zone-zero" as const,
+        listUrl: buildMihoyoListRequest("zenless-zone-zero", 1, 20).url,
+        detailUrl: buildMihoyoDetailRequest("zenless-zone-zero", "165865").url,
+        listPath: "tests/fixtures/crawler/mihoyo/zenless-zone-zero/list-page-1.json",
+        detailPath: "tests/fixtures/crawler/mihoyo/zenless-zone-zero/detail-165865.json",
+        detailContentType: "application/json",
+        detailBody: async (path: string) => await readFile(path, "utf8"),
+      },
+      {
         game: "arknights" as const,
         listUrl: buildHypergryphListRequest("arknights", 1, 20).url,
         detailUrl: "https://ak.hypergryph.com/news/4924",
         listPath: "tests/fixtures/crawler/hypergryph/arknights/list-page-1.json",
         detailPath: "tests/fixtures/crawler/hypergryph/arknights/detail-4924.json",
+        detailContentType: "text/html",
+        detailBody: async (path: string) => (JSON.parse(await readFile(path, "utf8")) as { body: string }).body,
+      },
+      {
+        game: "arknights-endfield" as const,
+        listUrl: buildHypergryphListRequest("arknights-endfield", 1, 20).url,
+        detailUrl: "https://endfield.hypergryph.com/news/4776",
+        listPath: "tests/fixtures/crawler/hypergryph/arknights-endfield/list-page-1.json",
+        detailPath: "tests/fixtures/crawler/hypergryph/arknights-endfield/detail-4776.json",
         detailContentType: "text/html",
         detailBody: async (path: string) => (JSON.parse(await readFile(path, "utf8")) as { body: string }).body,
       },
@@ -169,7 +210,23 @@ describe("crawler parse command", () => {
       const output: string[] = [];
       const listBody = await readFile(item.listPath, "utf8");
       const detailBody = await item.detailBody(item.detailPath);
-      const responses = new Map([[item.listUrl, { contentType: "application/json", body: listBody }], [item.detailUrl, { contentType: item.detailContentType, body: detailBody }]]);
+      const secondListUrl = new URL(item.listUrl);
+      const isMihoyo = item.game !== "arknights" && item.game !== "arknights-endfield";
+      secondListUrl.searchParams.set(isMihoyo ? "iPage" : "page", "2");
+      const listValue = JSON.parse(listBody) as { data: Record<string, unknown> };
+      const secondListBody = {
+        ...listValue,
+        data: {
+          ...listValue.data,
+          list: [],
+          ...(isMihoyo ? {} : { current: 2 }),
+        },
+      };
+      const responses = new Map([
+        [item.listUrl, { contentType: "application/json", body: listBody }],
+        [secondListUrl.toString(), { contentType: "application/json", body: JSON.stringify(secondListBody) }],
+        [item.detailUrl, { contentType: item.detailContentType, body: detailBody }],
+      ]);
       const fetcher = async (url: string) => {
         const response = responses.get(url);
         if (!response) throw new Error(`unexpected fixture URL: ${url}`);
@@ -183,10 +240,13 @@ describe("crawler parse command", () => {
         print: (line: string) => output.push(line),
       })).resolves.toBe(0);
       expect(createFetchAdapter(item.game).allowedHosts.length).toBeGreaterThan(0);
-      expect(output.join("\n")).toMatch(new RegExp(`run=20260801-000000.*rawPath=.*${item.game}\\.jsonl`));
+      expect(output.join("\n")).toMatch(new RegExp(`run=20260801-000000.*rawPath=.*${item.game}\\.jsonl count=1 pages=2`));
       const state = JSON.parse(await readFile(join(root, "state.json"), "utf8"));
       expect(state.games[item.game].checkpoint).toBe(null);
-      expect(state.games[item.game].sourceHashes).toHaveProperty(item.game === "genshin-impact" ? "165690" : "4924");
+      const sourceId = item.game === "genshin-impact" ? "165690"
+        : item.game === "zenless-zone-zero" ? "165865"
+          : item.game === "arknights" ? "4924" : "4776";
+      expect(state.games[item.game].sourceHashes).toHaveProperty(sourceId);
     }
   });
 

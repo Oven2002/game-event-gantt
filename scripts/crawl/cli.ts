@@ -81,6 +81,7 @@ function mihoyoAdapter(game: Extract<CrawlGame, "genshin-impact" | "honkai-star-
       url: buildMihoyoDetailRequest(game, item.sourceId).url,
       publishedAt: item.publishedAt,
     })),
+    hasMore: (page, pageNumber, _requestedPageSize, itemCount) => pageNumber * itemCount < (page as MihoyoListPage).total,
     detail: (sourceId, body, fetchedAt) => parseMihoyoDetail(game, sourceId, body, fetchedAt),
   };
 }
@@ -97,6 +98,10 @@ function hypergryphAdapter(game: Extract<CrawlGame, "arknights" | "arknights-end
       url: item.url,
       publishedAt: new Date(item.displayTime * 1000).toISOString(),
     })),
+    hasMore: (page) => {
+      const value = page as HypergryphListPage;
+      return value.current * value.pageSize < value.total;
+    },
     decodeDetailResponse: (response) => ({ status: response.status, contentType: response.contentType, body: response.body }),
     detail: (sourceId, body, fetchedAt) => parseHypergryphDetail(game, sourceId, body, fetchedAt),
   };

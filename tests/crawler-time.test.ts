@@ -71,6 +71,13 @@ describe("announcement timeline semantics", () => {
       content: "维护时间：2026年8月20日 04:00 至 2026年8月20日 11:00",
     })).toMatchObject({ status: "ready", kind: "event", type: "maintenance" });
   });
+
+  it("prioritizes banner and preview markers over a version number", () => {
+    const content = "时间：2026年8月20日 04:00 至 2026年8月20日 11:00";
+    expect(parseArticleCandidates({ title: "4.5版本活动跃迁（其一）", content })).toMatchObject({ status: "ready", kind: "event", type: "banner" });
+    expect(parseArticleCandidates({ title: "3.2版本前瞻特别节目预告", content })).toMatchObject({ status: "ready", kind: "event", type: "preview" });
+    expect(parseArticleCandidates({ title: "4.5版本更新说明", content })).toMatchObject({ status: "ready", kind: "version" });
+  });
   it("rejects multiple windows instead of collapsing them", () => {
     expect(parseArticleCandidates({ title: "活动说明", content: "第一期：2026年8月20日 04:00 至 11:00；第二期：2026年8月21日 04:00 至 11:00" })).toMatchObject({ status: "needs_review" });
   });

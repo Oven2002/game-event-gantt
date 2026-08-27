@@ -18,10 +18,10 @@ export interface ParsedArticleCandidate {
 type ArticleClassification = { kind: "version" } | { kind: "event"; type: "event" | "banner" | "preview" | "maintenance" };
 
 function classify(title: string): ArticleClassification | undefined {
-  if (/版本|版本更新|更新说明/.test(title)) return { kind: "version" };
-  if (/维护|停机|闪断/.test(title)) return { kind: "event", type: "maintenance" };
-  if (/寻访|祈愿|跃迁|调频/.test(title)) return { kind: "event", type: "banner" };
   if (/前瞻|特别节目/.test(title)) return { kind: "event", type: "preview" };
+  if (/寻访|祈愿|跃迁|调频/.test(title)) return { kind: "event", type: "banner" };
+  if (/维护|停机|闪断/.test(title)) return { kind: "event", type: "maintenance" };
+  if (/(?:版本.*(?:更新|研发|说明|公告)|更新说明)/.test(title)) return { kind: "version" };
   if (/活动/.test(title)) return { kind: "event", type: "event" };
   return undefined;
 }
