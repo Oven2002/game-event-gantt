@@ -3,10 +3,11 @@ import { execFile } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rename as fsRename, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { parseArticleCandidate } from "../scripts/crawl/parsers/article.ts";
 import { parseCliArgs, createRunId, defaultLookbackSince, runCrawlCli, createFetchAdapter, advanceState } from "../scripts/crawl/cli.ts";
 import { parseRun } from "../scripts/crawl/commands/parse.ts";
 import { sha256Utf8 } from "../scripts/crawl/common/hash.ts";
-import { artifactDirectory, artifactPath, runRoot } from "../scripts/crawl/common/run.ts";
+import { artifactDirectory, artifactPath, createRun, runRoot } from "../scripts/crawl/common/run.ts";
 import { beginStateTransaction, markStateTransactionPending, stateTransactionPath, recoverStateTransactions } from "../scripts/crawl/common/state.ts";
 import type { RawArticle, Sha256 } from "../scripts/crawl/types.ts";
 
@@ -271,6 +272,21 @@ describe("crawler parse command", () => {
     })).rejects.toThrow(/duplicate candidateKey/i);
     await expect(readFile(artifactPath(root, runId, "candidates", "json", "genshin-impact"), "utf8")).rejects.toThrow();
     await expect(readFile(artifactPath(root, runId, "rejections"), "utf8")).rejects.toThrow();
+  });
+
+  it("routes review through the executable CLI and writes report/template", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-cli-review-"));
+    const runId = "20260827-000020";
+    await createRun(root, runId);
+    const article = makeRaw({ sourceId: "cli-new", url: "https://ys.mihoyo.com/main/news/detail/cli-new", title: "CLI 新活动" });
+    await writeRaw(root, runId, article.game, [article]);
+    await mkdir(artifactDirectory(root, runId, "candidates"), { recursive: true });
+    await writeFile(artifactPath(root, runId, "candidates", "json", article.game), `${JSON.stringify([parseArticleCandidate(article, runId, "primary")])}\n`, "utf8");
+    const output: string[] = [];
+    await expect(runCrawlCli(["review", "--run", runId], { runtimeRoot: root, print: (line: string) => output.push(line) })).resolves.toBe(0);
+    await expect(readFile(artifactPath(root, runId, "reports", "md"), "utf8")).resolves.toContain("Review diff");
+    await expect(readFile(artifactPath(root, runId, "selections", "json"), "utf8")).resolves.toContain(runId);
+    expect(output.join("\n")).toMatch(/reportPath=.*templatePath=/);
   });
 
   it("routes parse through the executable CLI and reports its output", async () => {
