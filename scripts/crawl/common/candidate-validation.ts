@@ -54,7 +54,11 @@ export function validateCandidate(input: unknown, options: CandidateValidationOp
   if (parsed.kind === "event" && parsed.review === "ready" && !options.eventTypeIds.includes(parsed.type)) return rejection(parsed, "candidate_validation_failed", `event type is not configured: ${parsed.type}`);
   for (const source of parsed.sources) {
     const author = options.rawArticle.sourceAuthor;
-    const decision = evaluateSource(parsed.game, source, author ? { authorId: author.accountId, authorProfileUrl: author.profileUrl } : undefined);
+    const decision = evaluateSource(parsed.game, source, author ? {
+      platform: author.platform,
+      authorId: author.accountId,
+      authorProfileUrl: author.profileUrl,
+    } : undefined);
     if (!decision.allowed) return rejection(parsed, "candidate_validation_failed", decision.reason);
   }
   if (parsed.review === "ready") {

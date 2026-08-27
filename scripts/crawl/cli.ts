@@ -6,10 +6,11 @@ import { createRun } from "./common/run.ts";
 import { readJsonl } from "./common/files.ts";
 import { loadState, writeStateAtomic, type CrawlerState } from "./common/state.ts";
 import { RawArticleSchema } from "./types.ts";
-import { buildHypergryphListRequest, parseHypergryphDetail, parseHypergryphList, type HypergryphListPage } from "./adapters/hypergryph.ts";
+import { buildHypergryphListRequest, normalizeHypergryphContent, parseHypergryphDetail, parseHypergryphList, type HypergryphListPage } from "./adapters/hypergryph.ts";
 import { hypergryphGames } from "./hypergryph-config.ts";
 import { buildMihoyoDetailRequest, buildMihoyoListRequest, parseMihoyoDetail, parseMihoyoList, type MihoyoListPage } from "./adapters/mihoyo.ts";
 import { mihoyoGames } from "./mihoyo-config.ts";
+import { normalizeContent as normalizeMihoyoContent } from "./common/content.ts";
 
 export type CrawlGame = "genshin-impact" | "honkai-star-rail" | "zenless-zone-zero" | "arknights" | "arknights-endfield";
 export type CrawlCommand = "fetch" | "parse" | "review" | "approve";
@@ -73,6 +74,9 @@ function mihoyoAdapter(game: Extract<CrawlGame, "genshin-impact" | "honkai-star-
   const config = mihoyoGames[game];
   return {
     allowedHosts: config.officialHosts,
+    allowedListContentTypes: ["application/json"],
+    allowedDetailContentTypes: ["application/json"],
+    isCanonicalContent: (content) => normalizeMihoyoContent(content) === content,
     listUrl: (page, pageSize) => buildMihoyoListRequest(game, page, pageSize).url,
     detailUrl: (sourceId) => buildMihoyoDetailRequest(game, sourceId).url,
     list: (_page, _pageSize, body) => parseMihoyoList(game, body),
@@ -90,9 +94,12 @@ function hypergryphAdapter(game: Extract<CrawlGame, "arknights" | "arknights-end
   const config = hypergryphGames[game];
   return {
     allowedHosts: [config.officialHost, "web-news.hypergryph.com"],
+    allowedListContentTypes: ["application/json"],
+    allowedDetailContentTypes: ["text/html"],
+    isCanonicalContent: (content) => normalizeHypergryphContent(content) === content,
     listUrl: (page, pageSize) => buildHypergryphListRequest(game, page, pageSize).url,
     detailUrl: (sourceId) => `https://${config.officialHost}/news/${encodeURIComponent(sourceId)}`,
-    list: (_page, _pageSize, body) => parseHypergryphList(game, body),
+    list: (page, _pageSize, body) => parseHypergryphList(game, body, page),
     listItems: (page) => (page as HypergryphListPage).items.map((item) => ({
       sourceId: item.sourceId,
       url: item.url,
@@ -142,6 +149,7 @@ export interface RunCrawlCliOptions {
   eventTypesPath?: string;
   now?: () => Date;
   fetcher?: FetchCommandOptions<unknown>["fetcher"];
+  pageSize?: number;
   print?: (line: string) => void;
   printError?: (line: string) => void;
 }
@@ -176,6 +184,7 @@ export async function runCrawlCli(argv: string[], options: RunCrawlCliOptions = 
         runtimeRoot,
         runId,
         game: args.game!,
+        pageSize: options.pageSize,
         since: args.since,
         adapter: createFetchAdapter(args.game!),
         fetcher: options.fetcher,

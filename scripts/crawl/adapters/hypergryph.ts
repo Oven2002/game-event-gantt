@@ -1,4 +1,5 @@
 import { sha256Utf8 } from "../common/hash.ts";
+import { normalizeContent } from "../common/content.ts";
 import type { RawArticle, Sha256 } from "../types.ts";
 import { hypergryphGames, type HypergryphGameConfig } from "../hypergryph-config.ts";
 
@@ -32,7 +33,7 @@ function positiveIntegerField(data: Record<string, unknown>, key: string, allowZ
 }
 
 
-export function parseHypergryphList(game: HypergryphGameConfig["game"], body: unknown): HypergryphListPage {
+export function parseHypergryphList(game: HypergryphGameConfig["game"], body: unknown, requestedPage?: number): HypergryphListPage {
   const data = envelope(body);
   if (!Array.isArray(data.list)) throw new HypergryphAdapterError("invalid list");
   const items = data.list.map((raw) => {
@@ -46,6 +47,7 @@ export function parseHypergryphList(game: HypergryphGameConfig["game"], body: un
   }).filter((item, index, all) => all.findIndex((candidate) => candidate.sourceId === item.sourceId) === index);
   const total = positiveIntegerField(data, "total", true);
   const current = positiveIntegerField(data, "current");
+  if (requestedPage !== undefined && current !== requestedPage) throw new HypergryphAdapterError("response current page mismatch");
   const pageSizeValue = positiveIntegerField(data, "pageSize");
   if (pageSizeValue > 20) throw new HypergryphAdapterError("invalid pageSize");
   return { total, current, pageSize: pageSizeValue, items };
@@ -53,12 +55,14 @@ export function parseHypergryphList(game: HypergryphGameConfig["game"], body: un
 
 function htmlFromEnvelope(body: unknown): string {
   if (typeof body !== "object" || body === null || (body as { status?: unknown }).status !== 200 || typeof (body as { body?: unknown }).body !== "string") throw new HypergryphAdapterError("invalid detail response");
+  const contentType = typeof (body as { contentType?: unknown }).contentType === "string"
+    ? (body as { contentType: string }).contentType.split(";", 1)[0].trim().toLowerCase()
+    : "";
+  if (contentType !== "text/html") throw new HypergryphAdapterError("invalid detail content-type");
   return (body as { body: string }).body;
 }
-function decode(value: string): string { return value.replace(/\\u003c/g, "<").replace(/\\u003e/g, ">").replace(/\\u0026/g, "&").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">"); }
-export function normalizeHypergryphContent(html: string): string {
-  return decode(html).replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "").replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "").replace(/<\s*br\s*\/?>/gi, "\n").replace(/<\s*\/(?:p|div|li|h[1-6])\s*>/gi, "\n").replace(/<[^>]+>/g, "").replace(/\r\n?/g, "\n").split("\n").map((line) => line.replace(/[ \t]+/g, " ").trim()).filter((line, index, lines) => line || (index > 0 && lines[index - 1])).join("\n").trim();
-}
+function decode(value: string): string { return value.replace(/\\u003c/g, "<").replace(/\\u003e/g, ">").replace(/\\u0026/g, "&"); }
+export function normalizeHypergryphContent(html: string): string { return normalizeContent(decode(html)); }
 function parsePublishedAt(value: string): string | null {
   const full = value.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})$/);
   return full ? `${full[1]}-${full[2]}-${full[3]}T${full[4]}:${full[5]}:00+08:00` : null;
