@@ -2,6 +2,7 @@ import { pathToFileURL } from "node:url";
 import { join, resolve } from "node:path";
 import { fetchGame, type FetchAdapter, type FetchCommandOptions, type FetchCommandResult } from "./commands/fetch.ts";
 import { parseRun, type ParseCommandResult } from "./commands/parse.ts";
+import { reviewRun } from "./commands/review.ts";
 import { createRun, artifactPath, assertRuntimeRootSafe, assertRunId } from "./common/run.ts";
 import { readJsonl } from "./common/files.ts";
 import { sha256Utf8 } from "./common/hash.ts";
@@ -250,6 +251,11 @@ export async function runCrawlCli(argv: string[], options: RunCrawlCliOptions = 
         await abortStateTransaction(transactionPath, rawPath).catch(() => undefined);
         throw error;
       }
+    }
+    if (args.command === "review") {
+      const result = await reviewRun({ runtimeRoot, runId: args.run!, eventTypesPath });
+      print(`run=${args.run} reportPath=${result.reportPath} templatePath=${result.templatePath} items=${result.template.items.length}`);
+      return 0;
     }
     if (args.command === "parse") {
       const result = await parseRun({ runtimeRoot, runId: args.run!, eventTypesPath });

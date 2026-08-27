@@ -196,6 +196,24 @@ export type CandidateRejectionReason =
   | "invalid_source_identity"
   | "candidate_validation_failed";
 
+export const CandidateTargetMapEntrySchema = z.object({
+  candidateKey: z.string().regex(candidateKeyPattern),
+  game: z.string().regex(machineId),
+  region: z.literal("cn"),
+  kind: z.enum(["version", "event"]),
+  targetFile: z.string().regex(/^data\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+-\d{4}\.ya?ml$/),
+  targetId: z.string().regex(entryIdPattern),
+  appliedRunId: z.string().regex(/^\d{8}-\d{6}$/),
+  appliedAt: auditTimestampSchema,
+}).strict();
+export type CandidateTargetMapEntry = z.infer<typeof CandidateTargetMapEntrySchema>;
+
+export const CandidateTargetMapSchema = z.object({
+  schemaVersion: z.literal(1),
+  entries: z.array(CandidateTargetMapEntrySchema),
+}).strict();
+export type CandidateTargetMap = z.infer<typeof CandidateTargetMapSchema>;
+
 export type VersionSelectionPatch = {
   kind: "version";
   set: Partial<Pick<VersionYamlValue, "url">>;
