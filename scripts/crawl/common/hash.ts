@@ -1,12 +1,16 @@
 import { createHash } from "node:crypto";
 import type { CandidateItem, RawArticle } from "../types.ts";
 
+function compareCodeUnits(left: string, right: string): number {
+  return left === right ? 0 : left < right ? -1 : 1;
+}
+
 function sortValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(sortValue);
   if (value !== null && typeof value === "object") {
     return Object.fromEntries(
       Object.entries(value as Record<string, unknown>)
-        .sort(([left], [right]) => left.localeCompare(right))
+        .sort(([left], [right]) => compareCodeUnits(left, right))
         .map(([key, item]) => [key, sortValue(item)]),
     );
   }
@@ -25,13 +29,22 @@ export function hashCanonicalJson(value: unknown): `sha256:${string}` {
   return sha256Utf8(canonicalJson(value));
 }
 
+export function canonicalizeUrl(rawUrl: string): string {
+  const url = new URL(rawUrl);
+  url.protocol = url.protocol.toLowerCase();
+  url.hostname = url.hostname.toLowerCase();
+  if ((url.protocol === "https:" && url.port === "443") || (url.protocol === "http:" && url.port === "80")) url.port = "";
+  url.hash = "";
+  return url.toString();
+}
+
 export function sourceHashProjection(raw: Pick<RawArticle, "game" | "region" | "source" | "sourceId" | "url" | "title" | "publishedAt" | "contentHash">): Record<string, unknown> {
   return {
     game: raw.game,
     region: raw.region,
     source: raw.source,
     sourceId: raw.sourceId,
-    url: raw.url,
+    url: canonicalizeUrl(raw.url),
     title: raw.title,
     publishedAt: raw.publishedAt,
     contentHash: raw.contentHash,
@@ -45,7 +58,7 @@ export function candidateHashProjection(candidate: CandidateItem | Record<string
   const evidence = Array.isArray(value.evidence)
     ? [...value.evidence as Array<{ field: string; text: string }>].sort((left, right) => {
       const fieldDiff = evidenceOrder.indexOf(left.field) - evidenceOrder.indexOf(right.field);
-      return fieldDiff || left.text.localeCompare(right.text);
+      return fieldDiff || compareCodeUnits(left.text, right.text);
     })
     : [];
   return {

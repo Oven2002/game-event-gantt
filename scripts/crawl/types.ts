@@ -12,6 +12,7 @@ export type { EventYamlValue, VersionYamlValue };
 
 const entryIdPattern = /^[a-z0-9][a-z0-9._-]*$/;
 const candidateKeyPattern = /^[^/]+\/[^/]+\/[^/]+$/;
+const machineId = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const beijingTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\+08:00$/;
 
 export type Sha256 = string & { readonly __sha256: unique symbol };
@@ -35,6 +36,55 @@ const beijingTimestampSchema = z.string().regex(beijingTimestampPattern).superRe
     ctx.addIssue({ code: "custom", message: "必须是合法的北京时间" });
   }
 });
+const auditTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+const auditTimestampSchema = z.string().regex(auditTimestampPattern).superRefine((value, ctx) => {
+  if (!Number.isFinite(Date.parse(value))) ctx.addIssue({ code: "custom", message: "必须是合法的审计时间" });
+});
+const httpsUrl = httpUrl.refine((value) => new URL(value).protocol === "https:", "必须是 HTTPS URL");
+const fixtureRequestSchema = z.object({
+  method: z.literal("GET"),
+  url: httpsUrl,
+  parameters: z.record(z.string(), z.string()),
+}).strict();
+const fixtureResponseSchema = z.object({
+  status: z.number().int().min(100).max(599),
+  contentType: z.string().regex(/^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/i),
+  finalUrl: httpsUrl,
+  redirects: z.array(httpsUrl),
+}).strict();
+const fixturePaginationSchema = z.object({
+  kind: z.string().min(1),
+  termination: z.string().min(1),
+}).strict();
+const fixtureCheckpointSchema = z.object({
+  kind: z.string().min(1).nullable(),
+  reusable: z.boolean(),
+  reason: z.string().min(1),
+}).strict();
+
+export const FixtureMetadataSchema = z.object({
+  fixtureKind: z.enum(["real", "synthetic"]),
+  fixtureRole: z.enum(["list", "detail", "error", "blocker"]),
+  game: z.string().regex(machineId),
+  capturedAt: auditTimestampSchema,
+  request: fixtureRequestSchema,
+  response: fixtureResponseSchema,
+  responseFormat: z.enum(["json", "json-envelope", "html", "text"]),
+  pagination: fixturePaginationSchema.nullable(),
+  urlDerivation: z.string().min(1),
+  detailSourceId: z.string().regex(/^\d+$/).optional(),
+  checkpoint: fixtureCheckpointSchema,
+  blocker: z.string().min(1).nullable(),
+}).strict().superRefine((value, ctx) => {
+  if (value.fixtureRole === "list" && value.pagination === null) ctx.addIssue({ code: "custom", message: "list fixture must declare pagination" });
+  if (value.fixtureRole === "detail" && value.pagination !== null) ctx.addIssue({ code: "custom", message: "detail fixture must not declare pagination" });
+  if (value.fixtureRole === "detail" && value.detailSourceId === undefined) ctx.addIssue({ code: "custom", message: "detail fixture must declare detailSourceId" });
+  if (value.fixtureRole === "blocker" && value.blocker === null) ctx.addIssue({ code: "custom", message: "blocker fixture must declare blocker" });
+  if (value.fixtureRole !== "blocker" && value.blocker !== null) ctx.addIssue({ code: "custom", message: "non-blocker fixture must not declare blocker" });
+  if (value.checkpoint.kind !== null && !value.checkpoint.reusable) ctx.addIssue({ code: "custom", message: "non-reusable checkpoint must use null kind" });
+});
+export type FixtureMetadata = z.infer<typeof FixtureMetadataSchema>;
+
 const readyTimeCertaintySchema = z.object({
   start: z.enum(["confirmed", "inferred", "estimated"]),
   end: z.enum(["confirmed", "inferred", "estimated"]).optional(),

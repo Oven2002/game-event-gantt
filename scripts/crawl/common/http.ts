@@ -45,31 +45,74 @@ export interface FetchOfficialOptions {
 const lastRequestAt = new Map<string, number>();
 const retryableStatus = (status: number) => status === 429 || status >= 500;
 
+function parseIpv4Words(value: string): number[] | undefined {
+  if (isIP(value) !== 4) return undefined;
+  const words = value.split(".").map(Number);
+  return words.length === 4 && words.every((word) => Number.isInteger(word) && word >= 0 && word <= 255) ? words : undefined;
+}
+
+function parseIpv6Words(value: string): number[] | undefined {
+  let normalized = value;
+  if (normalized.includes(".")) {
+    const separator = normalized.lastIndexOf(":");
+    if (separator < 0) return undefined;
+    const ipv4 = parseIpv4Words(normalized.slice(separator + 1));
+    if (!ipv4) return undefined;
+    const first = ((ipv4[0] << 8) | ipv4[1]).toString(16);
+    const second = ((ipv4[2] << 8) | ipv4[3]).toString(16);
+    normalized = `${normalized.slice(0, separator + 1)}${first}:${second}`;
+  }
+  const sections = normalized.split("::");
+  if (sections.length > 2) return undefined;
+  const parseSection = (section: string): number[] => section ? section.split(":").map((part) => {
+    if (!/^[0-9a-f]{1,4}$/i.test(part)) throw new Error("invalid IPv6 section");
+    return Number.parseInt(part, 16);
+  }) : [];
+  try {
+    const left = parseSection(sections[0]);
+    const right = sections.length === 2 ? parseSection(sections[1]) : [];
+    if (sections.length === 1 && left.length !== 8) return undefined;
+    if (sections.length === 2 && left.length + right.length >= 8) return undefined;
+    return sections.length === 2 ? [...left, ...Array.from({ length: 8 - left.length - right.length }, () => 0), ...right] : left;
+  } catch {
+    return undefined;
+  }
+}
+
+function isUnsafeIpv4(words: number[]): boolean {
+  const [first, second] = words;
+  return first === 0 || first === 10 || first === 127 || first === 169 && second === 254
+    || first === 172 && second >= 16 && second <= 31
+    || first === 192 && second === 0 || first === 192 && second === 168
+    || first === 198 && (second === 18 || second === 19 || second === 51)
+    || first === 203 && second === 0
+    || first === 100 && second >= 64 && second <= 127
+    || first >= 240;
+}
+
 function isPrivateAddress(rawAddress: string): boolean {
   const address = rawAddress.toLowerCase().replace(/^\[|\]$/g, "");
-  const mappedHex = address.match(/^(?:::0:0:0:0:0:ffff|::ffff):([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
-  if (mappedHex) {
-    const first = Number.parseInt(mappedHex[1], 16);
-    const second = Number.parseInt(mappedHex[2], 16);
-    return isPrivateAddress(`${first >> 8}.${first & 255}.${second >> 8}.${second & 255}`);
-  }
-  const ipv4 = isIP(address) === 4 ? address : undefined;
-  if (ipv4) {
-    const octets = ipv4.split(".").map(Number);
-    const [first, second] = octets;
-    return first === 0 || first === 10 || first === 127 || first === 169 && second === 254
-      || first === 172 && second >= 16 && second <= 31
-      || first === 192 && second === 0 || first === 192 && second === 168
-      || first === 198 && (second === 18 || second === 19)
-      || first === 100 && second >= 64 && second <= 127;
-  }
-  if (isIP(address) !== 6) return false;
-  return address === "::1" || address === "::" || address.startsWith("fc") || address.startsWith("fd")
-    || address.startsWith("fe8") || address.startsWith("fe9") || address.startsWith("fea") || address.startsWith("feb")
-    || address.startsWith("fec") || address.startsWith("fed") || address.startsWith("fee") || address.startsWith("fef");
+  const ipv4 = parseIpv4Words(address);
+  if (ipv4) return isUnsafeIpv4(ipv4);
+  if (isIP(address) === 0) return false;
+  if (isIP(address) !== 6) return true;
+  const words = parseIpv6Words(address);
+  if (!words) return true;
+  const allZero = words.every((word) => word === 0);
+  const loopback = words.slice(0, 7).every((word) => word === 0) && words[7] === 1;
+  const mapped = words.slice(0, 5).every((word) => word === 0) && (words[5] === 0 || words[5] === 0xffff);
+  if (mapped) return isUnsafeIpv4([words[6] >> 8, words[6] & 255, words[7] >> 8, words[7] & 255]);
+  return allZero || loopback
+    || (words[0] & 0xfe00) === 0xfc00
+    || (words[0] & 0xffc0) === 0xfe80
+    || (words[0] === 0x2001 && words[1] === 0x0db8)
+    || (words[0] & 0xff00) === 0xff00;
 }
 
 async function assertResolvedHost(hostname: string, lookup: FetchOfficialOptions["lookup"]): Promise<void> {
+  if (isIP(hostname) !== 0) {
+    throw new CrawlerHttpError("UNSAFE_URL", `IP literal is not allowed: ${hostname}`);
+  }
   if (isPrivateAddress(hostname)) {
     throw new CrawlerHttpError("UNSAFE_URL", `private address is not allowed: ${hostname}`);
   }
@@ -80,7 +123,9 @@ async function assertResolvedHost(hostname: string, lookup: FetchOfficialOptions
     } catch (error) {
       throw new CrawlerHttpError("UNSAFE_URL", `host could not be resolved: ${hostname}`, { cause: (error as Error).message });
     }
-    if (addresses.some(isPrivateAddress)) throw new CrawlerHttpError("UNSAFE_URL", `host resolves to a private address: ${hostname}`);
+    if (!Array.isArray(addresses) || addresses.length === 0 || addresses.some((address) => isIP(address) === 0 || isPrivateAddress(address))) {
+      throw new CrawlerHttpError("UNSAFE_URL", `host did not resolve to safe public addresses: ${hostname}`);
+    }
   }
 }
 
@@ -157,6 +202,8 @@ export async function fetchOfficial(rawUrl: string, options: FetchOfficialOption
   let redirects = 0;
 
   while (true) {
+    // DNS preflight is best-effort; native fetch may resolve independently, so this is not connection pinning.
+    url = await assertSafeUrl(url.toString(), options.allowedHosts, options.lookup);
     if (redirects > maxRedirects) throw new CrawlerHttpError("REDIRECT_LIMIT", `redirect limit exceeded: ${maxRedirects}`);
     await waitForHost(url.hostname, intervalMs);
     const controller = new AbortController();
@@ -181,7 +228,13 @@ export async function fetchOfficial(rawUrl: string, options: FetchOfficialOption
         if (redirects >= maxRedirects) throw new CrawlerHttpError("REDIRECT_LIMIT", `redirect limit exceeded: ${maxRedirects}`);
         await response.body?.cancel().catch(() => undefined);
         redirects += 1;
-        url = await assertSafeUrl(new URL(location, url).toString(), options.allowedHosts, options.lookup);
+        let redirectedUrl: string;
+        try {
+          redirectedUrl = new URL(location, url).toString();
+        } catch {
+          throw new CrawlerHttpError("REDIRECT", "redirect location is invalid", { status: response.status, location });
+        }
+        url = await assertSafeUrl(redirectedUrl, options.allowedHosts, options.lookup);
         continue;
       }
 
@@ -196,7 +249,9 @@ export async function fetchOfficial(rawUrl: string, options: FetchOfficialOption
       }
 
       const contentType = (response.headers.get("content-type") ?? "").split(";", 1)[0].trim().toLowerCase();
-      if (!contentType || (options.allowedContentTypes && !options.allowedContentTypes.includes(contentType))) {
+      const allowedContentTypes = (options.allowedContentTypes ?? ["application/json", "text/html", "text/plain"])
+        .map((value) => value.toLowerCase().split(";", 1)[0].trim());
+      if (!contentType || !allowedContentTypes.includes(contentType)) {
         throw new CrawlerHttpError("CONTENT_TYPE", `unsupported content type: ${contentType || "missing"}`, { contentType });
       }
       return { url: url.toString(), status: response.status, contentType, body: await readLimitedBody(response, maxBytes, controller.signal) };

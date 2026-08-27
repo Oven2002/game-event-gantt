@@ -1,11 +1,59 @@
-import { access, mkdir, readdir } from "node:fs/promises";
-import { join } from "node:path";
+import { access, lstat, mkdir, readdir, realpath } from "node:fs/promises";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
 export const RUN_ARTIFACTS = ["raw", "errors", "rejections", "candidates", "reports", "selections", "approved"] as const;
 export type RunArtifact = typeof RUN_ARTIFACTS[number];
 
 const runIdPattern = /^\d{8}-\d{6}$/;
 const pathSegmentPattern = /^[a-z0-9][a-z0-9-]*$/;
+
+function isWithin(root: string, candidate: string): boolean {
+  const child = relative(root, candidate);
+  return child === "" || (child !== ".." && !child.startsWith(`..${sep}`) && !isAbsolute(child));
+}
+
+async function nearestExisting(path: string): Promise<string> {
+  let current = resolve(path);
+  while (true) {
+    try {
+      await access(current);
+      return current;
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      const parent = dirname(current);
+      if (parent === current) return current;
+      current = parent;
+    }
+  }
+}
+
+export async function assertRuntimeRootSafe(runtimeRoot: string, protectedRoot = resolve(process.cwd(), "data")): Promise<void> {
+  const resolvedRoot = resolve(runtimeRoot);
+  const protectedReal = await realpath(await nearestExisting(protectedRoot));
+  const rootExisting = await nearestExisting(resolvedRoot);
+  const rootReal = await realpath(rootExisting);
+  try {
+    if ((await lstat(resolvedRoot)).isSymbolicLink()) throw new Error(`runtime root must not be a symlink: ${resolvedRoot}`);
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+  if (isWithin(protectedReal, rootReal)) throw new Error(`runtime root is inside protected data: ${resolvedRoot}`);
+}
+
+export async function assertRuntimePathSafe(runtimeRoot: string, targetPath: string): Promise<void> {
+  await assertRuntimeRootSafe(runtimeRoot);
+  const resolvedRoot = resolve(runtimeRoot);
+  const resolvedTarget = resolve(targetPath);
+  if (!isWithin(resolvedRoot, resolvedTarget)) throw new Error(`runtime path is outside runtime root: ${resolvedTarget}`);
+  try {
+    if ((await lstat(resolvedTarget)).isSymbolicLink()) throw new Error(`runtime path must not be a symlink: ${resolvedTarget}`);
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+  const rootReal = await realpath(await nearestExisting(resolvedRoot));
+  const parentReal = await realpath(await nearestExisting(dirname(resolvedTarget)));
+  if (!isWithin(rootReal, parentReal)) throw new Error(`runtime path escapes runtime root: ${resolvedTarget}`);
+}
 
 export function assertRunId(runId: string): void {
   if (!runIdPattern.test(runId)) throw new Error(`invalid run-id: ${runId}`);
@@ -28,6 +76,7 @@ export function runRoot(runtimeRoot: string, runId: string): string {
 
 export function artifactDirectory(runtimeRoot: string, runId: string, artifact: RunArtifact): string {
   assertRunId(runId);
+  if (!(RUN_ARTIFACTS as readonly string[]).includes(artifact as string)) throw new Error(`invalid artifact: ${String(artifact)}`);
   return artifact === "raw" || artifact === "candidates"
     ? join(runtimeRoot, artifact, runId)
     : join(runtimeRoot, artifact);
@@ -75,6 +124,7 @@ async function artifactExists(runtimeRoot: string, runId: string, artifact: RunA
 
 export async function createRun(runtimeRoot: string, runId: string): Promise<string> {
   assertRunId(runId);
+  await assertRuntimeRootSafe(runtimeRoot);
   await assertRunArtifactsAbsent(runtimeRoot, runId, RUN_ARTIFACTS);
   const root = runRoot(runtimeRoot, runId);
   await mkdir(join(runtimeRoot, "runs"), { recursive: true });
