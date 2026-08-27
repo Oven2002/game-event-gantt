@@ -1,7 +1,11 @@
 import { lookup as dnsLookup } from "node:dns/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { request as httpsRequest } from "node:https";
+import { tmpdir } from "node:os";
 import { Readable } from "node:stream";
+import { join } from "node:path";
 import { isIP } from "node:net";
+import { withFileLock } from "./files.ts";
 
 export type HttpErrorCode =
   | "UNSAFE_URL"
@@ -155,10 +159,23 @@ async function assertSafeUrl(rawUrl: string, allowedHosts: string[], lookup: Fet
 }
 
 async function waitForHost(host: string, intervalMs: number): Promise<void> {
-  const previous = lastRequestAt.get(host) ?? 0;
-  const waitMs = Math.max(0, intervalMs - (Date.now() - previous));
-  if (waitMs > 0) await new Promise((resolve) => setTimeout(resolve, waitMs));
-  lastRequestAt.set(host, Date.now());
+  const lockName = host.replace(/[^a-z0-9.-]/gi, "_");
+  const lockPath = join(tmpdir(), "game-event-gantt-crawler-host-locks", `${lockName}.throttle`);
+  const timestampPath = `${lockPath}.state`;
+  await withFileLock(lockPath, async () => {
+    let previous = lastRequestAt.get(host) ?? 0;
+    try {
+      const persisted = Number(await readFile(timestampPath, "utf8"));
+      if (Number.isFinite(persisted)) previous = Math.max(previous, persisted);
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+    const waitMs = Math.max(0, intervalMs - (Date.now() - previous));
+    if (waitMs > 0) await new Promise((resolve) => setTimeout(resolve, waitMs));
+    const reservedAt = Date.now();
+    lastRequestAt.set(host, reservedAt);
+    await writeFile(timestampPath, `${reservedAt}\n`, "utf8");
+  });
 }
 
 async function readLimitedBody(response: Response, maxBytes: number, signal: AbortSignal): Promise<string> {

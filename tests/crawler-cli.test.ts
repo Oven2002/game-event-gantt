@@ -3,7 +3,7 @@ import { execFile } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rename as fsRename, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { parseCliArgs, createRunId, runCrawlCli, createFetchAdapter, advanceState } from "../scripts/crawl/cli.ts";
+import { parseCliArgs, createRunId, defaultLookbackSince, runCrawlCli, createFetchAdapter, advanceState } from "../scripts/crawl/cli.ts";
 import { parseRun } from "../scripts/crawl/commands/parse.ts";
 import { sha256Utf8 } from "../scripts/crawl/common/hash.ts";
 import { artifactDirectory, artifactPath, runRoot } from "../scripts/crawl/common/run.ts";
@@ -38,6 +38,14 @@ describe("crawler CLI argument contract", () => {
     expect(parseCliArgs(["fetch", "--game", "honkai-star-rail", "--since", "2026-08-01"])).toEqual({
       command: "fetch", game: "honkai-star-rail", since: "2026-08-01", full: false,
     });
+    expect(parseCliArgs(["fetch", "--game", "honkai-star-rail"])).toEqual({
+      command: "fetch", game: "honkai-star-rail", full: false,
+    });
+  });
+
+  it("derives the configured default lookback date in Beijing time", () => {
+    expect(defaultLookbackSince("genshin-impact", new Date("2026-08-31T12:00:00Z"))).toBe("2026-08-01");
+    expect(defaultLookbackSince("arknights", new Date("2026-03-01T00:30:00Z"))).toBe("2026-01-30");
   });
 
   it("parses parse with an explicit run and rejects missing run", () => {

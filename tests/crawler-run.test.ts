@@ -39,6 +39,7 @@ describe("crawler run lifecycle", () => {
   it("rejects invalid run ids before constructing filesystem paths", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
     expect(() => runRoot(root, "../escape")).toThrow(/run-id/);
+    expect(() => runRoot(root, "20261399-999999")).toThrow(/run-id/);
     await expect(createRun(root, "not-a-run")).rejects.toThrow(/run-id/);
   });
 

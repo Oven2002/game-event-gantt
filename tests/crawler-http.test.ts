@@ -1,3 +1,7 @@
+import { execFile } from "node:child_process";
+import { mkdtemp, readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { canonicalizeUrl, canonicalJson, hashCanonicalJson, sha256Utf8, sourceHashProjection, candidateHashProjection, oldValueHashProjection } from "../scripts/crawl/common/hash.ts";
 import { appendJsonl, appendJsonlIfUnique, readJsonl, readJsonAtomic, writeJsonAtomic, writeJsonlAtomic } from "../scripts/crawl/common/files.ts";
@@ -9,6 +13,24 @@ const hash = (letter: string): Sha256 => `sha256:${letter.repeat(64)}` as Sha256
 
 function response(body: string, init: ResponseInit = {}) {
   return new Response(body, { status: 200, headers: { "content-type": "application/json" }, ...init });
+}
+
+function runLockWorker(args: string[]): Promise<string> {
+  return new Promise((finish, fail) => {
+    execFile("node", ["--experimental-strip-types", "tests/helpers/crawler-lock-worker.ts", ...args], { cwd: resolve(".") }, (error, stdout, stderr) => {
+      if (error) fail(new Error(stderr || error.message));
+      else finish(stdout);
+    });
+  });
+}
+
+function runThrottleWorker(label: string): Promise<string> {
+  return new Promise((finish, fail) => {
+    execFile("node", ["--experimental-strip-types", "tests/helpers/crawler-throttle-worker.ts", label], { cwd: resolve(".") }, (error, stdout, stderr) => {
+      if (error) fail(new Error(stderr || error.message));
+      else finish(stdout);
+    });
+  });
 }
 
 describe("crawler hash and canonical JSON", () => {
@@ -82,6 +104,20 @@ describe("crawler hash and canonical JSON", () => {
     const value = { id: "event-1", name: "Event", sources: ["https://example.com/1"] };
     expect(oldValueHashProjection(value)).toEqual(oldValueHashProjection({ sources: value.sources, name: value.name, id: value.id }));
   });
+
+  it("matches the committed source, candidate, and old-value golden hashes", async () => {
+    const fixture = JSON.parse(await readFile(resolve("tests/fixtures/golden-hashes.json"), "utf8")) as {
+      raw: Parameters<typeof sourceHashProjection>[0];
+      sourceHash: string;
+      candidate: Record<string, unknown>;
+      candidateHash: string;
+      oldValue: unknown;
+      oldValueHash: string;
+    };
+    expect(hashCanonicalJson(sourceHashProjection(fixture.raw))).toBe(fixture.sourceHash);
+    expect(hashCanonicalJson(candidateHashProjection(fixture.candidate))).toBe(fixture.candidateHash);
+    expect(hashCanonicalJson(oldValueHashProjection(fixture.oldValue))).toBe(fixture.oldValueHash);
+  });
 });
 
 describe("crawler files", () => {
@@ -106,6 +142,30 @@ describe("crawler files", () => {
     const results = await Promise.all(Array.from({ length: 8 }, () => appendJsonlIfUnique(path, article, (value) => `${value.sourceId}:${value.contentHash}`)));
     expect(results.filter(Boolean)).toHaveLength(1);
     await expect(readJsonl(path)).resolves.toEqual([article]);
+  });
+
+  it("serializes file locks across independent Node processes", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-lock-"));
+    const lockPath = join(root, "shared");
+    const outputPath = join(root, "output.txt");
+    const [firstOutput, secondOutput] = await Promise.all([
+      runLockWorker([lockPath, outputPath, "first", "200"]),
+      runLockWorker([lockPath, outputPath, "second", "200"]),
+    ]);
+    const firstFinished = Number(firstOutput.trim().split(":")[1]);
+    const secondFinished = Number(secondOutput.trim().split(":")[1]);
+    expect(Math.abs(firstFinished - secondFinished)).toBeGreaterThanOrEqual(120);
+    expect((await readFile(outputPath, "utf8")).trim().split("\n").sort()).toEqual(["first", "second"]);
+  });
+
+  it("throttles the same host across independent processes", async () => {
+    const [firstOutput, secondOutput] = await Promise.all([
+      runThrottleWorker("first"),
+      runThrottleWorker("second"),
+    ]);
+    const firstFinished = Number(firstOutput.trim().split(":")[1]);
+    const secondFinished = Number(secondOutput.trim().split(":")[1]);
+    expect(Math.abs(firstFinished - secondFinished)).toBeGreaterThanOrEqual(150);
   });
 
   it("keeps the previous JSONL when an atomic replacement is rejected", async () => {

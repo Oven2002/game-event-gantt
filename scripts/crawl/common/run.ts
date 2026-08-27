@@ -4,7 +4,7 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 export const RUN_ARTIFACTS = ["raw", "errors", "rejections", "candidates", "reports", "selections", "approved"] as const;
 export type RunArtifact = typeof RUN_ARTIFACTS[number];
 
-const runIdPattern = /^\d{8}-\d{6}$/;
+const runIdPattern = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})$/;
 const pathSegmentPattern = /^[a-z0-9][a-z0-9-]*$/;
 
 function isWithin(root: string, candidate: string): boolean {
@@ -56,7 +56,20 @@ export async function assertRuntimePathSafe(runtimeRoot: string, targetPath: str
 }
 
 export function assertRunId(runId: string): void {
-  if (!runIdPattern.test(runId)) throw new Error(`invalid run-id: ${runId}`);
+  const match = runIdPattern.exec(runId);
+  if (!match) throw new Error(`invalid run-id: ${runId}`);
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText] = match;
+  const date = new Date(0);
+  date.setUTCFullYear(Number(yearText), Number(monthText) - 1, Number(dayText));
+  date.setUTCHours(Number(hourText), Number(minuteText), Number(secondText), 0);
+  if (
+    date.getUTCFullYear() !== Number(yearText)
+    || date.getUTCMonth() !== Number(monthText) - 1
+    || date.getUTCDate() !== Number(dayText)
+    || date.getUTCHours() !== Number(hourText)
+    || date.getUTCMinutes() !== Number(minuteText)
+    || date.getUTCSeconds() !== Number(secondText)
+  ) throw new Error(`invalid run-id: ${runId}`);
 }
 
 function assertPathSegment(value: string, label: string): void {

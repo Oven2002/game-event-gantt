@@ -1,8 +1,9 @@
 import { access, readdir, rm } from "node:fs/promises";
 import { dirname, basename, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
-import { readJsonAtomic, writeJsonAtomic } from "./files.ts";
+import { readJsonAtomic, updateJsonAtomic, withFileLock, writeJsonAtomic } from "./files.ts";
 import { sha256Schema, type Sha256 } from "../types.ts";
+import { assertRunId } from "./run.ts";
 
 export interface AdapterCheckpoint {
   kind: string;
@@ -33,10 +34,8 @@ export interface StateTransactionWriteOptions {
   rename?: (from: string, to: string) => Promise<void>;
 }
 
-const transactionRunIdPattern = /^\d{8}-\d{6}$/;
-
 export function stateTransactionPath(runtimeRoot: string, runId: string): string {
-  if (!transactionRunIdPattern.test(runId)) throw new Error(`invalid run-id: ${runId}`);
+  assertRunId(runId);
   return join(runtimeRoot, "runs", runId, "state-transaction.json");
 }
 
@@ -139,6 +138,21 @@ export async function abortStateTransaction(transactionPath: string, rawPath: st
   await removeStateTransaction(transactionPath);
 }
 
+async function latestStateForRecovery(runtimeRoot: string, fallback: CrawlerState): Promise<CrawlerState> {
+  const statePath = join(runtimeRoot, "state.json");
+  return withFileLock(statePath, async () => {
+    try {
+      const parsed = stateShape.safeParse(await readJsonAtomic(statePath));
+      if (!parsed.success) throw new CrawlerStateError("INVALID_STATE", "state schema validation failed during recovery");
+      return parsed.data as CrawlerState;
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return fallback;
+      if (error instanceof CrawlerStateError) throw error;
+      throw new CrawlerStateError("INVALID_STATE", "state file is not valid JSON during recovery");
+    }
+  });
+}
+
 export async function recoverStateTransactions(runtimeRoot: string, state: CrawlerState): Promise<void> {
   const runsDirectory = join(runtimeRoot, "runs");
   let entries;
@@ -162,7 +176,8 @@ export async function recoverStateTransactions(runtimeRoot: string, state: Crawl
     if (marker.runId !== entry.name || !isWithin(resolve(runtimeRoot), resolve(marker.rawPath))) {
       throw new CrawlerStateError("INVALID_STATE", "state transaction marker path or run mismatch");
     }
-    const current = state.games[marker.game]?.sourceHashes;
+    const currentState = await latestStateForRecovery(runtimeRoot, state);
+    const current = currentState.games[marker.game]?.sourceHashes;
     const committed = marker.phase === "state_pending"
       && marker.sourceHashes !== null
       && current !== undefined
@@ -221,6 +236,20 @@ export interface StateWriteOptions {
 export async function writeStateAtomic(statePath: string, state: CrawlerState, options: StateWriteOptions): Promise<void> {
   validateState(state, options.checkpointSchemas, options.knownGames);
   await writeJsonAtomic(statePath, state, options);
+}
+
+export async function updateStateAtomic(
+  statePath: string,
+  initialState: CrawlerState,
+  updater: (current: CrawlerState) => CrawlerState | Promise<CrawlerState>,
+  options: StateWriteOptions,
+): Promise<CrawlerState> {
+  return updateJsonAtomic(statePath, initialState, async (value) => {
+    const current = validateState(value, options.checkpointSchemas, options.knownGames);
+    const next = await updater(current);
+    validateState(next, options.checkpointSchemas, options.knownGames);
+    return next;
+  }, options);
 }
 
 export function assertScanMode(options: { since?: string; full?: boolean }): void {

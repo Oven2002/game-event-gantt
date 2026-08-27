@@ -2,10 +2,10 @@ import { pathToFileURL } from "node:url";
 import { join, resolve } from "node:path";
 import { fetchGame, type FetchAdapter, type FetchCommandOptions, type FetchCommandResult } from "./commands/fetch.ts";
 import { parseRun, type ParseCommandResult } from "./commands/parse.ts";
-import { createRun, artifactPath, assertRuntimeRootSafe } from "./common/run.ts";
+import { createRun, artifactPath, assertRuntimeRootSafe, assertRunId } from "./common/run.ts";
 import { readJsonl } from "./common/files.ts";
 import { sha256Utf8 } from "./common/hash.ts";
-import { abortStateTransaction, beginStateTransaction, loadState, markStateTransactionPending, recoverStateTransactions, removeStateTransaction, stateTransactionPath, writeStateAtomic, type CrawlerState } from "./common/state.ts";
+import { abortStateTransaction, beginStateTransaction, loadState, markStateTransactionPending, recoverStateTransactions, removeStateTransaction, stateTransactionPath, updateStateAtomic, writeStateAtomic, type CrawlerState } from "./common/state.ts";
 import { RawArticleSchema, type Sha256 } from "./types.ts";
 import { buildHypergryphListRequest, displayTimeToBeijing, normalizeHypergryphContent, parseHypergryphDetail, parseHypergryphList, type HypergryphListPage } from "./adapters/hypergryph.ts";
 import { hypergryphGames } from "./hypergryph-config.ts";
@@ -18,11 +18,22 @@ export type CrawlCommand = "fetch" | "parse" | "review" | "approve";
 export interface CliArgs { command: CrawlCommand; game?: CrawlGame; since?: string; full?: boolean; run?: string; selection?: string; }
 
 const games = new Set<CrawlGame>(["genshin-impact", "honkai-star-rail", "zenless-zone-zero", "arknights", "arknights-endfield"]);
-const runPattern = /^\d{8}-\d{6}$/;
 
 export function createRunId(date = new Date()): string {
   const pad = (value: number) => String(value).padStart(2, "0");
   return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}-${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}`;
+}
+
+export function defaultLookbackSince(game: CrawlGame, now: Date): string {
+  const config = game === "genshin-impact" || game === "honkai-star-rail" || game === "zenless-zone-zero"
+    ? mihoyoGames[game]
+    : hypergryphGames[game];
+  if (!Number.isSafeInteger(config.checkpoint.defaultLookbackDays) || config.checkpoint.defaultLookbackDays < 1) throw new Error(`invalid defaultLookbackDays for ${game}`);
+  const target = new Date(now.getTime() - config.checkpoint.defaultLookbackDays * 24 * 60 * 60 * 1000);
+  if (!Number.isFinite(target.getTime())) throw new Error("invalid current time");
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(target);
+  const values = Object.fromEntries(parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
 }
 
 function valueAfter(argv: string[], index: number, flag: string): string {
@@ -47,7 +58,7 @@ export function parseCliArgs(argv: string[]): CliArgs {
       result.full = true;
     } else if (flag === "--run") {
       const run = valueAfter(argv, index, flag);
-      if (!runPattern.test(run)) throw new Error("invalid run-id");
+      assertRunId(run);
       result.run = run; index += 1;
     } else if (flag === "--selection") {
       result.selection = valueAfter(argv, index, flag); index += 1;
@@ -58,7 +69,6 @@ export function parseCliArgs(argv: string[]): CliArgs {
   if (result.since && result.full) throw new Error("--since and --full are mutually exclusive");
   if (command === "fetch") {
     if (!result.game) throw new Error("fetch requires --game");
-    if (!result.since && !result.full) throw new Error("fetch requires --since or --full");
     if (result.run || result.selection) throw new Error("fetch does not accept --run or --selection");
   } else {
     if (!result.run) throw new Error(`${command} requires --run`);
@@ -135,7 +145,6 @@ export interface AdvanceStateOptions {
 }
 
 export async function advanceState(runtimeRoot: string, game: CrawlGame, rawPath: string, state: CrawlerState, options: AdvanceStateOptions = {}): Promise<void> {
-  const sourceHashes = { ...(state.games[game]?.sourceHashes ?? {}) };
   const rawSourceHashes: Record<string, Sha256> = {};
   try {
     for (const value of await readJsonl(rawPath)) {
@@ -143,21 +152,33 @@ export async function advanceState(runtimeRoot: string, game: CrawlGame, rawPath
       if (!result.success) throw new Error(`raw state update failed: ${result.error.message}`);
       if (result.data.game !== game) throw new Error(`raw state update game mismatch: ${result.data.game}`);
       if (sha256Utf8(result.data.content) !== result.data.contentHash) throw new Error(`raw state update contentHash mismatch: ${result.data.sourceId}`);
-      sourceHashes[result.data.sourceId] = result.data.contentHash;
       rawSourceHashes[result.data.sourceId] = result.data.contentHash;
     }
-    const nextState: CrawlerState = {
+    const buildNextState = (current: CrawlerState): CrawlerState => ({
       schemaVersion: 1,
-      games: { ...state.games, [game]: { checkpoint: null, sourceHashes } },
-    };
+      games: {
+        ...current.games,
+        [game]: {
+          checkpoint: null,
+          sourceHashes: { ...(current.games[game]?.sourceHashes ?? {}), ...rawSourceHashes },
+        },
+      },
+    });
     if (options.transactionPath) {
       if (!options.runId) throw new Error("state transaction requires runId");
       await markStateTransactionPending(options.transactionPath, options.runId, game, rawPath, rawSourceHashes);
     }
-    await (options.writeState ?? writeStateAtomic)(join(runtimeRoot, "state.json"), nextState, {
-      checkpointSchemas: {},
-      knownGames: checkpointKinds,
-    });
+    if (options.writeState) {
+      await options.writeState(join(runtimeRoot, "state.json"), buildNextState(state), {
+        checkpointSchemas: {},
+        knownGames: checkpointKinds,
+      });
+    } else {
+      await updateStateAtomic(join(runtimeRoot, "state.json"), state, buildNextState, {
+        checkpointSchemas: {},
+        knownGames: checkpointKinds,
+      });
+    }
   } catch (error) {
     if (options.transactionPath) await abortStateTransaction(options.transactionPath, rawPath).catch(() => undefined);
     throw error;
@@ -199,7 +220,8 @@ export async function runCrawlCli(argv: string[], options: RunCrawlCliOptions = 
     const runtimeRoot = options.runtimeRoot ?? resolve(process.cwd(), ".runtime/crawl");
     const eventTypesPath = options.eventTypesPath ?? resolve(process.cwd(), "data/event-types.yaml");
     if (args.command === "fetch") {
-      const runId = createRunId((options.now ?? (() => new Date()))());
+      const now = (options.now ?? (() => new Date()))();
+      const runId = createRunId(now);
       await assertRuntimeRootSafe(runtimeRoot);
       const state = await loadState(join(runtimeRoot, "state.json"), {}, checkpointKinds);
       await recoverStateTransactions(runtimeRoot, state);
@@ -213,7 +235,7 @@ export async function runCrawlCli(argv: string[], options: RunCrawlCliOptions = 
           runId,
           game: args.game!,
           pageSize: options.pageSize,
-          since: args.since,
+          since: args.since ?? (args.full ? undefined : defaultLookbackSince(args.game!, now)),
           adapter: createFetchAdapter(args.game!),
           fetcher: options.fetcher,
         });
