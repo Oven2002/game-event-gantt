@@ -79,6 +79,33 @@ describe("fetch command", () => {
     expect(JSON.parse((await readFile(result.rawPath, "utf8")).trim()).sourceId).toBe("1");
   });
 
+  it("fails instead of committing when maxPages is reached before pagination completes", async () => {
+    const { root, runId } = await newRun();
+    await expect(fetchGame({
+      runtimeRoot: root,
+      runId,
+      game: "demo",
+      maxPages: 1,
+      fetcher: async (url) => ({
+        url,
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(url.startsWith("detail:") ? article("1") : { items: [{ sourceId: "1", url: "detail:1" }] }),
+      }),
+      adapter: {
+        allowedHosts: ["demo.example"],
+        listUrl: (page) => `list:${page}`,
+        detailUrl: (id) => `detail:${id}`,
+        list: (_page, _size, body) => body as { items: Array<{ sourceId: string; url: string }> },
+        listItems: (page) => page.items,
+        hasMore: () => true,
+        detail: (id, _body, fetchedAt) => ({ ...article(id), fetchedAt }),
+      },
+    })).rejects.toThrow(/pagination|maxPages/i);
+    await expect(access(artifactPath(root, runId, "raw", "jsonl", "demo"))).rejects.toThrow();
+    expect(await readFile(artifactPath(root, runId, "errors"), "utf8")).toMatch(/pagination|maxPages/i);
+  });
+
   it("writes an empty raw artifact when the first page has no items", async () => {
     const { root, runId } = await newRun();
     const result = await fetchGame({
@@ -185,6 +212,31 @@ describe("fetch command", () => {
       },
     });
     expect(result.count).toBe(0);
+  });
+
+  it("rejects raw articles that are not already canonical content", async () => {
+    const { root, runId } = await newRun();
+    await expect(fetchGame({
+      runtimeRoot: root,
+      runId,
+      game: "demo",
+      fetcher: async (url) => ({
+        url,
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(url.startsWith("detail:") ? article("1") : { items: [{ sourceId: "1", url: "detail:1" }] }),
+      }),
+      adapter: {
+        allowedHosts: ["demo.example"],
+        listUrl: () => "list:1",
+        detailUrl: (id) => `detail:${id}`,
+        list: (_page, _size, body) => body as { items: Array<{ sourceId: string; url: string }> },
+        listItems: (page) => page.items,
+        detail: (id, _body, fetchedAt) => ({ ...article(id), fetchedAt }),
+        isCanonicalContent: () => false,
+      },
+    })).rejects.toThrow(/canonical content/i);
+    await expect(access(artifactPath(root, runId, "raw", "jsonl", "demo"))).rejects.toThrow();
   });
 
   it("rejects an invalid RawArticle and leaves no final raw artifact", async () => {

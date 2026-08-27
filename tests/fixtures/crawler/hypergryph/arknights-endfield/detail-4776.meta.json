@@ -9,5 +9,10 @@
     "parameters": {}
   },
   "pagination": null,
+  "urlDerivation": "Final official URL is https://endfield.hypergryph.com/news/{cid}",
+  "response": { "status": 200, "contentType": "text/html", "finalUrl": "https://endfield.hypergryph.com/news/4776", "redirects": [] },
+  "responseFormat": "json-envelope",
+  "detailSourceId": "4776",
+  "checkpoint": { "kind": null, "reusable": false, "reason": "No stable cross-run checkpoint was verified." },
   "blocker": null
 }

@@ -29,6 +29,14 @@ describe("crawler source policy", () => {
   it("requires configured official account identity for platform URLs", () => {
     expect(officialSourceAccounts.some((account) => account.platform === "bilibili")).toBe(true);
     expect(evaluateSource("arknights-endfield", "https://www.bilibili.com/opus/123")).toMatchObject({ allowed: false, role: "rejected" });
-    expect(evaluateSource("arknights-endfield", "https://www.bilibili.com/opus/123", { authorId: "1265652806", authorProfileUrl: "https://space.bilibili.com/1265652806" })).toMatchObject({ allowed: true, role: "official" });
+    expect(evaluateSource("arknights-endfield", "https://www.bilibili.com/opus/123", { platform: "bilibili", authorId: "1265652806", authorProfileUrl: "https://space.bilibili.com/1265652806" })).toMatchObject({ allowed: true, role: "official" });
+  });
+
+  it("rejects a configured account when the response author platform differs", () => {
+    expect(evaluateSource("arknights-endfield", "https://www.bilibili.com/opus/123", {
+      platform: "weibo",
+      authorId: "1265652806",
+      authorProfileUrl: "https://space.bilibili.com/1265652806",
+    })).toMatchObject({ allowed: false, role: "rejected" });
   });
 });

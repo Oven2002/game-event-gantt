@@ -15,5 +15,9 @@
   },
   "pagination": null,
   "urlDerivation": "Final official URL is https://ys.mihoyo.com/main/news/detail/165690",
+  "response": { "status": 200, "contentType": "application/json", "finalUrl": "https://act-api-takumi-static.mihoyo.com/content_v2_user/app/16471662a82d418a/getContent", "redirects": [] },
+  "responseFormat": "json",
+  "detailSourceId": "165690",
+  "checkpoint": { "kind": null, "reusable": false, "reason": "No stable cross-run checkpoint was verified." },
   "blocker": null
 }

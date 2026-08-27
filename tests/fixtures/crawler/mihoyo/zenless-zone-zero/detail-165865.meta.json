@@ -15,5 +15,9 @@
   },
   "pagination": null,
   "urlDerivation": "Final official URL is https://zenless.hoyoverse.com/zh-cn/news/165865",
+  "response": { "status": 200, "contentType": "application/json", "finalUrl": "https://sg-public-api-static.hoyoverse.com/content_v2_user/app/3e9196a4b9274bd7/getContent", "redirects": [] },
+  "responseFormat": "json",
+  "detailSourceId": "165865",
+  "checkpoint": { "kind": null, "reusable": false, "reason": "No stable cross-run checkpoint was verified." },
   "blocker": null
 }

@@ -4,8 +4,6 @@ import { mkdir, mkdtemp, readFile, rename as fsRename, writeFile } from "node:fs
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseCliArgs, createRunId, runCrawlCli, createFetchAdapter } from "../scripts/crawl/cli.ts";
-import { buildHypergryphListRequest } from "../scripts/crawl/adapters/hypergryph.ts";
-import { buildMihoyoDetailRequest, buildMihoyoListRequest } from "../scripts/crawl/adapters/mihoyo.ts";
 import { parseRun } from "../scripts/crawl/commands/parse.ts";
 import { sha256Utf8 } from "../scripts/crawl/common/hash.ts";
 import { artifactDirectory, artifactPath, runRoot } from "../scripts/crawl/common/run.ts";
@@ -82,6 +80,23 @@ describe("crawler parse command", () => {
     expect((await readFile(result.results[0].rejectionsPath, "utf8"))).toBe("");
   });
 
+  it("rejects provider raw content that is not canonical before parsing candidates", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-parse-"));
+    const runId = "20260801-000008";
+    await mkdir(runRoot(root, runId), { recursive: true });
+    const content = "<p>活动时间：2026年8月20日 04:00 至 2026年8月20日 11:00</p>";
+    await writeRaw(root, runId, "genshin-impact", [makeRaw({ content })]);
+
+    const result = await parseRun({
+      runtimeRoot: root,
+      runId,
+      eventTypesPath: resolve("data/event-types.yaml"),
+    });
+    expect(result).toMatchObject({ ready: 0, needsReview: 0, rejections: 1 });
+    expect(JSON.parse(await readFile(result.results[0].candidatesPath, "utf8"))).toEqual([]);
+    expect(await readFile(result.results[0].rejectionsPath, "utf8")).toMatch(/canonical content/i);
+  });
+
   it("keeps events-only version notices in rejection JSONL", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-parse-"));
     const runId = "20260801-000001";
@@ -149,6 +164,43 @@ describe("crawler parse command", () => {
     await expect(readFile(rejectionsPath, "utf8")).rejects.toThrow();
   });
 
+  it("refuses any pre-existing candidate file in the run directory", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-parse-"));
+    const runId = "20260801-000005";
+    await mkdir(runRoot(root, runId), { recursive: true });
+    await writeRaw(root, runId, "genshin-impact", [makeRaw()]);
+    const candidatesDirectory = artifactDirectory(root, runId, "candidates");
+    await mkdir(candidatesDirectory, { recursive: true });
+    await writeFile(join(candidatesDirectory, "stale.json"), "stale\n", "utf8");
+
+    await expect(parseRun({
+      runtimeRoot: root,
+      runId,
+      eventTypesPath: resolve("data/event-types.yaml"),
+    })).rejects.toThrow(/artifacts already exist/);
+    expect(await readFile(join(candidatesDirectory, "stale.json"), "utf8")).toBe("stale\n");
+  });
+
+  it("fails closed when raw articles produce duplicate candidate keys", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-parse-"));
+    const runId = "20260801-000006";
+    await mkdir(runRoot(root, runId), { recursive: true });
+    const firstContent = "活动时间：2026年8月20日 04:00 至 2026年8月20日 11:00";
+    const secondContent = "活动时间：2026年8月21日 04:00 至 2026年8月21日 11:00";
+    await writeRaw(root, runId, "genshin-impact", [
+      makeRaw({ content: firstContent, contentHash: sha256Utf8(firstContent) as Sha256 }),
+      makeRaw({ content: secondContent, contentHash: sha256Utf8(secondContent) as Sha256 }),
+    ]);
+
+    await expect(parseRun({
+      runtimeRoot: root,
+      runId,
+      eventTypesPath: resolve("data/event-types.yaml"),
+    })).rejects.toThrow(/duplicate candidateKey/i);
+    await expect(readFile(artifactPath(root, runId, "candidates", "json", "genshin-impact"), "utf8")).rejects.toThrow();
+    await expect(readFile(artifactPath(root, runId, "rejections"), "utf8")).rejects.toThrow();
+  });
+
   it("routes parse through the executable CLI and reports its output", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-cli-"));
     const runId = "20260801-000003";
@@ -169,17 +221,32 @@ describe("crawler parse command", () => {
     const cases = [
       {
         game: "genshin-impact" as const,
-        listUrl: buildMihoyoListRequest("genshin-impact", 1, 20).url,
-        detailUrl: buildMihoyoDetailRequest("genshin-impact", "165690").url,
+        pageSize: 1,
+        listUrl: "https://act-api-takumi-static.mihoyo.com/content_v2_user/app/16471662a82d418a/getContentList?iPage=1&iPageSize=1&sLangKey=zh-cn&isPreview=0&iChanId=719&iAppId=43",
+        detailUrl: "https://act-api-takumi-static.mihoyo.com/content_v2_user/app/16471662a82d418a/getContent?iInfoId=165690&iPageSize=50&sLangKey=zh-cn&isPreview=0",
+        detailSourceId: "165690",
         listPath: "tests/fixtures/crawler/mihoyo/genshin-impact/list-page-1.json",
         detailPath: "tests/fixtures/crawler/mihoyo/genshin-impact/detail-165690.json",
         detailContentType: "application/json",
         detailBody: async (path: string) => await readFile(path, "utf8"),
       },
       {
+        game: "honkai-star-rail" as const,
+        pageSize: 50,
+        listUrl: "https://act-api-takumi-static.mihoyo.com/content_v2_user/app/1963de8dc19e461c/getContentList?iPage=1&iPageSize=50&sLangKey=zh-cn&isPreview=0&iChanId=257",
+        detailUrl: "https://act-api-takumi-static.mihoyo.com/content_v2_user/app/1963de8dc19e461c/getContent?iInfoId=165883&iPageSize=50&sLangKey=zh-cn&isPreview=0",
+        detailSourceId: "165883",
+        listPath: "tests/fixtures/crawler/mihoyo/honkai-star-rail/list-page-1.json",
+        detailPath: "tests/fixtures/crawler/mihoyo/honkai-star-rail/detail-165883.json",
+        detailContentType: "application/json",
+        detailBody: async (path: string) => await readFile(path, "utf8"),
+      },
+      {
         game: "zenless-zone-zero" as const,
-        listUrl: buildMihoyoListRequest("zenless-zone-zero", 1, 20).url,
-        detailUrl: buildMihoyoDetailRequest("zenless-zone-zero", "165865").url,
+        pageSize: 1,
+        listUrl: "https://sg-public-api-static.hoyoverse.com/content_v2_user/app/3e9196a4b9274bd7/getContentList?iPage=1&iPageSize=1&sLangKey=zh-cn&isPreview=0&iChanId=288",
+        detailUrl: "https://sg-public-api-static.hoyoverse.com/content_v2_user/app/3e9196a4b9274bd7/getContent?iInfoId=165865&iPageSize=50&sLangKey=zh-cn&isPreview=0",
+        detailSourceId: "165865",
         listPath: "tests/fixtures/crawler/mihoyo/zenless-zone-zero/list-page-1.json",
         detailPath: "tests/fixtures/crawler/mihoyo/zenless-zone-zero/detail-165865.json",
         detailContentType: "application/json",
@@ -187,8 +254,10 @@ describe("crawler parse command", () => {
       },
       {
         game: "arknights" as const,
-        listUrl: buildHypergryphListRequest("arknights", 1, 20).url,
+        pageSize: 1,
+        listUrl: "https://web-news.hypergryph.com/api/bulletin?lang=zh-cn&code=arknights&page=1&pageSize=1",
         detailUrl: "https://ak.hypergryph.com/news/4924",
+        detailSourceId: "4924",
         listPath: "tests/fixtures/crawler/hypergryph/arknights/list-page-1.json",
         detailPath: "tests/fixtures/crawler/hypergryph/arknights/detail-4924.json",
         detailContentType: "text/html",
@@ -196,8 +265,10 @@ describe("crawler parse command", () => {
       },
       {
         game: "arknights-endfield" as const,
-        listUrl: buildHypergryphListRequest("arknights-endfield", 1, 20).url,
+        pageSize: 1,
+        listUrl: "https://web-news.hypergryph.com/api/bulletin?lang=zh-cn&code=endfield_web&page=1&pageSize=1",
         detailUrl: "https://endfield.hypergryph.com/news/4776",
+        detailSourceId: "4776",
         listPath: "tests/fixtures/crawler/hypergryph/arknights-endfield/list-page-1.json",
         detailPath: "tests/fixtures/crawler/hypergryph/arknights-endfield/detail-4776.json",
         detailContentType: "text/html",
@@ -208,12 +279,22 @@ describe("crawler parse command", () => {
     for (const item of cases) {
       const root = await mkdtemp(join(tmpdir(), "crawler-cli-fetch-"));
       const output: string[] = [];
-      const listBody = await readFile(item.listPath, "utf8");
       const detailBody = await item.detailBody(item.detailPath);
       const secondListUrl = new URL(item.listUrl);
       const isMihoyo = item.game !== "arknights" && item.game !== "arknights-endfield";
       secondListUrl.searchParams.set(isMihoyo ? "iPage" : "page", "2");
-      const listValue = JSON.parse(listBody) as { data: Record<string, unknown> };
+      const fixtureListValue = JSON.parse(await readFile(item.listPath, "utf8")) as { data: Record<string, unknown> };
+      const fixtureItems = Array.isArray(fixtureListValue.data.list) ? fixtureListValue.data.list as Array<Record<string, unknown>> : [];
+      const listValue = {
+        ...fixtureListValue,
+        data: {
+          ...fixtureListValue.data,
+          list: item.game === "honkai-star-rail"
+            ? fixtureItems.filter((entry) => String(entry.iInfoId) === item.detailSourceId)
+            : fixtureItems,
+        },
+      };
+      const listBody = JSON.stringify(listValue);
       const secondListBody = {
         ...listValue,
         data: {
@@ -236,16 +317,21 @@ describe("crawler parse command", () => {
       await expect(runCrawlCli(["fetch", "--game", item.game, "--full"], {
         runtimeRoot: root,
         now: () => new Date("2026-08-01T00:00:00Z"),
+        pageSize: item.pageSize,
         fetcher,
         print: (line: string) => output.push(line),
       })).resolves.toBe(0);
-      expect(createFetchAdapter(item.game).allowedHosts.length).toBeGreaterThan(0);
+      const adapter = createFetchAdapter(item.game);
+      expect(adapter.allowedHosts.length).toBeGreaterThan(0);
+      expect(adapter.allowedListContentTypes).toEqual(["application/json"]);
+      expect(adapter.allowedDetailContentTypes).toEqual(item.game === "arknights" || item.game === "arknights-endfield" ? ["text/html"] : ["application/json"]);
       expect(output.join("\n")).toMatch(new RegExp(`run=20260801-000000.*rawPath=.*${item.game}\\.jsonl count=1 pages=2`));
       const state = JSON.parse(await readFile(join(root, "state.json"), "utf8"));
       expect(state.games[item.game].checkpoint).toBe(null);
       const sourceId = item.game === "genshin-impact" ? "165690"
-        : item.game === "zenless-zone-zero" ? "165865"
-          : item.game === "arknights" ? "4924" : "4776";
+        : item.game === "honkai-star-rail" ? "165883"
+          : item.game === "zenless-zone-zero" ? "165865"
+            : item.game === "arknights" ? "4924" : "4776";
       expect(state.games[item.game].sourceHashes).toHaveProperty(sourceId);
     }
   });

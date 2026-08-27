@@ -87,6 +87,20 @@ describe("Mihoyo fixture adapter", () => {
     expect(() => parseMihoyoList("honkai-star-rail", { retcode: -1, message: "failed", data: { list: [] } })).toThrow(/retcode/);
   });
 
+  it("rejects missing or malformed list totals instead of guessing pagination", async () => {
+    const body = await fixture(`${root}/genshin-impact/list-page-1.json`);
+    const variants = [
+      { ...body.data, list: [] },
+      { ...body.data, list: [], iTotal: "bad" },
+      { ...body.data, list: [], iTotal: -1 },
+      { ...body.data, list: [], iTotal: 1.5 },
+    ];
+    delete variants[0].iTotal;
+    for (const data of variants) {
+      expect(() => parseMihoyoList("genshin-impact", { ...body, data })).toThrow(/iTotal/);
+    }
+  });
+
   it("does not treat dtStartTime as the publication time", async () => {
     const body = await fixture(`${root}/genshin-impact/list-page-1.json`);
     const item = { ...body.data.list[0] };

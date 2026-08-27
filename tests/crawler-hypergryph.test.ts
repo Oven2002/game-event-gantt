@@ -38,6 +38,11 @@ describe("Hypergryph fixture adapter", () => {
     expect(endfieldPage.items[0].url).toBe("https://endfield.hypergryph.com/news/4776");
   });
 
+  it("rejects a list response returned for a different page", async () => {
+    const body = await fixture(`${root}/arknights/list-page-1.json`);
+    expect(() => parseHypergryphList("arknights", body, 2)).toThrow(/current|page/i);
+  });
+
   it("deduplicates repeated bulletin entries by source id", async () => {
     const body = await fixture(`${root}/arknights/list-page-1.json`);
     const duplicated = { ...body, data: { ...body.data, list: [body.data.list[0], body.data.list[0]] } };
@@ -62,6 +67,14 @@ describe("Hypergryph fixture adapter", () => {
   it("preserves block order while stripping tags and scripts", () => {
     expect(normalizeHypergryphContent("<p>第一段</p><p><strong>第二段</strong></p><img src=\"x\"><script>x</script>"))
       .toBe("第一段\n第二段");
+  });
+
+  it("rejects a detail envelope with a non-HTML content type", async () => {
+    const envelope = await fixture(`${root}/arknights/detail-4924.json`);
+    expect(() => parseHypergryphDetail("arknights", "4924", {
+      ...envelope,
+      contentType: "application/json",
+    }, "2026-08-26T00:00:00+00:00")).toThrow(/content.?type/i);
   });
 
   it("rejects an unknown game or malformed list envelope", async () => {

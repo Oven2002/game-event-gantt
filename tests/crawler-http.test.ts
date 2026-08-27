@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canonicalJson, hashCanonicalJson, sha256Utf8, sourceHashProjection, candidateHashProjection, oldValueHashProjection } from "../scripts/crawl/common/hash.ts";
+import { canonicalizeUrl, canonicalJson, hashCanonicalJson, sha256Utf8, sourceHashProjection, candidateHashProjection, oldValueHashProjection } from "../scripts/crawl/common/hash.ts";
 import { appendJsonl, appendJsonlIfUnique, readJsonl, readJsonAtomic, writeJsonAtomic } from "../scripts/crawl/common/files.ts";
 import { CrawlerHttpError, fetchOfficial } from "../scripts/crawl/common/http.ts";
 import { loadState, writeStateAtomic, type CrawlerState } from "../scripts/crawl/common/state.ts";
@@ -37,6 +37,20 @@ describe("crawler hash and canonical JSON", () => {
     expect(sourceHashProjection(raw)).not.toHaveProperty("fetchedAt");
     const changed = { ...raw, fetchedAt: "second" };
     expect(sourceHashProjection(raw)).toEqual(sourceHashProjection(changed));
+  });
+
+  it("canonicalizes URL host, default port, and fragment before hashing", () => {
+    expect(canonicalizeUrl("HTTPS://Example.com:443/notices/1#section")).toBe("https://example.com/notices/1");
+    expect(sourceHashProjection({
+      game: "demo",
+      region: "cn",
+      source: "official",
+      sourceId: "1",
+      url: "HTTPS://Example.com:443/notices/1#section",
+      title: "Notice",
+      publishedAt: null,
+      contentHash: hash("a"),
+    }).url).toBe("https://example.com/notices/1");
   });
 
   it("uses the candidate projection without approval fields", () => {
@@ -143,6 +157,60 @@ describe("safe official HTTP client", () => {
       allowedHosts: ["example.com"],
       fetchImpl: async () => response("", { status: 302, headers: { location: "https://other.example/b" } }),
     })).rejects.toMatchObject({ code: "UNSAFE_URL" });
+  });
+
+  it("rejects public IP literals and expanded private IPv6 forms", async () => {
+    for (const host of ["203.0.113.10", "[0:0:0:0:0:0:0:1]", "[0:0:0:0:0:ffff:7f00:1]", "[::ffff:127.0.0.1]"]) {
+      await expect(fetchOfficial(`https://${host}/a`, {
+        allowedHosts: [host],
+        minHostIntervalMs: 0,
+        fetchImpl: async () => response("ok"),
+      })).rejects.toMatchObject({ code: "UNSAFE_URL" });
+    }
+  });
+
+  it("rejects unsupported content types without an explicit allowlist", async () => {
+    await expect(fetchOfficial("https://example.com/a", {
+      allowedHosts: ["example.com"],
+      minHostIntervalMs: 0,
+      fetchImpl: async () => response("binary", { headers: { "content-type": "application/octet-stream" } }),
+    })).rejects.toMatchObject({ code: "CONTENT_TYPE" });
+  });
+
+  it("rejects an allowlisted hostname that resolves to no addresses", async () => {
+    await expect(fetchOfficial("https://example.com/no-address", {
+      allowedHosts: ["example.com"],
+      lookup: async () => [],
+      fetchImpl: async () => response("should not be called"),
+    })).rejects.toMatchObject({ code: "UNSAFE_URL" });
+  });
+
+  it("revalidates DNS before retrying an official request", async () => {
+    let lookups = 0;
+    let attempts = 0;
+    await expect(fetchOfficial("https://example.com/a", {
+      allowedHosts: ["example.com"],
+      retryDelaysMs: [0],
+      minHostIntervalMs: 0,
+      lookup: async () => {
+        lookups += 1;
+        return lookups < 3 ? ["93.184.216.34"] : ["127.0.0.1"];
+      },
+      fetchImpl: async () => {
+        attempts += 1;
+        return response("busy", { status: 503 });
+      },
+    })).rejects.toMatchObject({ code: "UNSAFE_URL" });
+    expect(attempts).toBe(1);
+    expect(lookups).toBeGreaterThanOrEqual(3);
+  });
+
+  it("returns a structured error for an invalid redirect location", async () => {
+    await expect(fetchOfficial("https://example.com/a", {
+      allowedHosts: ["example.com"],
+      minHostIntervalMs: 0,
+      fetchImpl: async () => response("", { status: 302, headers: { location: "http://[invalid" } }),
+    })).rejects.toMatchObject({ code: "REDIRECT" });
   });
 
   it("limits redirect chains", async () => {

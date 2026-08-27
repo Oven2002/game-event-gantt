@@ -16,5 +16,8 @@
   },
   "pagination": { "kind": "page-number", "termination": "iPage beyond iTotal or empty list" },
   "urlDerivation": "List sUrl is empty; final official URL is https://zenless.hoyoverse.com/zh-cn/news/{iInfoId}",
+  "response": { "status": 200, "contentType": "application/json", "finalUrl": "https://sg-public-api-static.hoyoverse.com/content_v2_user/app/3e9196a4b9274bd7/getContentList", "redirects": [] },
+  "responseFormat": "json",
+  "checkpoint": { "kind": null, "reusable": false, "reason": "No stable cross-run checkpoint was verified." },
   "blocker": null
 }

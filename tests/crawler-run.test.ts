@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { artifactPath, assertRunArtifactsAbsent, assertRunExists, createRun, runRoot } from "../scripts/crawl/common/run.ts";
+import { artifactDirectory, artifactPath, assertRuntimePathSafe, assertRuntimeRootSafe, assertRunArtifactsAbsent, assertRunExists, createRun, runRoot } from "../scripts/crawl/common/run.ts";
 
 describe("crawler run lifecycle", () => {
   it("creates a run exclusively and rejects a duplicate", async () => {
@@ -42,10 +42,26 @@ describe("crawler run lifecycle", () => {
     await expect(createRun(root, "not-a-run")).rejects.toThrow(/run-id/);
   });
 
-  it("rejects path components that could escape the runtime root", async () => {
+  it("rejects undeclared runtime artifact names", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
-    const runId = "20260801-000002";
-    expect(() => artifactPath(root, runId, "reports", "../../escape")).toThrow(/suffix/);
-    expect(() => artifactPath(root, runId, "raw", "jsonl", "../escape")).toThrow(/game/);
+    expect(() => artifactDirectory(root, "20260801-000007", "unknown" as never)).toThrow(/artifact/i);
+  });
+
+  it("rejects runtime roots inside the protected data tree", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
+    const dataRoot = join(process.cwd(), "data");
+    await expect(assertRuntimeRootSafe(dataRoot)).rejects.toThrow(/data|runtime/i);
+    const link = join(root, "runtime-link");
+    await symlink(dataRoot, link, "dir");
+    await expect(assertRuntimeRootSafe(link)).rejects.toThrow(/data|runtime/i);
+  });
+
+  it("rejects artifact paths whose existing parent escapes the runtime root", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
+    const dataRoot = join(process.cwd(), "data");
+    await mkdir(join(root, "raw"), { recursive: true });
+    await symlink(dataRoot, join(root, "raw", "20260801-000003"), "dir");
+    const path = artifactPath(root, "20260801-000003", "raw", "jsonl", "demo");
+    await expect(assertRuntimePathSafe(root, path)).rejects.toThrow(/runtime|data|outside/i);
   });
 });

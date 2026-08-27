@@ -14,5 +14,9 @@
     }
   },
   "pagination": { "kind": "page-number", "termination": "page beyond total or empty list" },
+  "urlDerivation": "Detail URL is derived from https://ak.hypergryph.com/news/{cid}",
+  "response": { "status": 200, "contentType": "application/json", "finalUrl": "https://web-news.hypergryph.com/api/bulletin", "redirects": [] },
+  "responseFormat": "json",
+  "checkpoint": { "kind": null, "reusable": false, "reason": "No stable cross-run checkpoint was verified." },
   "blocker": null
 }
