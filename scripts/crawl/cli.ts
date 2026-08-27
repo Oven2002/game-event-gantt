@@ -2,11 +2,12 @@ import { pathToFileURL } from "node:url";
 import { join, resolve } from "node:path";
 import { fetchGame, type FetchAdapter, type FetchCommandOptions, type FetchCommandResult } from "./commands/fetch.ts";
 import { parseRun, type ParseCommandResult } from "./commands/parse.ts";
-import { createRun } from "./common/run.ts";
+import { createRun, artifactPath, assertRuntimeRootSafe } from "./common/run.ts";
 import { readJsonl } from "./common/files.ts";
-import { loadState, writeStateAtomic, type CrawlerState } from "./common/state.ts";
-import { RawArticleSchema } from "./types.ts";
-import { buildHypergryphListRequest, normalizeHypergryphContent, parseHypergryphDetail, parseHypergryphList, type HypergryphListPage } from "./adapters/hypergryph.ts";
+import { sha256Utf8 } from "./common/hash.ts";
+import { abortStateTransaction, beginStateTransaction, loadState, markStateTransactionPending, recoverStateTransactions, removeStateTransaction, stateTransactionPath, writeStateAtomic, type CrawlerState } from "./common/state.ts";
+import { RawArticleSchema, type Sha256 } from "./types.ts";
+import { buildHypergryphListRequest, displayTimeToBeijing, normalizeHypergryphContent, parseHypergryphDetail, parseHypergryphList, type HypergryphListPage } from "./adapters/hypergryph.ts";
 import { hypergryphGames } from "./hypergryph-config.ts";
 import { buildMihoyoDetailRequest, buildMihoyoListRequest, parseMihoyoDetail, parseMihoyoList, type MihoyoListPage } from "./adapters/mihoyo.ts";
 import { mihoyoGames } from "./mihoyo-config.ts";
@@ -103,14 +104,14 @@ function hypergryphAdapter(game: Extract<CrawlGame, "arknights" | "arknights-end
     listItems: (page) => (page as HypergryphListPage).items.map((item) => ({
       sourceId: item.sourceId,
       url: item.url,
-      publishedAt: new Date(item.displayTime * 1000).toISOString(),
+      publishedAt: displayTimeToBeijing(item.displayTime),
     })),
     hasMore: (page) => {
       const value = page as HypergryphListPage;
       return value.current * value.pageSize < value.total;
     },
     decodeDetailResponse: (response) => ({ status: response.status, contentType: response.contentType, body: response.body }),
-    detail: (sourceId, body, fetchedAt) => parseHypergryphDetail(game, sourceId, body, fetchedAt),
+    detail: (sourceId, body, fetchedAt, publishedAtFallback) => parseHypergryphDetail(game, sourceId, body, fetchedAt, publishedAtFallback),
   };
 }
 
@@ -127,21 +128,41 @@ const checkpointKinds: Record<CrawlGame, string | null> = {
   "arknights-endfield": hypergryphGames["arknights-endfield"].checkpoint.checkpointKind,
 };
 
-async function advanceState(runtimeRoot: string, game: CrawlGame, rawPath: string, state: CrawlerState): Promise<void> {
+export interface AdvanceStateOptions {
+  runId?: string;
+  transactionPath?: string;
+  writeState?: typeof writeStateAtomic;
+}
+
+export async function advanceState(runtimeRoot: string, game: CrawlGame, rawPath: string, state: CrawlerState, options: AdvanceStateOptions = {}): Promise<void> {
   const sourceHashes = { ...(state.games[game]?.sourceHashes ?? {}) };
-  for (const value of await readJsonl(rawPath)) {
-    const result = RawArticleSchema.safeParse(value);
-    if (!result.success) throw new Error(`raw state update failed: ${result.error.message}`);
-    sourceHashes[result.data.sourceId] = result.data.contentHash;
+  const rawSourceHashes: Record<string, Sha256> = {};
+  try {
+    for (const value of await readJsonl(rawPath)) {
+      const result = RawArticleSchema.safeParse(value);
+      if (!result.success) throw new Error(`raw state update failed: ${result.error.message}`);
+      if (result.data.game !== game) throw new Error(`raw state update game mismatch: ${result.data.game}`);
+      if (sha256Utf8(result.data.content) !== result.data.contentHash) throw new Error(`raw state update contentHash mismatch: ${result.data.sourceId}`);
+      sourceHashes[result.data.sourceId] = result.data.contentHash;
+      rawSourceHashes[result.data.sourceId] = result.data.contentHash;
+    }
+    const nextState: CrawlerState = {
+      schemaVersion: 1,
+      games: { ...state.games, [game]: { checkpoint: null, sourceHashes } },
+    };
+    if (options.transactionPath) {
+      if (!options.runId) throw new Error("state transaction requires runId");
+      await markStateTransactionPending(options.transactionPath, options.runId, game, rawPath, rawSourceHashes);
+    }
+    await (options.writeState ?? writeStateAtomic)(join(runtimeRoot, "state.json"), nextState, {
+      checkpointSchemas: {},
+      knownGames: checkpointKinds,
+    });
+  } catch (error) {
+    if (options.transactionPath) await abortStateTransaction(options.transactionPath, rawPath).catch(() => undefined);
+    throw error;
   }
-  const nextState: CrawlerState = {
-    schemaVersion: 1,
-    games: { ...state.games, [game]: { checkpoint: null, sourceHashes } },
-  };
-  await writeStateAtomic(join(runtimeRoot, "state.json"), nextState, {
-    checkpointSchemas: {},
-    knownGames: checkpointKinds,
-  });
+  if (options.transactionPath) await removeStateTransaction(options.transactionPath).catch(() => undefined);
 }
 
 export interface RunCrawlCliOptions {
@@ -149,6 +170,7 @@ export interface RunCrawlCliOptions {
   eventTypesPath?: string;
   now?: () => Date;
   fetcher?: FetchCommandOptions<unknown>["fetcher"];
+  writeState?: typeof writeStateAtomic;
   pageSize?: number;
   print?: (line: string) => void;
   printError?: (line: string) => void;
@@ -178,20 +200,34 @@ export async function runCrawlCli(argv: string[], options: RunCrawlCliOptions = 
     const eventTypesPath = options.eventTypesPath ?? resolve(process.cwd(), "data/event-types.yaml");
     if (args.command === "fetch") {
       const runId = createRunId((options.now ?? (() => new Date()))());
+      await assertRuntimeRootSafe(runtimeRoot);
       const state = await loadState(join(runtimeRoot, "state.json"), {}, checkpointKinds);
+      await recoverStateTransactions(runtimeRoot, state);
       await createRun(runtimeRoot, runId);
-      const result = await fetchGame({
-        runtimeRoot,
-        runId,
-        game: args.game!,
-        pageSize: options.pageSize,
-        since: args.since,
-        adapter: createFetchAdapter(args.game!),
-        fetcher: options.fetcher,
-      });
-      await advanceState(runtimeRoot, args.game!, result.rawPath, state);
-      printFetchResult(print, runId, result);
-      return 0;
+      const rawPath = artifactPath(runtimeRoot, runId, "raw", "jsonl", args.game!);
+      const transactionPath = stateTransactionPath(runtimeRoot, runId);
+      await beginStateTransaction(runtimeRoot, runId, args.game!, rawPath);
+      try {
+        const result = await fetchGame({
+          runtimeRoot,
+          runId,
+          game: args.game!,
+          pageSize: options.pageSize,
+          since: args.since,
+          adapter: createFetchAdapter(args.game!),
+          fetcher: options.fetcher,
+        });
+        await advanceState(runtimeRoot, args.game!, result.rawPath, state, {
+          runId,
+          transactionPath,
+          writeState: options.writeState,
+        });
+        printFetchResult(print, runId, result);
+        return 0;
+      } catch (error) {
+        await abortStateTransaction(transactionPath, rawPath).catch(() => undefined);
+        throw error;
+      }
     }
     if (args.command === "parse") {
       const result = await parseRun({ runtimeRoot, runId: args.run!, eventTypesPath });

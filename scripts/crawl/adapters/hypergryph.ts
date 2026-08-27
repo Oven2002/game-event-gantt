@@ -33,6 +33,13 @@ function positiveIntegerField(data: Record<string, unknown>, key: string, allowZ
 }
 
 
+export function displayTimeToBeijing(value: number): string {
+  if (!Number.isSafeInteger(value) || value <= 0 || value % 60 !== 0) throw new HypergryphAdapterError("invalid displayTime precision");
+  const shifted = new Date((value + 8 * 60 * 60) * 1000);
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}T${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}:00+08:00`;
+}
+
 export function parseHypergryphList(game: HypergryphGameConfig["game"], body: unknown, requestedPage?: number): HypergryphListPage {
   const data = envelope(body);
   if (!Array.isArray(data.list)) throw new HypergryphAdapterError("invalid list");
@@ -42,7 +49,7 @@ export function parseHypergryphList(game: HypergryphGameConfig["game"], body: un
     const sourceId = stringField(item, "cid");
     if (!/^\d+$/.test(sourceId)) throw new HypergryphAdapterError("invalid cid");
     const displayTime = item.displayTime;
-    if (typeof displayTime !== "number" || !Number.isInteger(displayTime) || displayTime <= 0) throw new HypergryphAdapterError("invalid displayTime");
+    if (typeof displayTime !== "number" || !Number.isSafeInteger(displayTime) || displayTime <= 0 || displayTime % 60 !== 0) throw new HypergryphAdapterError("invalid displayTime");
     return { sourceId, title: stringField(item, "title"), tab: stringField(item, "tab"), displayTime, url: `https://${hypergryphGames[game].officialHost}/news/${encodeURIComponent(sourceId)}`, brief: typeof item.brief === "string" ? item.brief : "" };
   }).filter((item, index, all) => all.findIndex((candidate) => candidate.sourceId === item.sourceId) === index);
   const total = positiveIntegerField(data, "total", true);
@@ -83,9 +90,9 @@ function detailMeta(html: string, sourceId: string): { title: string; publishedA
   if (embeddedId !== sourceId) throw new HypergryphAdapterError(`detail sourceId mismatch: ${sourceId}/${embeddedId ?? "missing"}`);
   return { title: normalizeHypergryphContent(title), publishedAt: dateText ? parsePublishedAt(dateText) : null, content: normalizeHypergryphContent(contentMatch[1]) };
 }
-export function parseHypergryphDetail(game: HypergryphGameConfig["game"], sourceId: string, body: unknown, fetchedAt: string): RawArticle {
+export function parseHypergryphDetail(game: HypergryphGameConfig["game"], sourceId: string, body: unknown, fetchedAt: string, publishedAtFallback?: string | null): RawArticle {
   if (!/^\d+$/.test(sourceId)) throw new HypergryphAdapterError("invalid sourceId");
   const meta = detailMeta(htmlFromEnvelope(body), sourceId);
   const url = `https://${hypergryphGames[game].officialHost}/news/${sourceId}`;
-  return { game, region: "cn", source: "hypergryph", sourceId, url, title: meta.title, publishedAt: meta.publishedAt, content: meta.content, contentHash: sha256Utf8(meta.content) as Sha256, fetchedAt };
+  return { game, region: "cn", source: "hypergryph", sourceId, url, title: meta.title, publishedAt: meta.publishedAt ?? publishedAtFallback ?? null, content: meta.content, contentHash: sha256Utf8(meta.content) as Sha256, fetchedAt };
 }
