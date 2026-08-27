@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { readFile, readdir } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { FixtureMetadataSchema } from "../scripts/crawl/types.ts";
+import { buildHypergryphListRequest } from "../scripts/crawl/adapters/hypergryph.ts";
+import { buildMihoyoDetailRequest, buildMihoyoListRequest } from "../scripts/crawl/adapters/mihoyo.ts";
+import { hypergryphGames } from "../scripts/crawl/hypergryph-config.ts";
+import { mihoyoGames } from "../scripts/crawl/mihoyo-config.ts";
 
 const fixtureRoot = resolve("tests/fixtures/crawler");
 const sensitiveText = /authorization|cookie|set-cookie|access.?key|secret|password|token|credential/i;
@@ -19,6 +23,15 @@ async function fixtureFiles(directory: string): Promise<string[]> {
     else if (entry.isFile() && entry.name.endsWith(".json") && !entry.name.endsWith(".meta.json")) files.push(path);
   }
   return files;
+}
+
+function baseUrl(url: string): string {
+  const value = new URL(url);
+  return `${value.origin}${value.pathname}`;
+}
+
+function queryParameters(url: string): Record<string, string> {
+  return Object.fromEntries(new URL(url).searchParams.entries());
 }
 
 describe("crawler fixture sidecars", () => {
@@ -44,6 +57,30 @@ describe("crawler fixture sidecars", () => {
       }
       expect(value.response.redirects).toEqual([]);
       expect(value.response.finalUrl).toBe(value.request.url);
+    }
+  });
+
+  it("matches sidecar request facts against the measured request builders", async () => {
+    const files = (await fixtureFiles(fixtureRoot)).sort();
+    for (const dataPath of files) {
+      const metadata = FixtureMetadataSchema.parse(await json(dataPath.replace(/\.json$/, ".meta.json")));
+      const parts = relative(fixtureRoot, dataPath).split("/");
+      const provider = parts[0];
+      const game = parts[1];
+      let expectedUrl: string;
+      if (metadata.fixtureRole === "list") {
+        const page = Number(metadata.request.parameters.iPage ?? metadata.request.parameters.page);
+        const pageSize = Number(metadata.request.parameters.iPageSize ?? metadata.request.parameters.pageSize);
+        expectedUrl = provider === "mihoyo"
+          ? buildMihoyoListRequest(game as keyof typeof mihoyoGames, page, pageSize).url
+          : buildHypergryphListRequest(game as keyof typeof hypergryphGames, page, pageSize).url;
+      } else {
+        expectedUrl = provider === "mihoyo"
+          ? buildMihoyoDetailRequest(game as keyof typeof mihoyoGames, metadata.detailSourceId!).url
+          : `https://${hypergryphGames[game as keyof typeof hypergryphGames].officialHost}/news/${metadata.detailSourceId}`;
+      }
+      expect(baseUrl(expectedUrl), relative(fixtureRoot, dataPath)).toBe(baseUrl(metadata.request.url));
+      expect(queryParameters(expectedUrl), relative(fixtureRoot, dataPath)).toEqual(metadata.request.parameters);
     }
   });
 

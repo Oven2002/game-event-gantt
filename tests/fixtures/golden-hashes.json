@@ -1,0 +1,56 @@
+{
+  "raw": {
+    "game": "genshin-impact",
+    "region": "cn",
+    "source": "mihoyo",
+    "sourceId": "golden-123",
+    "url": "https://YS.MIHOYO.com:443/main/news/detail/123#fragment",
+    "title": "黄金哈希公告",
+    "publishedAt": "2026-08-01T10:20:00+08:00",
+    "contentHash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "sourceHash": "sha256:6f775f0ec9f141971eed23ecde6b5a36648b5e28b3d58290c0b7014ffb61e804",
+  "candidate": {
+    "kind": "event",
+    "game": "genshin-impact",
+    "region": "cn",
+    "candidateKey": "genshin-impact/golden-123/slot-1",
+    "sourceId": "golden-123",
+    "semanticSlot": "slot-1",
+    "name": "黄金哈希公告",
+    "type": "event",
+    "start": "2026-08-20T04:00:00+08:00",
+    "end": "2026-08-20T11:00:00+08:00",
+    "timeCertainty": {
+      "start": "confirmed",
+      "end": "confirmed"
+    },
+    "sources": [
+      "https://ys.mihoyo.com/main/news/detail/123"
+    ],
+    "review": "ready",
+    "reviewReasons": [],
+    "evidence": [
+      {
+        "field": "end",
+        "text": "2026-08-20T11:00:00+08:00"
+      },
+      {
+        "field": "start",
+        "text": "2026-08-20T04:00:00+08:00"
+      }
+    ]
+  },
+  "candidateHash": "sha256:65c7e49e06ff5e95f18b7d9ccb04c19d27b78d250c344c62fe34668fe4c4f9fa",
+  "oldValue": {
+    "id": "event-golden",
+    "name": "黄金哈希公告",
+    "type": "event",
+    "start": "2026-08-20T04:00:00+08:00",
+    "end": "2026-08-20T11:00:00+08:00",
+    "sources": [
+      "https://ys.mihoyo.com/main/news/detail/123"
+    ]
+  },
+  "oldValueHash": "sha256:b17f6020af394ca72026e038ce2b2b28db8e3d6cc69fdd851a982992453e5a0f"
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseArticleCandidate } from "../scripts/crawl/parsers/article.ts";
-import { sha256Utf8 } from "../scripts/crawl/common/hash.ts";
+import { candidateHashProjection, hashCanonicalJson, sha256Utf8 } from "../scripts/crawl/common/hash.ts";
 import { validateCandidate, validateCandidateFromConfig, loadEventTypeIds } from "../scripts/crawl/common/candidate-validation.ts";
 import type { RawArticle, Sha256 } from "../scripts/crawl/types.ts";
 
@@ -14,6 +14,11 @@ const raw = (overrides: Partial<RawArticle> = {}): RawArticle => {
   };
   return { ...value, contentHash: sha256Utf8(value.content) as Sha256 };
 };
+
+const rehashCandidate = <T extends { candidateHash: Sha256 }>(candidate: T): T => ({
+  ...candidate,
+  candidateHash: hashCanonicalJson(candidateHashProjection(candidate)) as Sha256,
+});
 
 describe("candidate validation", () => {
   it("loads event type ids from the official data config", async () => {
@@ -33,14 +38,20 @@ describe("candidate validation", () => {
 
   it("rejects unknown event types and sources that are discovery-only", () => {
     const candidate = parseArticleCandidate(raw(), "20260801-000000", "slot-1");
-    expect(validateCandidate({ ...candidate, type: "unknown" } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false, rejection: { reasonCode: "candidate_validation_failed" } });
-    expect(validateCandidate({ ...candidate, sources: ["https://www.zhihu.com/question/123"] } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false, rejection: { reasonCode: "candidate_validation_failed" } });
+    const unknownType = rehashCandidate({ ...candidate, type: "unknown" });
+    const discoverySource = rehashCandidate({ ...candidate, sources: [...candidate.sources, "https://www.zhihu.com/question/123"] });
+    expect(validateCandidate(unknownType, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false, rejection: { reasonCode: "candidate_validation_failed" } });
+    expect(validateCandidate(discoverySource, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false, rejection: { reasonCode: "candidate_validation_failed" } });
   });
 
   it("requires evidence for confirmed times and note for estimated times", () => {
     const candidate = parseArticleCandidate(raw(), "20260801-000000", "slot-1");
-    expect(validateCandidate({ ...candidate, evidence: [] } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false });
-    expect(validateCandidate({ ...candidate, evidence: [{ field: "start", text: "forged" }, { field: "end", text: ("end" in candidate ? candidate.end : "") }] } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false });
+    const missingEvidence = rehashCandidate({ ...candidate, evidence: [] });
+    const forgedEvidence = rehashCandidate({ ...candidate, evidence: [{ field: "start", text: "forged" }, { field: "end", text: ("end" in candidate ? candidate.end : "") }] });
+    const estimatedWithoutNote = rehashCandidate({ ...candidate, timeCertainty: { start: "estimated", end: "confirmed" } });
+    expect(validateCandidate(missingEvidence, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false });
+    expect(validateCandidate(forgedEvidence, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false });
+    expect(validateCandidate(estimatedWithoutNote, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false, rejection: { detail: "inferred or estimated times require note" } });
   });
 
   it("rejects a candidate when raw content was changed without changing its stale hash", () => {
@@ -51,6 +62,8 @@ describe("candidate validation", () => {
   it("rejects a candidate whose raw article or source hash does not match", () => {
     const candidate = parseArticleCandidate(raw(), "20260801-000000", "slot-1");
     expect(validateCandidate(candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw({ title: "另一篇公告" }) })).toMatchObject({ ok: false });
-    expect(validateCandidate({ ...candidate, sourceHash: "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" } as typeof candidate, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false });
+    const wrongSourceHash = rehashCandidate({ ...candidate, sourceHash: sha256Utf8("wrong source") as Sha256 });
+    expect(validateCandidate(wrongSourceHash, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false, rejection: { reasonCode: "invalid_source_identity" } });
+    expect(validateCandidate({ ...candidate, candidateHash: sha256Utf8("wrong candidate") as Sha256 }, { supportsVersions: true, eventTypeIds: ["event"], rawArticle: raw() })).toMatchObject({ ok: false });
   });
 });
