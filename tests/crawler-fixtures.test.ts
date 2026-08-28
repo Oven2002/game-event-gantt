@@ -37,7 +37,7 @@ function queryParameters(url: string): Record<string, string> {
 describe("crawler fixture sidecars", () => {
   it("validates every response fixture and its metadata as an offline contract", async () => {
     const files = (await fixtureFiles(fixtureRoot)).sort();
-    expect(files).toHaveLength(10);
+    expect(files).toHaveLength(12);
     for (const dataPath of files) {
       const metadataPath = dataPath.replace(/\.json$/, ".meta.json");
       const metadata = await json(metadataPath);
@@ -48,8 +48,12 @@ describe("crawler fixture sidecars", () => {
       const parts = relative(fixtureRoot, dataPath).split("/");
       expect(value.game).toBe(parts[1]);
       expect(value.fixtureKind).toBe("real");
-      expect(value.blocker).toBeNull();
       expect(JSON.stringify(value)).not.toMatch(sensitiveText);
+      if (value.fixtureRole === "blocker") {
+        expect(value.blocker).not.toBeNull();
+        continue;
+      }
+      expect(value.blocker).toBeNull();
       if (value.fixtureRole === "list") expect(value.pagination).not.toBeNull();
       if (value.fixtureRole === "detail") {
         expect(value.pagination).toBeNull();
@@ -64,6 +68,7 @@ describe("crawler fixture sidecars", () => {
     const files = (await fixtureFiles(fixtureRoot)).sort();
     for (const dataPath of files) {
       const metadata = FixtureMetadataSchema.parse(await json(dataPath.replace(/\.json$/, ".meta.json")));
+      if (metadata.fixtureRole === "blocker") continue;
       const parts = relative(fixtureRoot, dataPath).split("/");
       const provider = parts[0];
       const game = parts[1];
@@ -88,6 +93,7 @@ describe("crawler fixture sidecars", () => {
     const files = (await fixtureFiles(fixtureRoot)).filter((path) => basename(path).includes("detail-")).sort();
     for (const detailPath of files) {
       const metadata = FixtureMetadataSchema.parse(await json(detailPath.replace(/\.json$/, ".meta.json")));
+      if (metadata.fixtureRole === "blocker") continue;
       const directory = dirname(detailPath);
       const listPath = join(directory, "list-page-1.json");
       const list = await json(listPath) as { data?: { list?: Array<Record<string, unknown>> } };

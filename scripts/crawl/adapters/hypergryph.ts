@@ -11,7 +11,7 @@ export class HypergryphAdapterError extends Error { constructor(message: string)
 export function buildHypergryphListRequest(game: HypergryphGameConfig["game"], page: number, pageSize = 20): HypergryphRequest {
   const config = hypergryphGames[game];
   if (!Number.isInteger(page) || page < 1 || !Number.isInteger(pageSize) || pageSize < 1 || pageSize > 20) throw new HypergryphAdapterError("invalid pagination");
-  const parameters = { lang: "zh-cn", code: config.apiCode, page: String(page), pageSize: String(pageSize) };
+  const parameters = { lang: config.language, code: config.apiCode, page: String(page), pageSize: String(pageSize) };
   return { method: "GET", url: `https://web-news.hypergryph.com/api/bulletin?${new URLSearchParams(parameters)}`, parameters };
 }
 
@@ -70,6 +70,18 @@ function htmlFromEnvelope(body: unknown): string {
 }
 function decode(value: string): string { return value.replace(/\\u003c/g, "<").replace(/\\u003e/g, ">").replace(/\\u0026/g, "&"); }
 export function normalizeHypergryphContent(html: string): string { return normalizeContent(decode(html)); }
+function rootHtmlAttribute(html: string, name: string): string | null {
+  const opening = html.match(/<html\b([^>]*)>/i)?.[1];
+  if (opening === undefined) throw new HypergryphAdapterError("missing html root");
+  return opening.match(new RegExp(`\\b${name}\\s*=\\s*[\"']([^\"']*)[\"']`, "i"))?.[1] ?? null;
+}
+function assertCnHtml(game: HypergryphGameConfig["game"], html: string): void {
+  const decodedHtml = decode(html);
+  const language = rootHtmlAttribute(decodedHtml, "lang");
+  if (language?.toLowerCase() !== hypergryphGames[game].language) throw new HypergryphAdapterError(`detail language is not ${hypergryphGames[game].language}`);
+  const oversea = rootHtmlAttribute(decodedHtml, "data-oversea");
+  if (oversea !== null && oversea.toLowerCase() !== "false") throw new HypergryphAdapterError("detail is marked as overseas");
+}
 function parsePublishedAt(value: string): string | null {
   const full = value.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})$/);
   return full ? `${full[1]}-${full[2]}-${full[3]}T${full[4]}:${full[5]}:00+08:00` : null;
@@ -92,7 +104,9 @@ function detailMeta(html: string, sourceId: string): { title: string; publishedA
 }
 export function parseHypergryphDetail(game: HypergryphGameConfig["game"], sourceId: string, body: unknown, fetchedAt: string, publishedAtFallback?: string | null): RawArticle {
   if (!/^\d+$/.test(sourceId)) throw new HypergryphAdapterError("invalid sourceId");
-  const meta = detailMeta(htmlFromEnvelope(body), sourceId);
+  const html = htmlFromEnvelope(body);
+  assertCnHtml(game, html);
+  const meta = detailMeta(html, sourceId);
   const url = `https://${hypergryphGames[game].officialHost}/news/${sourceId}`;
-  return { game, region: "cn", source: "hypergryph", sourceId, url, title: meta.title, publishedAt: meta.publishedAt ?? publishedAtFallback ?? null, content: meta.content, contentHash: sha256Utf8(meta.content) as Sha256, fetchedAt };
+  return { game, region: hypergryphGames[game].region, source: "hypergryph", sourceId, url, title: meta.title, publishedAt: meta.publishedAt ?? publishedAtFallback ?? null, content: meta.content, contentHash: sha256Utf8(meta.content) as Sha256, fetchedAt };
 }

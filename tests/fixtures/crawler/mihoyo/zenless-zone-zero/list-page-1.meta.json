@@ -2,12 +2,12 @@
   "fixtureKind": "real",
   "fixtureRole": "list",
   "game": "zenless-zone-zero",
-  "capturedAt": "2026-08-25T06:52:23+00:00",
+  "capturedAt": "2026-08-28T10:39:59+00:00",
   "request": {
     "method": "GET",
-    "url": "https://sg-public-api-static.hoyoverse.com/content_v2_user/app/3e9196a4b9274bd7/getContentList",
+    "url": "https://api-takumi-static.mihoyo.com/content_v2_user/app/706fd13a87294881/getContentList",
     "parameters": {
-      "iChanId": "288",
+      "iChanId": "278",
       "iPage": "1",
       "iPageSize": "1",
       "sLangKey": "zh-cn",
@@ -15,8 +15,8 @@
     }
   },
   "pagination": { "kind": "page-number", "termination": "iPage beyond iTotal or empty list" },
-  "urlDerivation": "List sUrl is empty; final official URL is https://zenless.hoyoverse.com/zh-cn/news/{iInfoId}",
-  "response": { "status": 200, "contentType": "application/json", "finalUrl": "https://sg-public-api-static.hoyoverse.com/content_v2_user/app/3e9196a4b9274bd7/getContentList", "redirects": [] },
+  "urlDerivation": "List sUrl is empty; final CN official URL is https://zzz.mihoyo.com/news/{iInfoId}",
+  "response": { "status": 200, "contentType": "application/json", "finalUrl": "https://api-takumi-static.mihoyo.com/content_v2_user/app/706fd13a87294881/getContentList", "redirects": [] },
   "responseFormat": "json",
   "checkpoint": { "kind": null, "reusable": false, "reason": "No stable cross-run checkpoint was verified." },
   "blocker": null

@@ -13,6 +13,14 @@ const fixture = async (path: string) => JSON.parse(await readFile(path, "utf8"))
 
 describe("Hypergryph configuration", () => {
   it("keeps Arknights events-only and Endfield version-capable", () => {
+    expect(hypergryphGames.arknights.region).toBe("cn");
+    expect(hypergryphGames["arknights-endfield"].region).toBe("cn");
+    expect(hypergryphGames.arknights.language).toBe("zh-cn");
+    expect(hypergryphGames["arknights-endfield"].language).toBe("zh-cn");
+    expect(hypergryphGames).toMatchObject({
+      arknights: { region: "cn", language: "zh-cn", apiCode: "arknights", officialHost: "ak.hypergryph.com" },
+      "arknights-endfield": { region: "cn", language: "zh-cn", apiCode: "endfield_web", officialHost: "endfield.hypergryph.com" },
+    });
     expect(hypergryphGames.arknights.supportsVersions).toBe(false);
     expect(hypergryphGames["arknights-endfield"].supportsVersions).toBe(true);
     expect(hypergryphGames.arknights.checkpoint.checkpointKind).toBe(null);
@@ -64,6 +72,22 @@ describe("Hypergryph fixture adapter", () => {
     }
   });
 
+  it("rejects overseas or missing CN markers in detail HTML", async () => {
+    const envelope = await fixture(`${root}/arknights-endfield/detail-4776.json`);
+    expect(() => parseHypergryphDetail("arknights-endfield", "4776", {
+      ...envelope,
+      body: envelope.body.replace('data-oversea="false"', 'data-oversea="true"'),
+    }, "2026-08-26T00:00:00+00:00")).toThrow(/oversea|region/i);
+    expect(() => parseHypergryphDetail("arknights-endfield", "4776", {
+      ...envelope,
+      body: envelope.body.replace('lang="zh-cn"', 'lang="en-us"'),
+    }, "2026-08-26T00:00:00+00:00")).toThrow(/language|lang|region/i);
+    expect(() => parseHypergryphDetail("arknights-endfield", "4776", {
+      ...envelope,
+      body: envelope.body.replace(' lang="zh-cn"', ""),
+    }, "2026-08-26T00:00:00+00:00")).toThrow(/language|lang|region/i);
+  });
+
   it("uses a validated list displayTime when detail has no publication date", async () => {
     const body = await fixture(`${root}/arknights/detail-4924.json`);
     const article = parseHypergryphDetail("arknights", "4924", body, "2026-08-26T00:00:00+00:00", "2026-08-21T17:00:00+08:00");
@@ -75,10 +99,18 @@ describe("Hypergryph fixture adapter", () => {
       .toBe("第一段\n第二段");
   });
 
-  it("preserves escaped angle-bracket text and remains idempotent", () => {
+  it("preserves escaped angle-bracket text and remains idempotent", async () => {
     const content = normalizeHypergryphContent("<p>修复&lt;浮空信件&gt;异常</p>");
     expect(content).toBe("修复<浮空信件>异常");
     expect(normalizeHypergryphContent(content)).toBe(content);
+    const ascii = normalizeHypergryphContent("<p>literal &lt;foo&gt;</p>");
+    expect(ascii).toBe("literal <foo>");
+    expect(normalizeHypergryphContent(ascii)).toBe(ascii);
+  });
+
+  it("removes HTML comments and document declarations", () => {
+    expect(normalizeHypergryphContent("<!doctype html><!-- hidden --><p>visible</p><?xml version=\"1.0\"?>"))
+      .toBe("visible");
   });
 
   it("rejects a detail envelope with a non-HTML content type", async () => {

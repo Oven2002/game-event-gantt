@@ -96,7 +96,7 @@ function isUnsafeIpv4(words: number[]): boolean {
     || first === 198 && (second === 18 || second === 19 || second === 51)
     || first === 203 && second === 0
     || first === 100 && second >= 64 && second <= 127
-    || first >= 240;
+    || first >= 224;
 }
 
 function isPrivateAddress(rawAddress: string): boolean {
@@ -119,7 +119,8 @@ function isPrivateAddress(rawAddress: string): boolean {
 }
 
 async function assertResolvedHost(hostname: string, lookup: FetchOfficialOptions["lookup"]): Promise<string[]> {
-  if (isIP(hostname) !== 0) {
+  const ipLiteral = hostname.replace(/^\[|\]$/g, "");
+  if (isIP(ipLiteral) !== 0) {
     throw new CrawlerHttpError("UNSAFE_URL", `IP literal is not allowed: ${hostname}`);
   }
   let addresses: string[];
@@ -178,6 +179,10 @@ async function waitForHost(host: string, intervalMs: number): Promise<void> {
   });
 }
 
+async function cancelResponseBody(response: Response): Promise<void> {
+  await response.body?.cancel().catch(() => undefined);
+}
+
 async function readLimitedBody(response: Response, maxBytes: number, signal: AbortSignal): Promise<string> {
   if (!response.body) return "";
   const reader = response.body.getReader();
@@ -225,10 +230,14 @@ function nodeRequestHeaders(init: RequestInit, url: URL): Record<string, string>
   return headers;
 }
 
+function createAbortError(): Error {
+  return Object.assign(new Error("The operation was aborted"), { name: "AbortError" });
+}
+
 function fetchPinned(url: URL, init: RequestInit, address: string): Promise<Response> {
   return new Promise((resolve, reject) => {
     const signal = init.signal;
-    const abortError = Object.assign(new Error("The operation was aborted"), { name: "AbortError" });
+    const abortError = createAbortError();
     let settled = false;
     const request = httpsRequest({
       hostname: address,
@@ -282,22 +291,36 @@ async function fetchPinnedWithFallback(
   let lastError: unknown;
   const deadline = Date.now() + timeoutMs;
   for (const address of addresses) {
-    if (init.signal?.aborted) {
-      const error = Object.assign(new Error("The operation was aborted"), { name: "AbortError" });
-      throw error;
-    }
+    if (init.signal?.aborted) throw createAbortError();
     const remaining = deadline - Date.now();
     if (remaining <= 0) break;
     const attemptController = new AbortController();
-    const attemptTimeout = setTimeout(() => attemptController.abort(), Math.min(5_000, remaining));
     const signal = init.signal ? AbortSignal.any([init.signal, attemptController.signal]) : attemptController.signal;
+    let timedOut = false;
+    let attemptTimer: ReturnType<typeof setTimeout> | undefined;
+    const requestPromise = Promise.resolve()
+      .then(() => fetchImpl(url, { ...init, signal }, address))
+      .then((response) => {
+        if (timedOut) {
+          void response.body?.cancel().catch(() => undefined);
+          throw createAbortError();
+        }
+        return response;
+      });
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      attemptTimer = setTimeout(() => {
+        timedOut = true;
+        attemptController.abort();
+        reject(createAbortError());
+      }, Math.min(5_000, remaining));
+    });
     try {
-      return await fetchImpl(url, { ...init, signal }, address);
+      return await Promise.race([requestPromise, timeoutPromise]);
     } catch (error: unknown) {
       if (init.signal?.aborted) throw error;
       lastError = error;
     } finally {
-      clearTimeout(attemptTimeout);
+      if (attemptTimer !== undefined) clearTimeout(attemptTimer);
     }
   }
   if (lastError !== undefined) throw lastError;
@@ -340,9 +363,15 @@ export async function fetchOfficial(rawUrl: string, options: FetchOfficialOption
 
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get("location");
-        if (!location) throw new CrawlerHttpError("REDIRECT", "redirect response has no location", { status: response.status });
-        if (redirects >= maxRedirects) throw new CrawlerHttpError("REDIRECT_LIMIT", `redirect limit exceeded: ${maxRedirects}`);
-        await response.body?.cancel().catch(() => undefined);
+        if (!location) {
+          await cancelResponseBody(response);
+          throw new CrawlerHttpError("REDIRECT", "redirect response has no location", { status: response.status });
+        }
+        if (redirects >= maxRedirects) {
+          await cancelResponseBody(response);
+          throw new CrawlerHttpError("REDIRECT_LIMIT", `redirect limit exceeded: ${maxRedirects}`);
+        }
+        await cancelResponseBody(response);
         redirects += 1;
         let redirectedUrl: string;
         try {
@@ -356,11 +385,12 @@ export async function fetchOfficial(rawUrl: string, options: FetchOfficialOption
 
       if (!response.ok) {
         if (retryableStatus(response.status) && attempt < retryDelays.length) {
-          await response.body?.cancel().catch(() => undefined);
+          await cancelResponseBody(response);
           const delay = retryDelays[attempt++];
           if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
           continue;
         }
+        await cancelResponseBody(response);
         throw new CrawlerHttpError("HTTP_STATUS", `official endpoint returned HTTP ${response.status}`, { status: response.status });
       }
 
@@ -368,6 +398,7 @@ export async function fetchOfficial(rawUrl: string, options: FetchOfficialOption
       const allowedContentTypes = (options.allowedContentTypes ?? ["application/json", "text/html", "text/plain"])
         .map((value) => value.toLowerCase().split(";", 1)[0].trim());
       if (!contentType || !allowedContentTypes.includes(contentType)) {
+        await cancelResponseBody(response);
         throw new CrawlerHttpError("CONTENT_TYPE", `unsupported content type: ${contentType || "missing"}`, { contentType });
       }
       return { url: requestUrl.toString(), status: response.status, contentType, body: await readLimitedBody(response, maxBytes, controller.signal) };

@@ -27,14 +27,14 @@ export class MihoyoAdapterError extends Error {
 const detailUrlTemplates: Record<MihoyoGameConfig["game"], string> = {
   "genshin-impact": "https://ys.mihoyo.com/main/news/detail/{sourceId}",
   "honkai-star-rail": "https://sr.mihoyo.com/news/{sourceId}",
-  "zenless-zone-zero": "https://zenless.hoyoverse.com/zh-cn/news/{sourceId}",
+  "zenless-zone-zero": "https://zzz.mihoyo.com/news/{sourceId}",
 };
 
 export function buildMihoyoDetailUrl(game: MihoyoGameConfig["game"], sourceId: string): string {
   const url = detailUrlTemplates[game].replace("{sourceId}", encodeURIComponent(sourceId));
   const parsed = new URL(url);
-  if (parsed.protocol !== "https:" || !mihoyoGames[game].officialHosts.includes(parsed.hostname)) {
-    throw new MihoyoAdapterError("generated URL is outside the configured official host allowlist");
+  if (parsed.protocol !== "https:" || parsed.hostname !== mihoyoGames[game].articleHost) {
+    throw new MihoyoAdapterError("generated URL is outside the configured CN article host");
   }
   return url;
 }
@@ -46,7 +46,7 @@ export interface MihoyoRequest {
 }
 
 function buildMihoyoApiUrl(game: MihoyoGameConfig["game"], endpoint: "getContentList" | "getContent"): string {
-  return `https://${mihoyoGames[game].officialHosts[0]}/content_v2_user/app/${mihoyoGames[game].appId}/${endpoint}`;
+  return `https://${mihoyoGames[game].apiHost}/content_v2_user/app/${mihoyoGames[game].appId}/${endpoint}`;
 }
 
 export function buildMihoyoListRequest(game: MihoyoGameConfig["game"], page: number, pageSize: number): MihoyoRequest {
@@ -54,7 +54,7 @@ export function buildMihoyoListRequest(game: MihoyoGameConfig["game"], page: num
   const parameters = {
     iPage: String(page),
     iPageSize: String(pageSize),
-    sLangKey: "zh-cn",
+    sLangKey: mihoyoGames[game].language,
     isPreview: "0",
     iChanId: String(mihoyoGames[game].channels[0]),
     ...(mihoyoGames[game].listAppId === undefined ? {} : { iAppId: mihoyoGames[game].listAppId }),
@@ -64,7 +64,7 @@ export function buildMihoyoListRequest(game: MihoyoGameConfig["game"], page: num
 
 export function buildMihoyoDetailRequest(game: MihoyoGameConfig["game"], sourceId: string): MihoyoRequest {
   if (!/^\d+$/.test(sourceId)) throw new MihoyoAdapterError("invalid sourceId");
-  const parameters = { iInfoId: sourceId, iPageSize: "50", sLangKey: "zh-cn", isPreview: "0" };
+  const parameters = { iInfoId: sourceId, iPageSize: "50", sLangKey: mihoyoGames[game].language, isPreview: "0" };
   return { method: "GET", url: `${buildMihoyoApiUrl(game, "getContent")}?${new URLSearchParams(parameters)}`, parameters };
 }
 
@@ -85,7 +85,19 @@ function getString(value: unknown, field: string, allowEmpty = false): string {
   return value;
 }
 
+function validateContentChannels(game: MihoyoGameConfig["game"], item: Record<string, unknown>): void {
+  const value = item.sChanId;
+  if (!Array.isArray(value) || value.length === 0 || value.some((channel) => typeof channel !== "string" || !/^\d+$/.test(channel))) {
+    throw new MihoyoAdapterError("invalid sChanId");
+  }
+  const allowed = new Set(mihoyoGames[game].contentChannels);
+  if (value.some((channel) => !allowed.has(Number(channel)))) {
+    throw new MihoyoAdapterError(`sChanId is outside the configured CN channels for ${game}`);
+  }
+}
+
 function normalizeItem(game: MihoyoGameConfig["game"], item: Record<string, unknown>, fetchedAt?: string): MihoyoListItem | RawArticle {
+  validateContentChannels(game, item);
   const sourceId = String(item.iInfoId ?? "");
   if (!/^\d+$/.test(sourceId)) throw new MihoyoAdapterError("missing iInfoId");
   const title = getString(item.sTitle, "sTitle");
@@ -102,7 +114,7 @@ function normalizeItem(game: MihoyoGameConfig["game"], item: Record<string, unkn
   if (fetchedAt === undefined) return normalized;
   return {
     game,
-    region: "cn",
+    region: mihoyoGames[game].region,
     source: "mihoyo",
     sourceId,
     url: normalized.url,

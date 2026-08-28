@@ -353,11 +353,11 @@ describe("crawler parse command", () => {
       {
         game: "zenless-zone-zero" as const,
         pageSize: 1,
-        listUrl: "https://sg-public-api-static.hoyoverse.com/content_v2_user/app/3e9196a4b9274bd7/getContentList?iPage=1&iPageSize=1&sLangKey=zh-cn&isPreview=0&iChanId=288",
-        detailUrl: "https://sg-public-api-static.hoyoverse.com/content_v2_user/app/3e9196a4b9274bd7/getContent?iInfoId=165865&iPageSize=50&sLangKey=zh-cn&isPreview=0",
-        detailSourceId: "165865",
+        listUrl: "https://api-takumi-static.mihoyo.com/content_v2_user/app/706fd13a87294881/getContentList?iPage=1&iPageSize=1&sLangKey=zh-cn&isPreview=0&iChanId=278",
+        detailUrl: "https://api-takumi-static.mihoyo.com/content_v2_user/app/706fd13a87294881/getContent?iInfoId=165853&iPageSize=50&sLangKey=zh-cn&isPreview=0",
+        detailSourceId: "165853",
         listPath: "tests/fixtures/crawler/mihoyo/zenless-zone-zero/list-page-1.json",
-        detailPath: "tests/fixtures/crawler/mihoyo/zenless-zone-zero/detail-165865.json",
+        detailPath: "tests/fixtures/crawler/mihoyo/zenless-zone-zero/detail-165853.json",
         detailContentType: "application/json",
         detailBody: async (path: string) => await readFile(path, "utf8"),
       },
@@ -439,7 +439,7 @@ describe("crawler parse command", () => {
       expect(state.games[item.game].checkpoint).toBe(null);
       const sourceId = item.game === "genshin-impact" ? "165690"
         : item.game === "honkai-star-rail" ? "165883"
-          : item.game === "zenless-zone-zero" ? "165865"
+          : item.game === "zenless-zone-zero" ? "165853"
             : item.game === "arknights" ? "4924" : "4776";
       expect(state.games[item.game].sourceHashes).toHaveProperty(sourceId);
       if (item.game === "arknights") {

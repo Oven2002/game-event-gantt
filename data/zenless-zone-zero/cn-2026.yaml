@@ -8,7 +8,7 @@ versions:
     end: "2026-09-09T06:00:00+08:00"
     note: 国服维护 07/29 06:00 开始、约11:00开服；版本共42天，官方明确结束 09/09 06:00
     sources:
-      - "https://zenless.hoyoverse.com/m/zh-cn/news/165414"
+      - "https://zzz.mihoyo.com/news/165415"
 
 events:
   - id: preview-3-1
@@ -17,7 +17,7 @@ events:
     start: "2026-07-17T19:30:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165248"
+      - "https://zzz.mihoyo.com/news/165272"
   - id: banner-3-1-first
     name: "上半卡池「复乐园」蕾米埃尔 + 爱芮复刻"
     type: banner
@@ -26,7 +26,7 @@ events:
     note: 下半希格莉德时装官方明确 08/19 12:00 起，反推上半 08/19 11:59 止
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165363"
+      - "https://zzz.mihoyo.com/news/165375"
   - id: banner-3-1-leimiel
     name: "「复乐园」蕾米埃尔池（整版本）"
     type: banner
@@ -35,7 +35,7 @@ events:
     note: 周年版本特殊结构，蕾米埃尔池延续整个版本（含音擎「空羽复归之诗」）
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165363"
+      - "https://zzz.mihoyo.com/news/165375"
   - id: banner-3-1-second
     name: "下半卡池「直到天空沉落」希格莉德"
     type: banner
@@ -44,7 +44,7 @@ events:
     note: 官方下期限时频段公告明确代理人与音擎调频时间
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165737"
+      - "https://zzz.mihoyo.com/news/165758"
   - id: event-zhounian
     name: "玛瑟尔周年馈礼"
     type: event
@@ -52,7 +52,7 @@ events:
     end: "2026-09-09T06:00:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zzz.mihoyo.com/news/165415"
   - id: event-faetong
     name: "法厄同年度大揭秘"
     type: event
@@ -60,7 +60,7 @@ events:
     end: "2026-09-09T06:00:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zzz.mihoyo.com/news/165415"
   - id: event-qianneng
     name: "潜能预演·狩猎游戏"
     type: event
@@ -68,7 +68,7 @@ events:
     end: "2026-09-09T06:00:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zzz.mihoyo.com/news/165415"
   - id: event-dianying
     name: "点映返礼（充值返礼）"
     type: event
@@ -76,7 +76,7 @@ events:
     end: "2026-09-09T06:00:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165366"
+      - "https://zzz.mihoyo.com/news/165383"
   - id: event-yunduan
     name: "云端礼赠（签到/加密母带×10）"
     type: event
@@ -84,7 +84,7 @@ events:
     end: "2026-09-08T03:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zzz.mihoyo.com/news/165415"
   - id: event-langhua
     name: "恰浪花逐夏而至（露西时装）"
     type: event
@@ -92,7 +92,7 @@ events:
     end: "2026-09-07T03:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165394"
+      - "https://zzz.mihoyo.com/news/165412"
   - id: event-kacha
     name: "「咔嚓！焦点对决！」"
     type: event
@@ -100,7 +100,7 @@ events:
     end: "2026-08-24T03:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165513"
+      - "https://zzz.mihoyo.com/news/165551"
   - id: event-guigui
     name: "回归丽都 羽落重逢"
     type: event
@@ -108,7 +108,7 @@ events:
     end: "2026-09-09T05:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zzz.mihoyo.com/news/165415"
   - id: event-shenxun
     name: "深度巡防-三倍赏金"
     type: event
@@ -116,7 +116,7 @@ events:
     end: "2026-08-17T03:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165611"
+      - "https://zzz.mihoyo.com/news/165621"
   - id: event-enne
     name: "「嗯呢」大派送！"
     type: event
@@ -124,7 +124,7 @@ events:
     end: "2026-09-08T03:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165740"
+      - "https://zzz.mihoyo.com/news/165760"
   - id: event-kazi
     name: "咔滋酥脆出餐计划"
     type: event
@@ -132,7 +132,7 @@ events:
     end: "2026-09-07T03:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165741"
+      - "https://zzz.mihoyo.com/news/165762"
   - id: event-jixian
     name: "极危通缉与悠游假期"
     type: event
@@ -140,7 +140,7 @@ events:
     end: "2026-09-07T03:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zzz.mihoyo.com/news/165415"
   - id: event-youcha
     name: "叮咚！见习邮差派件中"
     type: event
@@ -148,7 +148,7 @@ events:
     end: "2026-09-14T03:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zzz.mihoyo.com/news/165415"
   - id: event-shizhan
     name: "实战特训-三倍悬赏"
     type: event
@@ -156,7 +156,7 @@ events:
     end: "2026-09-07T03:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zzz.mihoyo.com/news/165415"
   - id: event-migong
     name: "迷宫诡域：贝果计划（常驻玩法开启）"
     type: event
@@ -165,7 +165,7 @@ events:
     note: 常驻玩法，官方仅给开启时刻
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zzz.mihoyo.com/news/165415"
   - id: event-ducheng
     name: "3.1「丽都城募」"
     type: event
@@ -173,7 +173,7 @@ events:
     end: "2026-09-07T03:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165388"
+      - "https://zzz.mihoyo.com/news/165403"
 
   - id: banner-3-1-engine-second
     name: "下半音擎频段「骁骑礼赞」"
@@ -183,7 +183,7 @@ events:
     note: "同期A级音擎为「含羞恶面」「好斗的阿炮」。"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165737"
+      - "https://zzz.mihoyo.com/news/165758"
 
   - id: banner-3-1-rerun-second
     name: "下半独家重映频段（琉音/浮波柚叶/浅羽悠真自选）"
@@ -192,7 +192,7 @@ events:
     end: "2026-09-08T14:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165737"
+      - "https://zzz.mihoyo.com/news/165758"
 
   - id: banner-3-1-engine-rerun-second
     name: "下半音擎回响频段（昨夜来电/狸法七变化/残心青囊自选）"
@@ -201,7 +201,7 @@ events:
     end: "2026-09-08T14:59:00+08:00"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165737"
+      - "https://zzz.mihoyo.com/news/165758"
 
   - id: event-taqiantingjing-3-1-second
     name: "台前试镜（下半试玩关卡）"
@@ -211,7 +211,7 @@ events:
     note: "可试玩希格莉德、蕾米埃尔、琉音、浮波柚叶、浅羽悠真。"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165737"
+      - "https://zzz.mihoyo.com/news/165758"
 
   - id: event-shiyu-defense-3-1
     name: "式舆防卫战（3.1周期）"
@@ -226,7 +226,7 @@ events:
     note: "3.1更新公告列出剧变节点第一至第三期，增益效果按期轮换"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zzz.mihoyo.com/news/165415"
   - id: event-dangerous-assault-3-1
     name: "危局强袭战（3.1周期）"
     type: event
@@ -240,4 +240,4 @@ events:
     note: "3.1更新公告列出第一至第三期敌人阵容，具体分期边界未单独公布"
     related: ["3.1"]
     sources:
-      - "https://zenless.hoyoverse.com/zh-cn/news/165414"
+      - "https://zzz.mihoyo.com/news/165415"

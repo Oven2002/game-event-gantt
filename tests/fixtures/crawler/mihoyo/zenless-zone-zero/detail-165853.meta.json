@@ -1,0 +1,23 @@
+{
+  "fixtureKind": "real",
+  "fixtureRole": "detail",
+  "game": "zenless-zone-zero",
+  "capturedAt": "2026-08-28T10:39:59+00:00",
+  "request": {
+    "method": "GET",
+    "url": "https://api-takumi-static.mihoyo.com/content_v2_user/app/706fd13a87294881/getContent",
+    "parameters": {
+      "iInfoId": "165853",
+      "iPageSize": "50",
+      "sLangKey": "zh-cn",
+      "isPreview": "0"
+    }
+  },
+  "pagination": null,
+  "urlDerivation": "Final CN official URL is https://zzz.mihoyo.com/news/165853",
+  "response": { "status": 200, "contentType": "application/json", "finalUrl": "https://api-takumi-static.mihoyo.com/content_v2_user/app/706fd13a87294881/getContent", "redirects": [] },
+  "responseFormat": "json",
+  "detailSourceId": "165853",
+  "checkpoint": { "kind": null, "reusable": false, "reason": "No stable cross-run checkpoint was verified." },
+  "blocker": null
+}

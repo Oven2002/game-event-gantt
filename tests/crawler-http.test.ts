@@ -15,6 +15,14 @@ function response(body: string, init: ResponseInit = {}) {
   return new Response(body, { status: 200, headers: { "content-type": "application/json" }, ...init });
 }
 
+function trackedResponse(init: ResponseInit, onCancel: () => void): Response {
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) { controller.enqueue(new TextEncoder().encode("body")); },
+    cancel: onCancel,
+  });
+  return new Response(body, init);
+}
+
 const testLookup = async (): Promise<string[]> => ["93.184.216.34"];
 
 function runLockWorker(args: string[]): Promise<string> {
@@ -291,6 +299,23 @@ describe("safe official HTTP client", () => {
     expect(attempted).toEqual(["93.184.216.1", "93.184.216.34"]);
   });
 
+  it("bounds a pinned transport that ignores the attempt abort signal", async () => {
+    const attempted: string[] = [];
+    const started = Date.now();
+    await expect(fetchOfficial("https://example.com/pinned-timeout", {
+      allowedHosts: ["example.com"],
+      lookup: async () => ["93.184.216.34"],
+      timeoutMs: 30,
+      minHostIntervalMs: 0,
+      pinnedFetchImpl: async (_url, _init, address) => {
+        attempted.push(address);
+        return new Promise<Response>(() => undefined);
+      },
+    })).rejects.toMatchObject({ code: "TIMEOUT" });
+    expect(attempted).toEqual(["93.184.216.34"]);
+    expect(Date.now() - started).toBeLessThan(500);
+  });
+
   it("revalidates DNS before retrying an official request", async () => {
     let lookups = 0;
     let attempts = 0;
@@ -348,6 +373,39 @@ describe("safe official HTTP client", () => {
       allowedHosts: ["example.com"],
       lookup: async () => ["::ffff:7f00:1"],
       fetchImpl: async () => response("ok"),
+    })).rejects.toMatchObject({ code: "UNSAFE_URL" });
+  });
+
+  it("cancels response bodies on rejection paths", async () => {
+    const cases = [
+      { name: "missing redirect location", init: { status: 302 }, maxRedirects: undefined, code: "REDIRECT" },
+      { name: "redirect limit", init: { status: 302, headers: { location: "https://example.com/next" } }, maxRedirects: 0, code: "REDIRECT_LIMIT" },
+      { name: "terminal status", init: { status: 404, headers: { "content-type": "application/json" } }, maxRedirects: undefined, code: "HTTP_STATUS" },
+      { name: "unsupported content type", init: { status: 200, headers: { "content-type": "application/octet-stream" } }, maxRedirects: undefined, code: "CONTENT_TYPE" },
+    ] as const;
+    for (const testCase of cases) {
+      let cancelled = false;
+      await expect(fetchOfficial("https://example.com/body-cleanup", {
+        allowedHosts: ["example.com"],
+        lookup: testLookup,
+        minHostIntervalMs: 0,
+        maxRedirects: testCase.maxRedirects,
+        fetchImpl: async () => trackedResponse(testCase.init, () => { cancelled = true; }),
+      }), testCase.name).rejects.toMatchObject({ code: testCase.code });
+      expect(cancelled, testCase.name).toBe(true);
+    }
+  });
+
+  it("rejects multicast DNS results and bracketed IP literals before lookup", async () => {
+    await expect(fetchOfficial("https://example.com/multicast", {
+      allowedHosts: ["example.com"],
+      lookup: async () => ["224.0.0.1"],
+      fetchImpl: async () => response("should not be called"),
+    })).rejects.toMatchObject({ code: "UNSAFE_URL" });
+    await expect(fetchOfficial("https://[::1]/literal", {
+      allowedHosts: ["[::1]"],
+      lookup: async () => ["93.184.216.34"],
+      fetchImpl: async () => response("should not be called"),
     })).rejects.toMatchObject({ code: "UNSAFE_URL" });
   });
 

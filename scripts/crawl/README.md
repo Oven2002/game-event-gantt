@@ -23,9 +23,9 @@ CLI 的 `--game` 只接受下面五个 machine ID。米哈游三作使用 `mihoy
 
 | game | adapter | 官方文章 URL | 实测响应/字段 | supportsVersions | checkpoint kind | 已冻结 fixture 的 blocker |
 | --- | --- | --- | --- | --- | --- | --- |
-| `genshin-impact` | Mihoyo | `https://ys.mihoyo.com/main/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime` | `true` | `null` | `null` |
-| `honkai-star-rail` | Mihoyo | `https://sr.mihoyo.com/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime` | `true` | `null` | `null` |
-| `zenless-zone-zero` | Mihoyo | `https://zenless.hoyoverse.com/zh-cn/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime` | `true` | `null` | `null` |
+| `genshin-impact` | Mihoyo | `https://ys.mihoyo.com/main/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime/sChanId` | `true` | `null` | `null` |
+| `honkai-star-rail` | Mihoyo | `https://sr.mihoyo.com/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime/sChanId` | `true` | `null` | `null` |
+| `zenless-zone-zero` | Mihoyo | `https://zzz.mihoyo.com/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime/sChanId` | `true` | `null` | `null` |
 | `arknights` | Hypergryph | `https://ak.hypergryph.com/news/{cid}` | `code/data/list`; `cid/title/tab/displayTime/brief`; `total/current/pageSize` | `false` | `null` | `null` |
 | `arknights-endfield` | Hypergryph | `https://endfield.hypergryph.com/news/{cid}` | `code/data/list`; `cid/title/tab/displayTime/brief`; `total/current/pageSize` | `true` | `null` | `null` |
 
@@ -45,7 +45,7 @@ iPage, iPageSize, sLangKey=zh-cn, isPreview=0, iChanId
 | --- | --- | --- | --- | --- |
 | `genshin-impact` | `act-api-takumi-static.mihoyo.com` | `16471662a82d418a` | `719` | `iAppId=43` |
 | `honkai-star-rail` | `act-api-takumi-static.mihoyo.com` | `1963de8dc19e461c` | `257` | 无 |
-| `zenless-zone-zero` | `sg-public-api-static.hoyoverse.com` | `3e9196a4b9274bd7` | `288` | 无 |
+| `zenless-zone-zero` | `api-takumi-static.mihoyo.com` | `706fd13a87294881` | `278` | 无 |
 
 列表响应必须是成功的 JSON envelope：`retcode === 0`、存在 object 类型的 `data`、存在数组 `data.list` 和非负整数 `data.iTotal`。列表项使用 `iInfoId`、`sTitle`、`dtCreateTime` 和 `sContent`；详情请求使用 `iInfoId`、`iPageSize=50`、`sLangKey=zh-cn`、`isPreview=0`，并再次确认详情中的 `iInfoId` 与请求 ID 一致。
 
@@ -69,7 +69,18 @@ GET https://web-news.hypergryph.com/api/bulletin
 
 响应必须满足 `code === 0`、`data.list` 为数组，且 `data.total`、`data.current`、`data.pageSize` 为合法整数。列表项使用 `cid`、`title`、`tab`、`displayTime` 和可选 `brief`；`cid` 必须为数字字符串，`displayTime` 必须是秒级且整分钟。详情响应在 transport 层为 `text/html`，运行时以 `{ status, contentType, body }` envelope 交给 parser；parser 会校验文章内嵌 `cid`、标题、日期和正文。
 
-### 2.3 checkpoint 现状
+### 2.3 国服区域硬校验
+
+`zh-cn` 只表示语言，不单独代表服务器区域。每次 fetch 必须同时满足：
+
+- Mihoyo：使用配置中的 CN `apiHost`、`appId`、请求 channel 和 `articleHost`；list/detail 的 `sChanId` 必须属于该游戏的 CN 内容频道集合；正式 source 只能使用配置的 CN 文章 host。
+- Hypergryph：使用 `lang=zh-cn` 和该游戏的 CN `apiCode`；详情 HTML 必须有 `html[lang="zh-cn"]`；若存在 `data-oversea`，其值必须为 `false`；文章 host 必须是该游戏的 CN 官方 host。
+- API transport host、CDN CNAME、DNS 地址和 CDN POP 只说明网络承载，不得单独作为 region 判据。
+- `zh-tw`、`en-us`、`api-os-*`、`sg-public-*`、HoYoverse 国际文章 host 和不匹配的 channel 必须 fail closed。
+
+当前五个游戏的正常 source host 为：`ys.mihoyo.com`、`sr.mihoyo.com`、`zzz.mihoyo.com`、`ak.hypergryph.com`、`endfield.hypergryph.com`。旧的 ZZZ HoYoverse 样本保留在 fixture 目录中，但 sidecar 标为 `blocker`，不参与正常 fetch/parse 合同。
+
+### 2.4 checkpoint 现状
 
 五个游戏当前都记录：
 

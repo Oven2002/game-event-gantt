@@ -22,11 +22,46 @@ describe("Mihoyo game configuration", () => {
       "zenless-zone-zero",
     ]);
     for (const config of Object.values(mihoyoGames)) {
+      expect(config.region).toBe("cn");
+      expect(config.language).toBe("zh-cn");
       expect(config.supportsVersions).toBe(true);
       expect(config.checkpoint.checkpointKind).toBe(null);
       expect(config.checkpoint.defaultLookbackDays).toBeGreaterThan(0);
       expect(config.officialHosts.length).toBeGreaterThan(0);
+      expect(config.apiHost).toBe(config.officialHosts[0]);
+      expect(config.articleHost).toBe(config.officialHosts[1]);
+      expect(config.contentChannels.length).toBeGreaterThan(0);
     }
+    expect(mihoyoGames).toMatchObject({
+      "genshin-impact": {
+        region: "cn",
+        language: "zh-cn",
+        apiHost: "act-api-takumi-static.mihoyo.com",
+        articleHost: "ys.mihoyo.com",
+        appId: "16471662a82d418a",
+        listAppId: "43",
+        channels: [719],
+        contentChannels: [719, 720, 721, 723],
+      },
+      "honkai-star-rail": {
+        region: "cn",
+        language: "zh-cn",
+        apiHost: "act-api-takumi-static.mihoyo.com",
+        articleHost: "sr.mihoyo.com",
+        appId: "1963de8dc19e461c",
+        channels: [257],
+        contentChannels: [257],
+      },
+    });
+    expect(mihoyoGames["zenless-zone-zero"]).toMatchObject({
+      region: "cn",
+      language: "zh-cn",
+      apiHost: "api-takumi-static.mihoyo.com",
+      articleHost: "zzz.mihoyo.com",
+      appId: "706fd13a87294881",
+      channels: [278],
+      contentChannels: [278],
+    });
   });
 });
 
@@ -45,7 +80,7 @@ describe("Mihoyo fixture adapter", () => {
     const cases = [
       ["genshin-impact", "detail-165690.json", "165690"],
       ["honkai-star-rail", "detail-165883.json", "165883"],
-      ["zenless-zone-zero", "detail-165865.json", "165865"],
+      ["zenless-zone-zero", "detail-165853.json", "165853"],
     ] as const;
     for (const [game, file, sourceId] of cases) {
       const body = await fixture(`${root}/${game}/${file}`);
@@ -72,11 +107,28 @@ describe("Mihoyo fixture adapter", () => {
     const genshin = buildMihoyoListRequest("genshin-impact", 1, 1);
     expect(genshin.parameters.iAppId).toBe("43");
     const zzz = buildMihoyoListRequest("zenless-zone-zero", 1, 1);
-    expect(zzz.parameters.iChanId).toBe("288");
+    expect(zzz.url).toContain("api-takumi-static.mihoyo.com/content_v2_user/app/706fd13a87294881/getContentList");
+    expect(zzz.parameters.iChanId).toBe("278");
 
-    const detail = buildMihoyoDetailRequest("zenless-zone-zero", "165865");
-    expect(detail.url).toContain("/content_v2_user/app/3e9196a4b9274bd7/getContent");
-    expect(detail.parameters).toMatchObject({ iInfoId: "165865", iPageSize: "50", sLangKey: "zh-cn", isPreview: "0" });
+    const detail = buildMihoyoDetailRequest("zenless-zone-zero", "165853");
+    expect(detail.url).toContain("api-takumi-static.mihoyo.com/content_v2_user/app/706fd13a87294881/getContent");
+    expect(detail.parameters).toMatchObject({ iInfoId: "165853", iPageSize: "50", sLangKey: "zh-cn", isPreview: "0" });
+  });
+
+  it("rejects a Mihoyo response from a different configured channel", async () => {
+    const listBody = await fixture(`${root}/honkai-star-rail/list-page-1.json`);
+    expect(() => parseMihoyoList("zenless-zone-zero", listBody)).toThrow(/channel/i);
+    const detailBody = await fixture(`${root}/honkai-star-rail/detail-165883.json`);
+    expect(() => parseMihoyoDetail("zenless-zone-zero", "165883", detailBody, "2026-08-25T10:00:00+00:00"))
+      .toThrow(/channel/i);
+  });
+
+  it("rejects the preserved foreign ZZZ fixture", async () => {
+    const listBody = await fixture(`${root}/zenless-zone-zero/list-page-1-foreign.json`);
+    expect(() => parseMihoyoList("zenless-zone-zero", listBody)).toThrow(/channel/i);
+    const detailBody = await fixture(`${root}/zenless-zone-zero/detail-165865-foreign.json`);
+    expect(() => parseMihoyoDetail("zenless-zone-zero", "165865", detailBody, "2026-08-25T10:00:00+00:00"))
+      .toThrow(/channel/i);
   });
 
   it("preserves a legitimate empty list-body article and rejects malformed responses", async () => {

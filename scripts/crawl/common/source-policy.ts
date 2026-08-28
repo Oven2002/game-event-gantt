@@ -1,15 +1,17 @@
 import { officialSourceAccounts } from "../source-accounts.ts";
+import { mihoyoGames } from "../mihoyo-config.ts";
+import { hypergryphGames } from "../hypergryph-config.ts";
 
 export type SourceRole = "official" | "discovery" | "rejected";
 export type SourcePlatform = "bilibili" | "weibo" | "miyoushe" | "taptap";
 export interface SourceDecision { allowed: boolean; role: SourceRole; reason: string; }
 
 const officialArticleHosts: Record<string, string[]> = {
-  "genshin-impact": ["ys.mihoyo.com"],
-  "honkai-star-rail": ["sr.mihoyo.com"],
-  "zenless-zone-zero": ["zenless.hoyoverse.com"],
-  arknights: ["ak.hypergryph.com"],
-  "arknights-endfield": ["endfield.hypergryph.com"],
+  "genshin-impact": [mihoyoGames["genshin-impact"].articleHost],
+  "honkai-star-rail": [mihoyoGames["honkai-star-rail"].articleHost],
+  "zenless-zone-zero": [mihoyoGames["zenless-zone-zero"].articleHost],
+  arknights: [hypergryphGames.arknights.officialHost],
+  "arknights-endfield": [hypergryphGames["arknights-endfield"].officialHost],
 };
 const rejectedHosts = new Set(["forum.gamer.com.tw", "news.17173.com", "m.ali213.net", "www.gamersky.com"]);
 
