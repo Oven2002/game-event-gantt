@@ -65,7 +65,7 @@ async function prepareRun(items: Array<{ raw: RawArticle; candidate: CandidateIt
   await mkdir(gameRoot, { recursive: true });
   await writeFile(join(gameRoot, "cn-2026.yaml"), dataContent, "utf8");
   const runId = "20260827-000001";
-  await createRun(runtimeRoot, runId);
+  await createRun(runtimeRoot, runId, "genshin-impact");
   await mkdir(join(runtimeRoot, "raw", runId), { recursive: true });
   await mkdir(join(runtimeRoot, "candidates", runId), { recursive: true });
   await mkdir(join(runtimeRoot, "rejections"), { recursive: true });

@@ -7,13 +7,13 @@ import { artifactDirectory, artifactPath, assertRuntimePathSafe, assertRuntimeRo
 describe("crawler run lifecycle", () => {
   it("creates a run exclusively and rejects a duplicate", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
-    await expect(createRun(root, "20260801-000000")).resolves.toBe(runRoot(root, "20260801-000000"));
-    await expect(createRun(root, "20260801-000000")).rejects.toThrow(/already exists/);
+    await expect(createRun(root, "20260801-000000", "demo")).resolves.toBe(runRoot(root, "20260801-000000"));
+    await expect(createRun(root, "20260801-000000", "demo")).rejects.toThrow(/already exists/);
   });
 
   it("rejects any pre-existing artifact before a command writes", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
-    await createRun(root, "20260801-000000");
+    await createRun(root, "20260801-000000", "demo");
     await mkdir(join(root, "raw", "20260801-000000"), { recursive: true });
     await writeFile(artifactPath(root, "20260801-000000", "raw", "jsonl", "demo"), "{}\n");
     await expect(assertRunArtifactsAbsent(root, "20260801-000000", ["raw", "errors"])).rejects.toThrow(/artifacts already exist/);
@@ -40,7 +40,7 @@ describe("crawler run lifecycle", () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
     expect(() => runRoot(root, "../escape")).toThrow(/run-id/);
     expect(() => runRoot(root, "20261399-999999")).toThrow(/run-id/);
-    await expect(createRun(root, "not-a-run")).rejects.toThrow(/run-id/);
+    await expect(createRun(root, "not-a-run", "demo")).rejects.toThrow(/run-id/);
   });
 
   it("rejects undeclared runtime artifact names", async () => {
@@ -69,7 +69,15 @@ describe("crawler run lifecycle", () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
     const outside = await mkdtemp(join(tmpdir(), "crawler-run-outside-"));
     await symlink(outside, join(root, "runs"), "dir");
-    await expect(createRun(root, "20260801-000002")).rejects.toThrow(/symlink|runs/i);
+    await expect(createRun(root, "20260801-000002", "demo")).rejects.toThrow(/symlink|runs/i);
+  });
+
+  it("rejects a pre-existing raw run directory symlink even when its target is empty", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
+    const outside = await mkdtemp(join(tmpdir(), "crawler-run-outside-"));
+    await mkdir(join(root, "raw"), { recursive: true });
+    await symlink(outside, join(root, "raw", "20260801-000003"), "dir");
+    await expect(createRun(root, "20260801-000003", "demo")).rejects.toThrow(/symlink|runtime/i);
   });
 
   it("rejects runtime roots inside an injected protected tree", async () => {

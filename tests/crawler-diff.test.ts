@@ -42,7 +42,7 @@ async function prepareRun(rawArticles: RawArticle[], dataFiles: Record<string, s
   await mkdir(gameRoot, { recursive: true });
   for (const [name, content] of Object.entries(dataFiles)) await writeFile(join(gameRoot, name), content, "utf8");
   const runId = "20260827-000001";
-  await createRun(runtimeRoot, runId);
+  await createRun(runtimeRoot, runId, "genshin-impact");
   await mkdir(join(runtimeRoot, "raw", runId), { recursive: true });
   await mkdir(join(runtimeRoot, "candidates", runId), { recursive: true });
   await writeFile(artifactPath(runtimeRoot, runId, "raw", "jsonl", "genshin-impact"), `${rawArticles.map((value) => JSON.stringify(value)).join("\n")}\n`, "utf8");
@@ -191,7 +191,7 @@ describe("crawler review diff", () => {
   it("rejects a review runtime root inside its injected data root", async () => {
     const setup = await prepareRun([raw("new-1", "全新活动", "活动时间：2026年8月20日 04:00 至 2026年8月20日 11:00")], { "cn-2026.yaml": existingEvent("existing-event", "旧活动", "old-1") });
     const unsafeRuntimeRoot = join(setup.dataRoot, ".runtime", "crawl");
-    await createRun(unsafeRuntimeRoot, setup.runId);
+    await createRun(unsafeRuntimeRoot, setup.runId, "genshin-impact");
     await expect(reviewRun({ ...setup, runtimeRoot: unsafeRuntimeRoot })).rejects.toThrow(/protected|data|runtime/i);
   });
 

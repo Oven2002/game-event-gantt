@@ -226,8 +226,8 @@ export async function runCrawlCli(argv: string[], options: RunCrawlCliOptions = 
       const runId = createRunId(now);
       await assertRuntimeRootSafe(runtimeRoot);
       const state = await loadState(join(runtimeRoot, "state.json"), {}, checkpointKinds);
-      await recoverStateTransactions(runtimeRoot, state);
-      await createRun(runtimeRoot, runId);
+      await recoverStateTransactions(runtimeRoot, state, new Set(Object.keys(checkpointKinds)));
+      await createRun(runtimeRoot, runId, args.game!);
       const rawPath = artifactPath(runtimeRoot, runId, "raw", "jsonl", args.game!);
       const transactionPath = stateTransactionPath(runtimeRoot, runId);
       return await withRunLock(runtimeRoot, runId, async () => {

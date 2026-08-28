@@ -25,7 +25,7 @@ const article = (id: string): RawArticle => ({
 async function newRun(): Promise<{ root: string; runId: string }> {
   const root = await mkdtemp(join(tmpdir(), "crawler-fetch-"));
   const runId = "20260801-000000";
-  await createRun(root, runId);
+  await createRun(root, runId, "demo");
   return { root, runId };
 }
 

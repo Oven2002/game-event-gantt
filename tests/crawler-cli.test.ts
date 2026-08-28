@@ -140,13 +140,13 @@ describe("crawler parse command", () => {
   it("rolls back an unfinished state transaction during recovery", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-state-"));
     const runId = "20260801-000011";
-    await mkdir(runRoot(root, runId), { recursive: true });
+    await createRun(root, runId, "genshin-impact");
     const rawPath = artifactPath(root, runId, "raw", "jsonl", "genshin-impact");
     await writeRaw(root, runId, "genshin-impact", [makeRaw()]);
     const transactionPath = stateTransactionPath(root, runId);
     await beginStateTransaction(root, runId, "genshin-impact", rawPath);
 
-    await recoverStateTransactions(root, { schemaVersion: 1, games: {} });
+    await recoverStateTransactions(root, { schemaVersion: 1, games: {} }, new Set(["genshin-impact"]));
     await expect(readFile(rawPath, "utf8")).rejects.toThrow();
     await expect(readFile(transactionPath, "utf8")).rejects.toThrow();
   });
@@ -154,7 +154,7 @@ describe("crawler parse command", () => {
   it("keeps raw when recovery sees that state already contains the transaction hashes", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-state-"));
     const runId = "20260801-000012";
-    await mkdir(runRoot(root, runId), { recursive: true });
+    await createRun(root, runId, "genshin-impact");
     const article = makeRaw();
     const rawPath = artifactPath(root, runId, "raw", "jsonl", "genshin-impact");
     await writeRaw(root, runId, "genshin-impact", [article]);
@@ -165,7 +165,7 @@ describe("crawler parse command", () => {
     await recoverStateTransactions(root, {
       schemaVersion: 1,
       games: { "genshin-impact": { checkpoint: null, sourceHashes: { [article.sourceId]: article.contentHash } } },
-    });
+    }, new Set(["genshin-impact"]));
     await expect(readFile(rawPath, "utf8")).resolves.toContain(article.sourceId);
     await expect(readFile(transactionPath, "utf8")).rejects.toThrow();
   });
@@ -277,7 +277,7 @@ describe("crawler parse command", () => {
   it("routes review through the executable CLI and writes report/template", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-cli-review-"));
     const runId = "20260827-000020";
-    await createRun(root, runId);
+    await createRun(root, runId, "genshin-impact");
     const article = makeRaw({ sourceId: "cli-new", url: "https://ys.mihoyo.com/main/news/detail/cli-new", title: "CLI 新活动" });
     await writeRaw(root, runId, article.game, [article]);
     await mkdir(artifactDirectory(root, runId, "candidates"), { recursive: true });
@@ -294,7 +294,7 @@ describe("crawler parse command", () => {
   it("routes approve through the executable CLI and writes a manifest", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-cli-approve-"));
     const runId = "20260827-000021";
-    await createRun(root, runId);
+    await createRun(root, runId, "genshin-impact");
     const article = makeRaw({ sourceId: "cli-approve", url: "https://ys.mihoyo.com/main/news/detail/cli-approve", title: "CLI 批准活动" });
     await writeRaw(root, runId, article.game, [article]);
     await mkdir(artifactDirectory(root, runId, "candidates"), { recursive: true });

@@ -9,11 +9,19 @@ export interface AtomicWriteOptions {
 }
 
 const fileLocks = new Map<string, Promise<void>>();
-interface FileLockOptions {
+export interface FileLockOptions {
   timeoutMs?: number;
   staleMs?: number;
   retryMs?: number;
 }
+
+export class FileLockTimeoutError extends Error {
+  constructor(filePath: string) {
+    super(`timed out waiting for file lock: ${filePath}`);
+    this.name = "FileLockTimeoutError";
+  }
+}
+
 interface ProcessLock {
   path: string;
   token: string;
@@ -51,7 +59,7 @@ async function acquireProcessLock(filePath: string, options: FileLockOptions = {
       } catch (statError: unknown) {
         if ((statError as NodeJS.ErrnoException).code !== "ENOENT") throw statError;
       }
-      if (Date.now() >= deadline) throw new Error(`timed out waiting for file lock: ${filePath}`);
+      if (Date.now() >= deadline) throw new FileLockTimeoutError(filePath);
       await new Promise((resolve) => setTimeout(resolve, retryMs));
     }
   }
@@ -87,6 +95,21 @@ export async function withFileLock<T>(filePath: string, operation: () => Promise
     await releaseProcessLock(lock);
     releaseQueue();
     if (fileLocks.get(filePath) === queued) fileLocks.delete(filePath);
+  }
+}
+
+export async function tryFileLock<T>(filePath: string, operation: () => Promise<T>, options: FileLockOptions = {}): Promise<{ acquired: true; value: T } | { acquired: false }> {
+  let lock: ProcessLock;
+  try {
+    lock = await acquireProcessLock(filePath, { ...options, timeoutMs: 0 });
+  } catch (error: unknown) {
+    if (error instanceof FileLockTimeoutError) return { acquired: false };
+    throw error;
+  }
+  try {
+    return { acquired: true, value: await operation() };
+  } finally {
+    await releaseProcessLock(lock);
   }
 }
 

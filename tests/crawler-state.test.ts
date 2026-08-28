@@ -14,6 +14,7 @@ const registry = {
   },
 };
 const knownGames = { demo: "page", noCheckpoint: null };
+const recoveryGames = new Set(Object.keys(knownGames));
 const state: CrawlerState = { schemaVersion: 1, games: { noCheckpoint: { checkpoint: null, sourceHashes: {} } } };
 
 function runStateWorker(args: string[]): Promise<void> {
@@ -74,6 +75,7 @@ it("recovers against the latest on-disk state instead of a stale snapshot", asyn
   const runId = "20260827-000010";
   const rawPath = join(root, "raw", runId, "demo.jsonl");
   const sourceHash = `sha256:${"a".repeat(64)}` as never;
+  await createRun(root, runId, "demo");
   await mkdir(dirname(rawPath), { recursive: true });
   await writeFile(rawPath, "raw\n", "utf8");
   await writeStateAtomic(join(root, "state.json"), {
@@ -83,14 +85,14 @@ it("recovers against the latest on-disk state instead of a stale snapshot", asyn
   const transactionPath = stateTransactionPath(root, runId);
   await beginStateTransaction(root, runId, "demo", rawPath);
   await markStateTransactionPending(root, transactionPath, runId, "demo", rawPath, { article: sourceHash });
-  await recoverStateTransactions(root, { schemaVersion: 1, games: {} });
+  await recoverStateTransactions(root, { schemaVersion: 1, games: {} }, recoveryGames);
   await expect(readFile(rawPath, "utf8")).resolves.toBe("raw\n");
 });
 
 it("skips recovery cleanup for a run that still owns its run lock", async () => {
   const root = await mkdtemp(join(tmpdir(), "crawler-state-live-"));
   const runId = "20260827-000011";
-  await createRun(root, runId);
+  await createRun(root, runId, "demo");
   const rawPath = join(root, "raw", runId, "demo.jsonl");
   await mkdir(dirname(rawPath), { recursive: true });
   await writeFile(rawPath, "raw\n", "utf8");
@@ -112,7 +114,7 @@ it("skips recovery cleanup for a run that still owns its run lock", async () => 
     await held;
   });
   await acquired;
-  await recoverStateTransactions(root, { schemaVersion: 1, games: {} });
+  await recoverStateTransactions(root, { schemaVersion: 1, games: {} }, recoveryGames);
   await expect(readFile(rawPath, "utf8")).resolves.toBe("raw\n");
   await expect(readJsonAtomic(stateTransactionPath(root, runId))).resolves.toMatchObject({ phase: "fetching" });
   release();
@@ -122,7 +124,7 @@ it("skips recovery cleanup for a run that still owns its run lock", async () => 
 it("rejects a non-canonical raw path before writing a transaction", async () => {
   const root = await mkdtemp(join(tmpdir(), "crawler-state-path-"));
   const runId = "20260827-000012";
-  await createRun(root, runId);
+  await createRun(root, runId, "demo");
   const invalidRawPath = join(root, "raw", runId, "other.jsonl");
   await expect(beginStateTransaction(root, runId, "demo", invalidRawPath)).rejects.toMatchObject({ code: "INVALID_STATE" });
 });
@@ -131,7 +133,7 @@ it("fails closed on a symlinked raw parent during recovery", async () => {
   const root = await mkdtemp(join(tmpdir(), "crawler-state-symlink-"));
   const outside = await mkdtemp(join(tmpdir(), "crawler-state-outside-"));
   const runId = "20260827-000013";
-  await createRun(root, runId);
+  await createRun(root, runId, "demo");
   await mkdir(join(root, "raw"), { recursive: true });
   const rawRunDirectory = join(root, "raw", runId);
   await symlink(outside, rawRunDirectory, "dir");
@@ -145,8 +147,57 @@ it("fails closed on a symlinked raw parent during recovery", async () => {
     phase: "fetching",
     sourceHashes: null,
   });
-  await expect(recoverStateTransactions(root, { schemaVersion: 1, games: {} })).rejects.toThrow(/symlink|runtime path/i);
+  await expect(recoverStateTransactions(root, { schemaVersion: 1, games: {} }, recoveryGames)).rejects.toThrow(/symlink|runtime path/i);
   await expect(readFile(outsideRaw, "utf8")).resolves.toBe("protected\n");
+});
+
+it("fails closed on a symlinked run entry during recovery", async () => {
+  const root = await mkdtemp(join(tmpdir(), "crawler-state-run-entry-"));
+  const outside = await mkdtemp(join(tmpdir(), "crawler-state-run-outside-"));
+  await mkdir(join(root, "runs"), { recursive: true });
+  await symlink(outside, join(root, "runs", "20260827-000014"), "dir");
+  await expect(recoverStateTransactions(root, { schemaVersion: 1, games: {} }, recoveryGames)).rejects.toThrow(/symlink|runtime path/i);
+});
+
+it("rejects a tampered marker even while its run lock is held", async () => {
+  const root = await mkdtemp(join(tmpdir(), "crawler-state-tampered-"));
+  const runId = "20260827-000015";
+  await createRun(root, runId, "demo");
+  await writeJsonAtomic(stateTransactionPath(root, runId), {
+    schemaVersion: 1,
+    runId,
+    game: "demo",
+    rawPath: join(root, "raw", runId, "other.jsonl"),
+    phase: "fetching",
+    sourceHashes: null,
+  });
+  let markAcquired!: () => void;
+  const acquired = new Promise<void>((resolveAcquired) => { markAcquired = resolveAcquired; });
+  let release!: () => void;
+  const held = new Promise<void>((resolveRelease) => { release = resolveRelease; });
+  const activeRun = withRunLock(root, runId, async () => {
+    markAcquired();
+    await held;
+  });
+  await acquired;
+  await expect(recoverStateTransactions(root, { schemaVersion: 1, games: {} }, recoveryGames)).rejects.toMatchObject({ code: "INVALID_STATE" });
+  release();
+  await activeRun;
+});
+
+it("rejects a marker that changes game and raw path together", async () => {
+  const root = await mkdtemp(join(tmpdir(), "crawler-state-game-tampered-"));
+  const runId = "20260827-000016";
+  await createRun(root, runId, "demo");
+  await writeJsonAtomic(stateTransactionPath(root, runId), {
+    schemaVersion: 1,
+    runId,
+    game: "other-game",
+    rawPath: join(root, "raw", runId, "other-game.jsonl"),
+    phase: "fetching",
+    sourceHashes: null,
+  });
+  await expect(recoverStateTransactions(root, { schemaVersion: 1, games: {} }, recoveryGames)).rejects.toMatchObject({ code: "INVALID_STATE" });
 });
 
 it("merges state updates from independent processes", async () => {

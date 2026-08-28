@@ -1,9 +1,9 @@
-import { access, readdir, rm, stat } from "node:fs/promises";
+import { access, readdir, rm } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
-import { readJsonAtomic, updateJsonAtomic, withFileLock, writeJsonAtomic } from "./files.ts";
+import { readJsonAtomic, tryFileLock, updateJsonAtomic, withFileLock, writeJsonAtomic } from "./files.ts";
 import { sha256Schema, type Sha256 } from "../types.ts";
-import { artifactPath, assertRunId, assertRuntimePathSafe, assertRuntimeRootSafe, runRoot } from "./run.ts";
+import { artifactPath, assertRunId, assertRuntimePathSafe, assertRuntimeRootSafe, runMetadataPath, runRoot } from "./run.ts";
 
 const RUN_LOCK_STALE_MS = 120_000;
 
@@ -12,23 +12,22 @@ export function runLockPath(runtimeRoot: string, runId: string): string {
   return join(runtimeRoot, "runs", runId, "run.lock");
 }
 
-export async function withRunLock<T>(runtimeRoot: string, runId: string, operation: () => Promise<T>): Promise<T> {
+export interface RunLockOptions {
+  timeoutMs?: number;
+}
+
+export async function withRunLock<T>(runtimeRoot: string, runId: string, operation: () => Promise<T>, options: RunLockOptions = {}): Promise<T> {
   const lockPath = runLockPath(runtimeRoot, runId);
   await assertRuntimeRootSafe(runtimeRoot);
   await assertRuntimePathSafe(runtimeRoot, lockPath);
-  return withFileLock(lockPath, operation, { staleMs: RUN_LOCK_STALE_MS });
+  return withFileLock(lockPath, operation, { staleMs: RUN_LOCK_STALE_MS, ...options });
 }
 
-async function isLockHeldFresh(runtimeRoot: string, runId: string): Promise<boolean> {
-  const lockPath = `${runLockPath(runtimeRoot, runId)}.lock`;
+async function tryRunLock<T>(runtimeRoot: string, runId: string, operation: () => Promise<T>): Promise<{ acquired: true; value: T } | { acquired: false }> {
+  const lockPath = runLockPath(runtimeRoot, runId);
+  await assertRuntimeRootSafe(runtimeRoot);
   await assertRuntimePathSafe(runtimeRoot, lockPath);
-  try {
-    const lockStat = await stat(lockPath);
-    return Date.now() - lockStat.mtimeMs <= RUN_LOCK_STALE_MS;
-  } catch (error: unknown) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-    return false;
-  }
+  return tryFileLock(lockPath, operation, { staleMs: RUN_LOCK_STALE_MS });
 }
 
 export interface AdapterCheckpoint {
@@ -103,10 +102,49 @@ const stateTransactionShape = z.object({
   if (value.phase === "state_pending" && value.sourceHashes === null) ctx.addIssue({ code: "custom", message: "state-pending transaction must contain source hashes" });
 });
 
+const runMetadataShape = z.object({
+  schemaVersion: z.literal(1),
+  runId: z.string().regex(/^\d{8}-\d{6}$/),
+  game: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+}).strict();
+
 function validateStateTransaction(value: unknown): StateTransactionMarker {
   const parsed = stateTransactionShape.safeParse(value);
   if (!parsed.success) throw new CrawlerStateError("INVALID_STATE", "state transaction marker validation failed");
   return parsed.data as StateTransactionMarker;
+}
+
+async function trustedRunGame(runtimeRoot: string, runId: string, knownGames: ReadonlySet<string>): Promise<string> {
+  const metadataPath = runMetadataPath(runtimeRoot, runId);
+  await assertRuntimePathSafe(runtimeRoot, metadataPath);
+  let value: unknown;
+  try {
+    value = await readJsonAtomic(metadataPath);
+  } catch {
+    throw new CrawlerStateError("INVALID_STATE", "run metadata is missing or invalid");
+  }
+  const parsed = runMetadataShape.safeParse(value);
+  if (!parsed.success || parsed.data.runId !== runId || !knownGames.has(parsed.data.game)) {
+    throw new CrawlerStateError("INVALID_STATE", "run metadata identity validation failed");
+  }
+  return parsed.data.game;
+}
+
+async function assertTransactionMarker(
+  runtimeRoot: string,
+  entryName: string,
+  marker: StateTransactionMarker,
+  knownGames: ReadonlySet<string>,
+): Promise<void> {
+  if (marker.runId !== entryName) throw new CrawlerStateError("INVALID_STATE", "state transaction marker run mismatch");
+  const expectedGame = await trustedRunGame(runtimeRoot, marker.runId, knownGames);
+  if (marker.game !== expectedGame) throw new CrawlerStateError("INVALID_STATE", "state transaction marker game mismatch");
+  assertRunRootSafe(runtimeRoot, marker.runId);
+  if (!isWithin(resolve(runtimeRoot), resolve(marker.rawPath))) {
+    throw new CrawlerStateError("INVALID_STATE", "state transaction marker path escapes runtime root");
+  }
+  assertCanonicalRawPath(runtimeRoot, marker.runId, expectedGame, marker.rawPath);
+  await assertRuntimePathSafe(runtimeRoot, marker.rawPath);
 }
 
 function isWithin(root: string, candidate: string): boolean {
@@ -208,7 +246,7 @@ async function latestStateForRecovery(runtimeRoot: string, fallback: CrawlerStat
   });
 }
 
-export async function recoverStateTransactions(runtimeRoot: string, state: CrawlerState): Promise<void> {
+export async function recoverStateTransactions(runtimeRoot: string, state: CrawlerState, knownGames: ReadonlySet<string>): Promise<void> {
   await assertRuntimeRootSafe(runtimeRoot);
   const runsDirectory = join(runtimeRoot, "runs");
   await assertRuntimePathSafe(runtimeRoot, runsDirectory);
@@ -220,6 +258,7 @@ export async function recoverStateTransactions(runtimeRoot: string, state: Crawl
     throw error;
   }
   for (const entry of entries) {
+    if (entry.isSymbolicLink()) throw new CrawlerStateError("INVALID_STATE", `runtime runs directory contains a symlink: ${entry.name}`);
     if (!entry.isDirectory()) continue;
     const transactionPath = join(runsDirectory, entry.name, "state-transaction.json");
     await assertRuntimePathSafe(runtimeRoot, transactionPath);
@@ -231,24 +270,28 @@ export async function recoverStateTransactions(runtimeRoot: string, state: Crawl
       throw new CrawlerStateError("INVALID_STATE", "state transaction marker is not valid JSON");
     }
     const marker = validateStateTransaction(value);
-    if (marker.runId !== entry.name) {
-      throw new CrawlerStateError("INVALID_STATE", "state transaction marker run mismatch");
-    }
-    assertRunRootSafe(runtimeRoot, marker.runId);
-    if (await isLockHeldFresh(runtimeRoot, marker.runId)) continue;
-    if (!isWithin(resolve(runtimeRoot), resolve(marker.rawPath))) {
-      throw new CrawlerStateError("INVALID_STATE", "state transaction marker path escapes runtime root");
-    }
-    assertCanonicalRawPath(runtimeRoot, marker.runId, marker.game, marker.rawPath);
-    await assertRuntimePathSafe(runtimeRoot, marker.rawPath);
-    const currentState = await latestStateForRecovery(runtimeRoot, state);
-    const current = currentState.games[marker.game]?.sourceHashes;
-    const committed = marker.phase === "state_pending"
-      && marker.sourceHashes !== null
-      && current !== undefined
-      && Object.entries(marker.sourceHashes).every(([sourceId, contentHash]) => current[sourceId] === contentHash);
-    if (!committed) await removeRawAndTemps(marker.rawPath);
-    await removeStateTransaction(transactionPath);
+    await assertTransactionMarker(runtimeRoot, entry.name, marker, knownGames);
+    const result = await tryRunLock(runtimeRoot, marker.runId, async () => {
+      let lockedValue: unknown;
+      try {
+        lockedValue = await readJsonAtomic(transactionPath);
+      } catch (error: unknown) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+        throw new CrawlerStateError("INVALID_STATE", "state transaction marker is not valid JSON");
+      }
+      const lockedMarker = validateStateTransaction(lockedValue);
+      await assertTransactionMarker(runtimeRoot, entry.name, lockedMarker, knownGames);
+      const currentState = await latestStateForRecovery(runtimeRoot, state);
+      const current = currentState.games[lockedMarker.game]?.sourceHashes;
+      const committed = lockedMarker.phase === "state_pending"
+        && lockedMarker.sourceHashes !== null
+        && current !== undefined
+        && Object.entries(lockedMarker.sourceHashes).every(([sourceId, contentHash]) => current[sourceId] === contentHash);
+      if (!committed) await removeRawAndTemps(lockedMarker.rawPath);
+      await removeStateTransaction(transactionPath);
+      return true;
+    });
+    if (!result.acquired) continue;
   }
 }
 

@@ -1,5 +1,6 @@
 import { access, lstat, mkdir, readdir, realpath } from "node:fs/promises";
 import { dirname, isAbsolute, join, parse, relative, resolve, sep } from "node:path";
+import { writeJsonAtomic } from "./files.ts";
 
 export const RUN_ARTIFACTS = ["raw", "errors", "rejections", "candidates", "reports", "selections", "approved"] as const;
 export type RunArtifact = typeof RUN_ARTIFACTS[number];
@@ -100,6 +101,10 @@ export function runRoot(runtimeRoot: string, runId: string): string {
   return join(runtimeRoot, "runs", runId);
 }
 
+export function runMetadataPath(runtimeRoot: string, runId: string): string {
+  return join(runRoot(runtimeRoot, runId), "run.json");
+}
+
 export function artifactDirectory(runtimeRoot: string, runId: string, artifact: RunArtifact): string {
   assertRunId(runId);
   if (!(RUN_ARTIFACTS as readonly string[]).includes(artifact as string)) throw new Error(`invalid artifact: ${String(artifact)}`);
@@ -130,6 +135,18 @@ async function exists(path: string): Promise<boolean> {
   }
 }
 
+async function assertNoSymlinkEntries(directory: string, label: string): Promise<void> {
+  let entries;
+  try {
+    entries = await readdir(directory, { withFileTypes: true });
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
+    throw error;
+  }
+  const symlink = entries.find((entry) => entry.isSymbolicLink());
+  if (symlink) throw new Error(`${label} must not contain a symlink: ${join(directory, symlink.name)}`);
+}
+
 async function artifactExists(runtimeRoot: string, runId: string, artifact: RunArtifact): Promise<string | undefined> {
   if (artifact === "raw" || artifact === "candidates") {
     const directory = artifactDirectory(runtimeRoot, runId, artifact);
@@ -148,13 +165,22 @@ async function artifactExists(runtimeRoot: string, runId: string, artifact: RunA
   return undefined;
 }
 
-export async function createRun(runtimeRoot: string, runId: string): Promise<string> {
+export interface RunMetadata {
+  schemaVersion: 1;
+  runId: string;
+  game: string;
+}
+
+export async function createRun(runtimeRoot: string, runId: string, game: string): Promise<string> {
   assertRunId(runId);
+  assertPathSegment(game, "game");
   await assertRuntimeRootSafe(runtimeRoot);
   const runsDirectory = join(runtimeRoot, "runs");
   await assertNoSymlinkComponents(runsDirectory, "runtime runs directory");
+  await assertNoSymlinkEntries(runsDirectory, "runtime runs directory");
   await assertRunArtifactsAbsent(runtimeRoot, runId, RUN_ARTIFACTS);
   const root = runRoot(runtimeRoot, runId);
+  await assertNoSymlinkComponents(root, "runtime run directory");
   await mkdir(runsDirectory, { recursive: true });
   try {
     await mkdir(root);
@@ -162,6 +188,7 @@ export async function createRun(runtimeRoot: string, runId: string): Promise<str
     if ((error as NodeJS.ErrnoException).code === "EEXIST") throw new Error(`run already exists: ${runId}`);
     throw error;
   }
+  await writeJsonAtomic(runMetadataPath(runtimeRoot, runId), { schemaVersion: 1, runId, game } satisfies RunMetadata);
   return root;
 }
 
@@ -169,6 +196,9 @@ export async function assertRunArtifactsAbsent(runtimeRoot: string, runId: strin
   assertRunId(runId);
   const present: string[] = [];
   for (const artifact of artifacts) {
+    const directory = artifactDirectory(runtimeRoot, runId, artifact);
+    await assertRuntimePathSafe(runtimeRoot, directory);
+    await assertNoSymlinkEntries(directory, `runtime ${artifact} directory`);
     const path = await artifactExists(runtimeRoot, runId, artifact);
     if (path) present.push(path);
   }
