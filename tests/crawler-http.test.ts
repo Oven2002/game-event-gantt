@@ -15,6 +15,8 @@ function response(body: string, init: ResponseInit = {}) {
   return new Response(body, { status: 200, headers: { "content-type": "application/json" }, ...init });
 }
 
+const testLookup = async (): Promise<string[]> => ["93.184.216.34"];
+
 function runLockWorker(args: string[]): Promise<string> {
   return new Promise((finish, fail) => {
     execFile("node", ["--experimental-strip-types", "tests/helpers/crawler-lock-worker.ts", ...args], { cwd: resolve(".") }, (error, stdout, stderr) => {
@@ -196,12 +198,14 @@ describe("safe official HTTP client", () => {
   it("limits content type and response size", async () => {
     await expect(fetchOfficial("https://example.com/a", {
       allowedHosts: ["example.com"],
+      lookup: testLookup,
       allowedContentTypes: ["application/json"],
       fetchImpl: async () => response("<html>", { headers: { "content-type": "text/html" } }),
     })).rejects.toMatchObject({ code: "CONTENT_TYPE" });
 
     await expect(fetchOfficial("https://example.com/a", {
       allowedHosts: ["example.com"],
+      lookup: testLookup,
       maxBytes: 3,
       fetchImpl: async () => response("1234"),
     })).rejects.toMatchObject({ code: "RESPONSE_TOO_LARGE" });
@@ -211,6 +215,7 @@ describe("safe official HTTP client", () => {
     let attempts = 0;
     await expect(fetchOfficial("https://example.com/a", {
       allowedHosts: ["example.com"],
+      lookup: testLookup,
       retryDelaysMs: [0],
       fetchImpl: async () => {
         attempts += 1;
@@ -223,6 +228,7 @@ describe("safe official HTTP client", () => {
   it("revalidates every manual redirect target", async () => {
     await expect(fetchOfficial("https://example.com/a", {
       allowedHosts: ["example.com"],
+      lookup: testLookup,
       fetchImpl: async () => response("", { status: 302, headers: { location: "https://other.example/b" } }),
     })).rejects.toMatchObject({ code: "UNSAFE_URL" });
   });
@@ -240,6 +246,7 @@ describe("safe official HTTP client", () => {
   it("rejects unsupported content types without an explicit allowlist", async () => {
     await expect(fetchOfficial("https://example.com/a", {
       allowedHosts: ["example.com"],
+      lookup: testLookup,
       minHostIntervalMs: 0,
       fetchImpl: async () => response("binary", { headers: { "content-type": "application/octet-stream" } }),
     })).rejects.toMatchObject({ code: "CONTENT_TYPE" });
@@ -257,7 +264,7 @@ describe("safe official HTTP client", () => {
     let capturedAddress = "";
     const result = await fetchOfficial("https://example.com/pinned", {
       allowedHosts: ["example.com"],
-      lookup: async () => ["93.184.216.34"],
+      lookup: testLookup,
       fetchImpl: async () => response("unpinned"),
       pinnedFetchImpl: async (_url, _init, address) => {
         capturedAddress = address;
@@ -291,6 +298,7 @@ describe("safe official HTTP client", () => {
   it("returns a structured error for an invalid redirect location", async () => {
     await expect(fetchOfficial("https://example.com/a", {
       allowedHosts: ["example.com"],
+      lookup: testLookup,
       minHostIntervalMs: 0,
       fetchImpl: async () => response("", { status: 302, headers: { location: "http://[invalid" } }),
     })).rejects.toMatchObject({ code: "REDIRECT" });
@@ -299,6 +307,7 @@ describe("safe official HTTP client", () => {
   it("limits redirect chains", async () => {
     await expect(fetchOfficial("https://example.com/a", {
       allowedHosts: ["example.com"],
+      lookup: testLookup,
       maxRedirects: 2,
       fetchImpl: async () => response("", { status: 302, headers: { location: "https://example.com/a" } }),
     })).rejects.toMatchObject({ code: "REDIRECT_LIMIT" });
@@ -307,6 +316,7 @@ describe("safe official HTTP client", () => {
   it("treats maxRedirects as the exact number of followed redirects", async () => {
     await expect(fetchOfficial("https://example.com/a", {
       allowedHosts: ["example.com"],
+      lookup: testLookup,
       maxRedirects: 0,
       minHostIntervalMs: 0,
       fetchImpl: async () => response("", { status: 302, headers: { location: "https://example.com/a" } }),
@@ -331,6 +341,7 @@ describe("safe official HTTP client", () => {
     });
     await expect(fetchOfficial("https://example.com/a", {
       allowedHosts: ["example.com"],
+      lookup: testLookup,
       timeoutMs: 10,
       minHostIntervalMs: 0,
       fetchImpl: async () => new Response(body, { status: 200, headers: { "content-type": "text/plain" } }),
