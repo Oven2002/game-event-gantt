@@ -164,6 +164,10 @@ describe("Mihoyo fixture adapter", () => {
   it("normalizes readable text without changing meaningful order", () => {
     expect(normalizeContent("<p>第一段</p><p>第二段 &amp; 其他</p><img src=\"x\"><script>alert(1)</script>"))
       .toBe("第一段\n第二段 & 其他");
+    expect(normalizeContent("<font color=\"red\">字体</font>")).toBe("字体");
+    const escaped = normalizeContent("<p>literal &lt;span&gt;</p>");
+    expect(escaped).toBe("literal <span>");
+    expect(normalizeContent(escaped)).toBe(escaped);
   });
 
   it("deduplicates the same source article by sourceId and contentHash", async () => {

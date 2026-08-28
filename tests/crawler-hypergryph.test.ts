@@ -84,8 +84,11 @@ describe("Hypergryph fixture adapter", () => {
     }, "2026-08-26T00:00:00+00:00")).toThrow(/language|lang|region/i);
     expect(() => parseHypergryphDetail("arknights-endfield", "4776", {
       ...envelope,
-      body: envelope.body.replace(' lang="zh-cn"', ""),
-    }, "2026-08-26T00:00:00+00:00")).toThrow(/language|lang|region/i);
+      body: envelope.body.replace(
+        '<html lang="zh-cn" class="zh-cn" data-oversea="false">',
+        '<!-- <html lang="zh-cn"> --><html lang="en-us" class="en-us" data-oversea="true">',
+      ),
+    }, "2026-08-26T00:00:00+00:00")).toThrow(/language|oversea|region/i);
   });
 
   it("uses a validated list displayTime when detail has no publication date", async () => {

@@ -14,6 +14,8 @@ const officialArticleHosts: Record<string, string[]> = {
   "arknights-endfield": [hypergryphGames["arknights-endfield"].officialHost],
 };
 const rejectedHosts = new Set(["forum.gamer.com.tw", "news.17173.com", "m.ali213.net", "www.gamersky.com"]);
+const localePath = /(^|\/)\p{L}{2}-\p{L}{2}(?:\/|$)/u;
+const cnLocalePath = /(^|\/)zh-cn(?:\/|$)/i;
 
 export function isDiscoveryOnlySource(rawUrl: string): boolean {
   try { return new URL(rawUrl).hostname.toLowerCase().split(".").slice(-2).join(".") === "zhihu.com"; } catch { return false; }
@@ -25,7 +27,8 @@ export function evaluateSource(game: string, rawUrl: string, context: { platform
   const host = url.hostname.toLowerCase();
   if (isDiscoveryOnlySource(rawUrl)) return { allowed: false, role: "discovery", reason: "Zhihu is discovery-only" };
   if (url.protocol !== "https:" || url.username || url.password || (url.port !== "" && url.port !== "443")) return { allowed: false, role: "rejected", reason: "HTTPS on the default port without credentials is required" };
-  if (rejectedHosts.has(host) || host === "facebook.com" || host.endsWith(".facebook.com") || host.endsWith("gamer.com.tw") || /(^|\/)zh-tw(?:\/|$)/i.test(url.pathname)) return { allowed: false, role: "rejected", reason: "foreign-server or third-party source" };
+  const foreignLocale = localePath.test(url.pathname) && !cnLocalePath.test(url.pathname);
+  if (rejectedHosts.has(host) || host === "facebook.com" || host.endsWith(".facebook.com") || host.endsWith("gamer.com.tw") || foreignLocale) return { allowed: false, role: "rejected", reason: "foreign-server or third-party source" };
   const configured = officialArticleHosts[game] ?? [];
   if (configured.includes(host)) return { allowed: true, role: "official", reason: "configured CN official host" };
   const platform = host === "www.bilibili.com" ? "bilibili" : host === "www.weibo.com" ? "weibo" : host === "www.miyoushe.com" ? "miyoushe" : host === "www.taptap.cn" ? "taptap" : undefined;

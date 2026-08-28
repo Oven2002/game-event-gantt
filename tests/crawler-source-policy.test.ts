@@ -16,6 +16,7 @@ describe("crawler source policy", () => {
   });
 
   it("rejects insecure, foreign-server, and third-party URLs", () => {
+    expect(evaluateSource("zenless-zone-zero", "https://zzz.mihoyo.com/en-us/news/165853")).toMatchObject({ allowed: false, role: "rejected" });
     for (const url of [
       "http://ys.mihoyo.com/main/news/detail/1",
       "https://genshin.hoyoverse.com/zh-tw/news/1",

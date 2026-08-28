@@ -71,7 +71,8 @@ function htmlFromEnvelope(body: unknown): string {
 function decode(value: string): string { return value.replace(/\\u003c/g, "<").replace(/\\u003e/g, ">").replace(/\\u0026/g, "&"); }
 export function normalizeHypergryphContent(html: string): string { return normalizeContent(decode(html)); }
 function rootHtmlAttribute(html: string, name: string): string | null {
-  const opening = html.match(/<html\b([^>]*)>/i)?.[1];
+  const documentStart = html.replace(/^\uFEFF/, "").replace(/^(?:\s|<!--[\s\S]*?-->|<!doctype\b[^>]*>|<\?[\s\S]*?\?>)+/i, "");
+  const opening = documentStart.match(/^<html\b([^>]*)>/i)?.[1];
   if (opening === undefined) throw new HypergryphAdapterError("missing html root");
   return opening.match(new RegExp(`\\b${name}\\s*=\\s*[\"']([^\"']*)[\"']`, "i"))?.[1] ?? null;
 }
