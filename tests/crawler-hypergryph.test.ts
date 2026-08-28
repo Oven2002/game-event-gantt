@@ -75,6 +75,12 @@ describe("Hypergryph fixture adapter", () => {
       .toBe("第一段\n第二段");
   });
 
+  it("preserves escaped angle-bracket text and remains idempotent", () => {
+    const content = normalizeHypergryphContent("<p>修复&lt;浮空信件&gt;异常</p>");
+    expect(content).toBe("修复<浮空信件>异常");
+    expect(normalizeHypergryphContent(content)).toBe(content);
+  });
+
   it("rejects a detail envelope with a non-HTML content type", async () => {
     const envelope = await fixture(`${root}/arknights/detail-4924.json`);
     expect(() => parseHypergryphDetail("arknights", "4924", {

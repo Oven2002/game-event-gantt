@@ -15,7 +15,7 @@ export function normalizeContent(html: string): string {
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "")
     .replace(/<\s*br\s*\/?>/gi, "\n")
     .replace(/<\s*\/(?:p|div|li|h[1-6])\s*>/gi, "\n")
-    .replace(/<[^>]+>/g, ""))
+    .replace(/<\s*\/?\s*[A-Za-z][^>]*>/g, ""))
     .replace(/\r\n?/g, "\n")
     .split("\n")
     .map((line) => line.replace(/[ \t]+/g, " ").trim())
