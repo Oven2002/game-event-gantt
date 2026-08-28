@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { hashCanonicalJson, oldValueHashProjection, proposalHashProjection } from "./common/hash.ts";
 import {
   eventSchema,
   httpUrl,
@@ -13,6 +14,7 @@ export type { EventYamlValue, VersionYamlValue };
 const entryIdPattern = /^[a-z0-9][a-z0-9._-]*$/;
 const candidateKeyPattern = /^[^/]+\/[^/]+\/[^/]+$/;
 const machineId = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const targetFilePattern = /^data\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+-\d{4}\.ya?ml$/;
 const beijingTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\+08:00$/;
 
 export type Sha256 = string & { readonly __sha256: unique symbol };
@@ -411,6 +413,9 @@ export const VersionSelectionPatchSchema = z.object({
   if (Object.keys(value.set).some((field) => value.unset.includes(field as "url"))) {
     ctx.addIssue({ code: "custom", message: "set 与 unset 不能有交集" });
   }
+  if (Object.values(value.set).some((fieldValue) => fieldValue === undefined)) {
+    ctx.addIssue({ code: "custom", message: "set 不允许包含 undefined" });
+  }
 });
 
 export const EventSelectionPatchSchema = z.object({
@@ -424,14 +429,17 @@ export const EventSelectionPatchSchema = z.object({
   if (Object.keys(value.set).some((field) => value.unset.includes(field as "url" | "priority"))) {
     ctx.addIssue({ code: "custom", message: "set 与 unset 不能有交集" });
   }
+  if (Object.values(value.set).some((fieldValue) => fieldValue === undefined)) {
+    ctx.addIssue({ code: "custom", message: "set 不允许包含 undefined" });
+  }
 });
 
 const selectionBaseSchema = {
-  candidateKey: z.string().min(1),
+  candidateKey: z.string().regex(candidateKeyPattern),
   candidateHash: sha256Schema,
   sourceHash: sha256Schema,
   targetId: z.string().regex(entryIdPattern),
-  targetFile: z.string().min(1),
+  targetFile: z.string().regex(targetFilePattern),
 };
 
 export const ApprovalSelectionItemSchema = z.union([
@@ -443,9 +451,15 @@ export const ApprovalSelectionItemSchema = z.union([
 
 export const ApprovalSelectionSchema = z.object({
   schemaVersion: z.literal(1),
-  runId: z.string().min(1),
+  runId: z.string().regex(/^\d{8}-\d{6}$/),
   selections: z.array(ApprovalSelectionItemSchema),
-}).strict();
+}).strict().superRefine((value, ctx) => {
+  const seen = new Set<string>();
+  value.selections.forEach((selection, index) => {
+    if (seen.has(selection.candidateKey)) ctx.addIssue({ code: "custom", path: ["selections", index, "candidateKey"], message: "candidateKey 不能重复" });
+    seen.add(selection.candidateKey);
+  });
+});
 
 const targetOptionSchema = z.object({
   targetId: z.string().regex(entryIdPattern),
@@ -481,13 +495,13 @@ export const ApprovalSelectionTemplateSchema = z.object({
 }).strict();
 
 const approvedManifestEntryBaseSchema = {
-  candidateKey: z.string().min(1),
+  candidateKey: z.string().regex(candidateKeyPattern),
   candidateHash: sha256Schema,
   sourceHash: sha256Schema,
-  game: z.string().min(1),
+  game: z.string().regex(machineId),
   region: z.literal("cn"),
   operation: z.enum(["add", "update"]),
-  targetFile: z.string().min(1),
+  targetFile: z.string().regex(targetFilePattern),
   targetId: z.string().regex(entryIdPattern),
   oldValueHash: sha256Schema.nullable(),
   proposalHash: sha256Schema,
@@ -496,11 +510,44 @@ const approvedManifestEntryBaseSchema = {
 export const ApprovedManifestEntrySchema = z.union([
   z.object({ ...approvedManifestEntryBaseSchema, kind: z.literal("version"), patch: VersionSelectionPatchSchema.nullable(), oldValue: versionSchema.nullable(), yamlValue: versionSchema }).strict(),
   z.object({ ...approvedManifestEntryBaseSchema, kind: z.literal("event"), patch: EventSelectionPatchSchema.nullable(), oldValue: eventSchema.nullable(), yamlValue: eventSchema }).strict(),
-]);
+]).superRefine((value, ctx) => {
+  if (value.yamlValue.id !== value.targetId) ctx.addIssue({ code: "custom", path: ["yamlValue", "id"], message: "yamlValue.id 必须等于 targetId" });
+  if (value.operation === "add") {
+    if (value.oldValue !== null) ctx.addIssue({ code: "custom", path: ["oldValue"], message: "add 的 oldValue 必须为 null" });
+    if (value.oldValueHash !== null) ctx.addIssue({ code: "custom", path: ["oldValueHash"], message: "add 的 oldValueHash 必须为 null" });
+  } else {
+    if (value.oldValue === null) ctx.addIssue({ code: "custom", path: ["oldValue"], message: "update 必须有 oldValue" });
+    if (value.oldValueHash === null) ctx.addIssue({ code: "custom", path: ["oldValueHash"], message: "update 必须有 oldValueHash" });
+  }
+  if (value.patch !== null && value.patch.kind !== value.kind) ctx.addIssue({ code: "custom", path: ["patch", "kind"], message: "patch.kind 必须等于 manifest kind" });
+  const expectedOldValueHash = value.oldValue === null ? null : hashCanonicalJson(oldValueHashProjection(value.oldValue));
+  if (value.oldValueHash !== expectedOldValueHash) ctx.addIssue({ code: "custom", path: ["oldValueHash"], message: "oldValueHash 与 oldValue 不一致" });
+  const expectedProposalHash = hashCanonicalJson(proposalHashProjection({
+    operation: value.operation,
+    kind: value.kind,
+    candidateHash: value.candidateHash,
+    sourceHash: value.sourceHash,
+    oldValueHash: value.oldValueHash,
+    targetFile: value.targetFile,
+    targetId: value.targetId,
+    patch: value.patch,
+    yamlValue: value.yamlValue,
+  }));
+  if (value.proposalHash !== expectedProposalHash) ctx.addIssue({ code: "custom", path: ["proposalHash"], message: "proposalHash 与 manifest 内容不一致" });
+});
 
 export const ApprovedManifestSchema = z.object({
   schemaVersion: z.literal(1),
-  runId: z.string().min(1),
-  generatedAt: z.string().min(1),
+  runId: z.string().regex(/^\d{8}-\d{6}$/),
+  generatedAt: auditTimestampSchema,
   entries: z.array(ApprovedManifestEntrySchema),
-}).strict();
+}).strict().superRefine((value, ctx) => {
+  const seenCandidates = new Set<string>();
+  const seenTargets = new Set<string>();
+  value.entries.forEach((entry, index) => {
+    if (seenCandidates.has(entry.candidateKey)) ctx.addIssue({ code: "custom", path: ["entries", index, "candidateKey"], message: "candidateKey 不能重复" });
+    if (seenTargets.has(`${entry.game}/${entry.region}/${entry.kind}/${entry.targetId}`)) ctx.addIssue({ code: "custom", path: ["entries", index, "targetId"], message: "manifest target identity 不能重复" });
+    seenCandidates.add(entry.candidateKey);
+    seenTargets.add(`${entry.game}/${entry.region}/${entry.kind}/${entry.targetId}`);
+  });
+});

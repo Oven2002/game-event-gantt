@@ -25,6 +25,7 @@ import {
 import { candidateHashProjection, canonicalizeUrl, hashCanonicalJson, oldValueHashProjection, sourceHashProjection } from "./hash.ts";
 import { assertRunId, assertRuntimePathSafe, assertRuntimeRootSafe, assertRunArtifactsAbsent, assertRunExists, artifactDirectory, artifactPath, runRoot } from "./run.ts";
 import { withFileLock } from "./files.ts";
+import { mergeSources } from "./sources.ts";
 import { loadEventTypeIds, validateCandidate } from "./candidate-validation.ts";
 import { mihoyoGames } from "../mihoyo-config.ts";
 import { hypergryphGames } from "../hypergryph-config.ts";
@@ -200,14 +201,14 @@ function candidateUncertain(candidate: CandidateItem): boolean {
 
 function candidateField(candidate: CandidateItem, field: string): unknown {
   const value = candidate as unknown as Record<string, unknown>;
-  if (field === "sources") return (value.sources as string[]).map(canonicalizeUrl);
+  if (field === "sources") return mergeSources([], value.sources as string[]);
   if (field === "relatedCandidateKeys") return value.relatedCandidateKeys ?? [];
   return value[field] ?? null;
 }
 
 function targetField(target: IndexedTarget, field: string): unknown {
   const value = target.value as unknown as Record<string, unknown>;
-  if (field === "sources") return (value.sources as string[]).map(canonicalizeUrl);
+  if (field === "sources") return mergeSources([], value.sources as string[]);
   if (field === "related") return value.related ?? [];
   return value[field] ?? null;
 }
@@ -244,7 +245,7 @@ function rangesOverlap(left: Array<[number, number]>, right: Array<[number, numb
 function suspectedTargets(candidate: CandidateItem, index: DataIndex): Array<{ target: IndexedTarget; reasons: string[] }> {
   const kind = candidateKind(candidate);
   if (!kind) return [];
-  const candidateSources = new Set(candidate.sources.map(canonicalizeUrl));
+  const candidateSources = new Set(mergeSources([], candidate.sources));
   const candidateRanges = timestampRange(candidate as { start?: string; end?: string; periods?: Array<{ start: string; end: string }> });
   return [...index.targets.values()]
     .filter((target) => target.game === candidate.game && target.region === candidate.region && target.kind === kind)
@@ -303,7 +304,7 @@ async function readRejections(runtimeRoot: string, runId: string, protectedRoot:
   return rejections;
 }
 
-async function readCandidates(runtimeRoot: string, runId: string, eventTypeIds: string[], protectedRoot: string): Promise<Array<{ candidate: CandidateItem; raw: RawArticle }>> {
+export async function readRunCandidates(runtimeRoot: string, runId: string, eventTypeIds: string[], protectedRoot: string): Promise<Array<{ candidate: CandidateItem; raw: RawArticle }>> {
   const directory = artifactDirectory(runtimeRoot, runId, "candidates");
   await assertRuntimePathSafe(runtimeRoot, directory, protectedRoot);
   const entries = (await readdir(directory, { withFileTypes: true }))
@@ -480,7 +481,7 @@ export async function reviewRun(options: ReviewRunOptions): Promise<ReviewRunRes
   const eventTypeIds = await loadEventTypeIds(options.eventTypesPath ?? resolve(process.cwd(), "data/event-types.yaml"));
   const mapByCandidate = new Map(mapEntries.map((entry) => [entry.candidateKey, entry]));
   const rejections = await readRejections(options.runtimeRoot, options.runId, dataRoot);
-  const candidates = await readCandidates(options.runtimeRoot, options.runId, eventTypeIds, dataRoot);
+  const candidates = await readRunCandidates(options.runtimeRoot, options.runId, eventTypeIds, dataRoot);
   const entries: ReviewEntry[] = [];
   const templateItems: ApprovalSelectionTemplate["items"] = [];
   for (const { candidate, raw } of candidates) {

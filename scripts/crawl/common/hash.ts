@@ -88,3 +88,27 @@ export function candidateHashProjection(candidate: CandidateItem | Record<string
 export function oldValueHashProjection(value: unknown): unknown {
   return sortValue(value);
 }
+
+export function proposalHashProjection(value: {
+  operation: "add" | "update";
+  kind: "version" | "event";
+  candidateHash: unknown;
+  sourceHash: unknown;
+  oldValueHash: unknown;
+  targetFile: unknown;
+  targetId: unknown;
+  patch: unknown;
+  yamlValue: unknown;
+}): Record<string, unknown> {
+  return {
+    operation: value.operation,
+    kind: value.kind,
+    candidateHash: value.candidateHash,
+    sourceHash: value.sourceHash,
+    oldValueHash: value.oldValueHash,
+    targetFile: value.targetFile,
+    targetId: value.targetId,
+    patch: value.patch,
+    yamlValue: value.yamlValue,
+  };
+}
