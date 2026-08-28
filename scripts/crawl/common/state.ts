@@ -1,9 +1,35 @@
-import { access, readdir, rm } from "node:fs/promises";
-import { dirname, basename, join, relative, resolve, sep } from "node:path";
+import { access, readdir, rm, stat } from "node:fs/promises";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
 import { readJsonAtomic, updateJsonAtomic, withFileLock, writeJsonAtomic } from "./files.ts";
 import { sha256Schema, type Sha256 } from "../types.ts";
-import { assertRunId } from "./run.ts";
+import { artifactPath, assertRunId, assertRuntimePathSafe, assertRuntimeRootSafe, runRoot } from "./run.ts";
+
+const RUN_LOCK_STALE_MS = 120_000;
+
+export function runLockPath(runtimeRoot: string, runId: string): string {
+  assertRunId(runId);
+  return join(runtimeRoot, "runs", runId, "run.lock");
+}
+
+export async function withRunLock<T>(runtimeRoot: string, runId: string, operation: () => Promise<T>): Promise<T> {
+  const lockPath = runLockPath(runtimeRoot, runId);
+  await assertRuntimeRootSafe(runtimeRoot);
+  await assertRuntimePathSafe(runtimeRoot, lockPath);
+  return withFileLock(lockPath, operation, { staleMs: RUN_LOCK_STALE_MS });
+}
+
+async function isLockHeldFresh(runtimeRoot: string, runId: string): Promise<boolean> {
+  const lockPath = `${runLockPath(runtimeRoot, runId)}.lock`;
+  await assertRuntimePathSafe(runtimeRoot, lockPath);
+  try {
+    const lockStat = await stat(lockPath);
+    return Date.now() - lockStat.mtimeMs <= RUN_LOCK_STALE_MS;
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    return false;
+  }
+}
 
 export interface AdapterCheckpoint {
   kind: string;
@@ -88,6 +114,21 @@ function isWithin(root: string, candidate: string): boolean {
   return child === "" || (child !== ".." && !child.startsWith(`..${sep}`));
 }
 
+function canonicalRawPath(runtimeRoot: string, runId: string, game: string): string {
+  return artifactPath(runtimeRoot, runId, "raw", "jsonl", game);
+}
+
+function assertCanonicalRawPath(runtimeRoot: string, runId: string, game: string, rawPath: string): void {
+  if (resolve(rawPath) !== resolve(canonicalRawPath(runtimeRoot, runId, game))) {
+    throw new CrawlerStateError("INVALID_STATE", "state transaction raw path is not canonical");
+  }
+}
+
+function assertRunRootSafe(runtimeRoot: string, runId: string): void {
+  const root = runRoot(runtimeRoot, runId);
+  if (!isWithin(resolve(runtimeRoot), resolve(root))) throw new CrawlerStateError("INVALID_STATE", "state transaction path escapes runtime root");
+}
+
 async function removeRawAndTemps(rawPath: string): Promise<void> {
   await rm(rawPath, { force: true });
   let entries;
@@ -108,6 +149,11 @@ export async function beginStateTransaction(
   rawPath: string,
   options: StateTransactionWriteOptions = {},
 ): Promise<void> {
+  assertRunRootSafe(runtimeRoot, runId);
+  assertCanonicalRawPath(runtimeRoot, runId, game, rawPath);
+  await assertRuntimeRootSafe(runtimeRoot);
+  await assertRuntimePathSafe(runtimeRoot, stateTransactionPath(runtimeRoot, runId));
+  await assertRuntimePathSafe(runtimeRoot, rawPath);
   await writeJsonAtomic(stateTransactionPath(runtimeRoot, runId), {
     schemaVersion: 1,
     runId,
@@ -119,6 +165,7 @@ export async function beginStateTransaction(
 }
 
 export async function markStateTransactionPending(
+  runtimeRoot: string,
   transactionPath: string,
   runId: string,
   game: string,
@@ -126,6 +173,14 @@ export async function markStateTransactionPending(
   sourceHashes: Record<string, Sha256>,
   options: StateTransactionWriteOptions = {},
 ): Promise<void> {
+  assertRunRootSafe(runtimeRoot, runId);
+  assertCanonicalRawPath(runtimeRoot, runId, game, rawPath);
+  if (resolve(transactionPath) !== resolve(stateTransactionPath(runtimeRoot, runId))) {
+    throw new CrawlerStateError("INVALID_STATE", "state transaction path is not canonical");
+  }
+  await assertRuntimeRootSafe(runtimeRoot);
+  await assertRuntimePathSafe(runtimeRoot, transactionPath);
+  await assertRuntimePathSafe(runtimeRoot, rawPath);
   await writeJsonAtomic(transactionPath, { schemaVersion: 1, runId, game, rawPath, phase: "state_pending", sourceHashes }, options);
 }
 
@@ -154,7 +209,9 @@ async function latestStateForRecovery(runtimeRoot: string, fallback: CrawlerStat
 }
 
 export async function recoverStateTransactions(runtimeRoot: string, state: CrawlerState): Promise<void> {
+  await assertRuntimeRootSafe(runtimeRoot);
   const runsDirectory = join(runtimeRoot, "runs");
+  await assertRuntimePathSafe(runtimeRoot, runsDirectory);
   let entries;
   try {
     entries = await readdir(runsDirectory, { withFileTypes: true });
@@ -165,6 +222,7 @@ export async function recoverStateTransactions(runtimeRoot: string, state: Crawl
   for (const entry of entries) {
     if (!entry.isDirectory()) continue;
     const transactionPath = join(runsDirectory, entry.name, "state-transaction.json");
+    await assertRuntimePathSafe(runtimeRoot, transactionPath);
     let value: unknown;
     try {
       value = await readJsonAtomic(transactionPath);
@@ -173,9 +231,16 @@ export async function recoverStateTransactions(runtimeRoot: string, state: Crawl
       throw new CrawlerStateError("INVALID_STATE", "state transaction marker is not valid JSON");
     }
     const marker = validateStateTransaction(value);
-    if (marker.runId !== entry.name || !isWithin(resolve(runtimeRoot), resolve(marker.rawPath))) {
-      throw new CrawlerStateError("INVALID_STATE", "state transaction marker path or run mismatch");
+    if (marker.runId !== entry.name) {
+      throw new CrawlerStateError("INVALID_STATE", "state transaction marker run mismatch");
     }
+    assertRunRootSafe(runtimeRoot, marker.runId);
+    if (await isLockHeldFresh(runtimeRoot, marker.runId)) continue;
+    if (!isWithin(resolve(runtimeRoot), resolve(marker.rawPath))) {
+      throw new CrawlerStateError("INVALID_STATE", "state transaction marker path escapes runtime root");
+    }
+    assertCanonicalRawPath(runtimeRoot, marker.runId, marker.game, marker.rawPath);
+    await assertRuntimePathSafe(runtimeRoot, marker.rawPath);
     const currentState = await latestStateForRecovery(runtimeRoot, state);
     const current = currentState.games[marker.game]?.sourceHashes;
     const committed = marker.phase === "state_pending"

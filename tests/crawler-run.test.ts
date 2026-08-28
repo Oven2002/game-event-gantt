@@ -65,6 +65,13 @@ describe("crawler run lifecycle", () => {
     await expect(assertRuntimeRootSafe(join(linkedParent, "runtime"))).rejects.toThrow(/symlink|runtime/i);
   });
 
+  it("rejects a pre-existing runs directory symlink before creating the run", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
+    const outside = await mkdtemp(join(tmpdir(), "crawler-run-outside-"));
+    await symlink(outside, join(root, "runs"), "dir");
+    await expect(createRun(root, "20260801-000002")).rejects.toThrow(/symlink|runs/i);
+  });
+
   it("rejects runtime roots inside an injected protected tree", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-run-"));
     const protectedRoot = join(root, "custom-data");

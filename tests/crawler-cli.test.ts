@@ -160,7 +160,7 @@ describe("crawler parse command", () => {
     await writeRaw(root, runId, "genshin-impact", [article]);
     const transactionPath = stateTransactionPath(root, runId);
     await beginStateTransaction(root, runId, "genshin-impact", rawPath);
-    await markStateTransactionPending(transactionPath, runId, "genshin-impact", rawPath, { [article.sourceId]: article.contentHash });
+    await markStateTransactionPending(root, transactionPath, runId, "genshin-impact", rawPath, { [article.sourceId]: article.contentHash });
 
     await recoverStateTransactions(root, {
       schemaVersion: 1,

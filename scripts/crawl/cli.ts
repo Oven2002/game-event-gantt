@@ -7,7 +7,7 @@ import { approveRun } from "./commands/approve.ts";
 import { createRun, artifactPath, assertRuntimeRootSafe, assertRunId } from "./common/run.ts";
 import { readJsonl } from "./common/files.ts";
 import { sha256Utf8 } from "./common/hash.ts";
-import { abortStateTransaction, beginStateTransaction, loadState, markStateTransactionPending, recoverStateTransactions, removeStateTransaction, stateTransactionPath, updateStateAtomic, writeStateAtomic, type CrawlerState } from "./common/state.ts";
+import { abortStateTransaction, beginStateTransaction, loadState, markStateTransactionPending, recoverStateTransactions, removeStateTransaction, stateTransactionPath, updateStateAtomic, withRunLock, writeStateAtomic, type CrawlerState } from "./common/state.ts";
 import { RawArticleSchema, type Sha256 } from "./types.ts";
 import { buildHypergryphListRequest, displayTimeToBeijing, normalizeHypergryphContent, parseHypergryphDetail, parseHypergryphList, type HypergryphListPage } from "./adapters/hypergryph.ts";
 import { hypergryphGames } from "./hypergryph-config.ts";
@@ -168,7 +168,7 @@ export async function advanceState(runtimeRoot: string, game: CrawlGame, rawPath
     });
     if (options.transactionPath) {
       if (!options.runId) throw new Error("state transaction requires runId");
-      await markStateTransactionPending(options.transactionPath, options.runId, game, rawPath, rawSourceHashes);
+      await markStateTransactionPending(runtimeRoot, options.transactionPath, options.runId, game, rawPath, rawSourceHashes);
     }
     if (options.writeState) {
       await options.writeState(join(runtimeRoot, "state.json"), buildNextState(state), {
@@ -230,28 +230,30 @@ export async function runCrawlCli(argv: string[], options: RunCrawlCliOptions = 
       await createRun(runtimeRoot, runId);
       const rawPath = artifactPath(runtimeRoot, runId, "raw", "jsonl", args.game!);
       const transactionPath = stateTransactionPath(runtimeRoot, runId);
-      await beginStateTransaction(runtimeRoot, runId, args.game!, rawPath);
-      try {
-        const result = await fetchGame({
-          runtimeRoot,
-          runId,
-          game: args.game!,
-          pageSize: options.pageSize,
-          since: args.since ?? (args.full ? undefined : defaultLookbackSince(args.game!, now)),
-          adapter: createFetchAdapter(args.game!),
-          fetcher: options.fetcher,
-        });
-        await advanceState(runtimeRoot, args.game!, result.rawPath, state, {
-          runId,
-          transactionPath,
-          writeState: options.writeState,
-        });
-        printFetchResult(print, runId, result);
-        return 0;
-      } catch (error) {
-        await abortStateTransaction(transactionPath, rawPath).catch(() => undefined);
-        throw error;
-      }
+      return await withRunLock(runtimeRoot, runId, async () => {
+        await beginStateTransaction(runtimeRoot, runId, args.game!, rawPath);
+        try {
+          const result = await fetchGame({
+            runtimeRoot,
+            runId,
+            game: args.game!,
+            pageSize: options.pageSize,
+            since: args.since ?? (args.full ? undefined : defaultLookbackSince(args.game!, now)),
+            adapter: createFetchAdapter(args.game!),
+            fetcher: options.fetcher,
+          });
+          await advanceState(runtimeRoot, args.game!, result.rawPath, state, {
+            runId,
+            transactionPath,
+            writeState: options.writeState,
+          });
+          printFetchResult(print, runId, result);
+          return 0;
+        } catch (error) {
+          await abortStateTransaction(transactionPath, rawPath).catch(() => undefined);
+          throw error;
+        }
+      });
     }
     if (args.command === "review") {
       const result = await reviewRun({ runtimeRoot, runId: args.run!, eventTypesPath });

@@ -151,9 +151,11 @@ async function artifactExists(runtimeRoot: string, runId: string, artifact: RunA
 export async function createRun(runtimeRoot: string, runId: string): Promise<string> {
   assertRunId(runId);
   await assertRuntimeRootSafe(runtimeRoot);
+  const runsDirectory = join(runtimeRoot, "runs");
+  await assertNoSymlinkComponents(runsDirectory, "runtime runs directory");
   await assertRunArtifactsAbsent(runtimeRoot, runId, RUN_ARTIFACTS);
   const root = runRoot(runtimeRoot, runId);
-  await mkdir(join(runtimeRoot, "runs"), { recursive: true });
+  await mkdir(runsDirectory, { recursive: true });
   try {
     await mkdir(root);
   } catch (error: unknown) {
