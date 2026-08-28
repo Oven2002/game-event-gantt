@@ -291,6 +291,25 @@ describe("crawler parse command", () => {
     expect(output.join("\n")).toMatch(/reportPath=.*templatePath=/);
   });
 
+  it("routes approve through the executable CLI and writes a manifest", async () => {
+    const root = await mkdtemp(join(tmpdir(), "crawler-cli-approve-"));
+    const runId = "20260827-000021";
+    await createRun(root, runId);
+    const article = makeRaw({ sourceId: "cli-approve", url: "https://ys.mihoyo.com/main/news/detail/cli-approve", title: "CLI 批准活动" });
+    await writeRaw(root, runId, article.game, [article]);
+    await mkdir(artifactDirectory(root, runId, "candidates"), { recursive: true });
+    await writeFile(artifactPath(root, runId, "candidates", "json", article.game), `${JSON.stringify([parseArticleCandidate(article, runId, "primary")])}\n`, "utf8");
+    await mkdir(artifactDirectory(root, runId, "rejections"), { recursive: true });
+    await writeFile(artifactPath(root, runId, "rejections"), "", "utf8");
+    const candidate = parseArticleCandidate(article, runId, "primary");
+    const selectionPath = join(root, "approved-selection.json");
+    await writeFile(selectionPath, `${JSON.stringify({ schemaVersion: 1, runId, selections: [{ candidateKey: candidate.candidateKey, candidateHash: candidate.candidateHash, sourceHash: candidate.sourceHash, kind: candidate.kind, operation: "add", expectedOldValueHash: null, targetId: "task9-cli-approved-event-20260827", targetFile: "data/genshin-impact/cn-2026.yaml" }] })}\n`, "utf8");
+    const output: string[] = [];
+    await expect(runCrawlCli(["approve", "--run", runId, "--selection", selectionPath], { runtimeRoot: root, print: (line: string) => output.push(line) })).resolves.toBe(0);
+    await expect(readFile(artifactPath(root, runId, "approved", "json"), "utf8")).resolves.toContain(runId);
+    expect(output.join("\n")).toMatch(/manifestPath=/);
+  });
+
   it("routes parse through the executable CLI and reports its output", async () => {
     const root = await mkdtemp(join(tmpdir(), "crawler-cli-"));
     const runId = "20260801-000003";
