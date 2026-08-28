@@ -272,6 +272,38 @@ function fetchPinned(url: URL, init: RequestInit, address: string): Promise<Resp
   });
 }
 
+async function fetchPinnedWithFallback(
+  url: URL,
+  init: RequestInit,
+  addresses: readonly string[],
+  timeoutMs: number,
+  fetchImpl: PinnedFetchImpl,
+): Promise<Response> {
+  let lastError: unknown;
+  const deadline = Date.now() + timeoutMs;
+  for (const address of addresses) {
+    if (init.signal?.aborted) {
+      const error = Object.assign(new Error("The operation was aborted"), { name: "AbortError" });
+      throw error;
+    }
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) break;
+    const attemptController = new AbortController();
+    const attemptTimeout = setTimeout(() => attemptController.abort(), Math.min(5_000, remaining));
+    const signal = init.signal ? AbortSignal.any([init.signal, attemptController.signal]) : attemptController.signal;
+    try {
+      return await fetchImpl(url, { ...init, signal }, address);
+    } catch (error: unknown) {
+      if (init.signal?.aborted) throw error;
+      lastError = error;
+    } finally {
+      clearTimeout(attemptTimeout);
+    }
+  }
+  if (lastError !== undefined) throw lastError;
+  throw new Error("all validated addresses failed");
+}
+
 export async function fetchOfficial(rawUrl: string, options: FetchOfficialOptions): Promise<OfficialHttpResponse> {
   const timeoutMs = options.timeoutMs ?? 30_000;
   const maxBytes = options.maxBytes ?? 5 * 1024 * 1024;
@@ -285,7 +317,6 @@ export async function fetchOfficial(rawUrl: string, options: FetchOfficialOption
   while (true) {
     const validated = await assertSafeUrl(url, options.allowedHosts, options.lookup);
     const requestUrl = validated.url;
-    const address = validated.addresses[0];
     if (redirects > maxRedirects) throw new CrawlerHttpError("REDIRECT_LIMIT", `redirect limit exceeded: ${maxRedirects}`);
     await waitForHost(requestUrl.hostname, intervalMs);
     const controller = new AbortController();
@@ -298,9 +329,9 @@ export async function fetchOfficial(rawUrl: string, options: FetchOfficialOption
           signal: controller.signal,
           headers: { accept: "application/json, text/html, text/plain", "user-agent": options.userAgent ?? "game-event-gantt-crawler/phase1" },
         };
-        if (options.pinnedFetchImpl) response = await options.pinnedFetchImpl(requestUrl, init, address);
+        if (options.pinnedFetchImpl) response = await fetchPinnedWithFallback(requestUrl, init, validated.addresses, timeoutMs, options.pinnedFetchImpl);
         else if (options.fetchImpl) response = await options.fetchImpl(requestUrl, init);
-        else response = await fetchPinned(requestUrl, init, address);
+        else response = await fetchPinnedWithFallback(requestUrl, init, validated.addresses, timeoutMs, fetchPinned);
       } catch (error) {
         if (error instanceof CrawlerHttpError) throw error;
         if ((error as Error).name === "AbortError") throw new CrawlerHttpError("TIMEOUT", `request timed out after ${timeoutMs}ms`);

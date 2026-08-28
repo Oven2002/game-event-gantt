@@ -275,6 +275,22 @@ describe("safe official HTTP client", () => {
     expect(capturedAddress).toBe("93.184.216.34");
   });
 
+  it("falls back to the next validated address when pinned transport fails", async () => {
+    const attempted: string[] = [];
+    const result = await fetchOfficial("https://example.com/pinned-fallback", {
+      allowedHosts: ["example.com"],
+      lookup: async () => ["93.184.216.1", "93.184.216.34"],
+      minHostIntervalMs: 0,
+      pinnedFetchImpl: async (_url, _init, address) => {
+        attempted.push(address);
+        if (address === "93.184.216.1") throw new Error("connect timeout");
+        return response("fallback");
+      },
+    });
+    expect(result.body).toBe("fallback");
+    expect(attempted).toEqual(["93.184.216.1", "93.184.216.34"]);
+  });
+
   it("revalidates DNS before retrying an official request", async () => {
     let lookups = 0;
     let attempts = 0;
