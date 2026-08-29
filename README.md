@@ -70,6 +70,18 @@ npm run build          # 数据校验 + 类型检查 + 生产构建
 
 GitHub 侧的工作流（`.github/workflows/ci.yml`）负责把关：每个 Pull Request 以及推送到 `main` 的提交都会运行数据校验、单元测试与生产构建。站点部署本身由 Cloudflare Pages 完成，GitHub Actions 不参与发布。
 
+### 爬虫运行边界
+
+爬虫不是 Cloudflare Pages 的生产进程，也不是站点打开时的实时数据接口。它的作用是从国服官方 API/文章批量收集和初步解析公告，减少需要交给模型或人工阅读的原始文本量；当前 fetch/parse 本身是确定性程序，不会自动修改 `data/`、commit 或 push。
+
+因此，收集数据时仍需要在本地或独立 runner（例如 NAS/Docker、服务器或专用 CI runner）运行爬虫。Cloudflare Pages 只负责在 `data/*.yaml` 发生提交后构建静态站点。
+
+一次采集周期中，每个游戏运行一次 `fetch` 即可：一次命令会自动完成该游戏的全部分页和详情请求，不需要手动逐页运行；五个游戏就是五次独立运行，因为 CLI 的 `--game` 是必填且每次运行有独立 run ID。一个游戏失败时只需用新的 run ID 重跑该游戏。
+
+增量和全量的含义不同：不带参数默认回看最近 30 天，`--since` 扫描指定日期/时间之后的窗口，`--full` 扫描全部历史分页。当前没有经过验证的持久 cursor（`checkpoint.kind` 为 `null`），state 中的 source hash 只用于证据和变化比对，不代表下次可以从 API 上次位置继续。因此日常增量采集需要每个周期重复运行五个游戏各一次；首次建立全历史快照时才使用每个游戏各一次 `--full`。
+
+正式数据仍需经过 `fetch → parse → review → 人工选择 → approve → 合并 YAML → push`；完成 push 后 Cloudflare Pages 才会部署更新。
+
 ## 技术栈
 
 - [Astro](https://astro.build/) 7（静态站点）

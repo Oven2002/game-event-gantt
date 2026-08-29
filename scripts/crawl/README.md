@@ -98,11 +98,41 @@ reason = No stable cross-run checkpoint was verified.
 
 未提供 `--since` 时，各游戏默认回看 30 天；`--full` 扫描全部分页；`--since` 与 `--full` 互斥。没有稳定 checkpoint 并不是失败，失败的是伪造一个未验证的 checkpoint。
 
-## 3. 直接运行 CLI
+## 3. 运行位置与采集周期
+
+### 3.1 爬虫的定位
+
+crawler 的主要目的，是在收集公告时用确定性代码完成批量列表请求、详情请求、字段校验、正文规范化和初步时间解析，从而减少需要交给模型或人工阅读的原始文本量。`fetch` 和 `parse` 本身不调用模型，也不是正式数据写入器；它们只生成可追溯的 runtime artifact。
+
+Cloudflare Pages 只托管静态站点，不能作为 crawler 的运行环境。当前 `.github/workflows/ci.yml` 也只执行测试和 build，不执行实时官网请求。因此实际收集必须在本地或独立 runner（例如 NAS/Docker、服务器或专用 CI runner）执行，并为 `.runtime/crawl` 提供持久目录或上传运行 artifact。
+
+### 3.2 一次采集周期和五个游戏
+
+一次 `fetch` 只负责一个 `--game`，但会自动请求该游戏的全部列表分页和每条详情，不需要按页手动重复。五个游戏的一轮采集需要五次独立 `fetch`，每次有自己的 run ID：
+
+```text
+fetch --game genshin-impact
+fetch --game honkai-star-rail
+fetch --game zenless-zone-zero
+fetch --game arknights
+fetch --game arknights-endfield
+```
+
+随后每个 run 分别执行 `parse`、`review` 和（人工确认后）`approve`。某一个游戏失败时，只用新的 run ID 重跑该游戏；同一 run 的 artifact 不覆盖复用。
+
+### 3.3 “全量”和“增量”的含义
+
+- **首次全历史采集**：五个游戏各运行一次 `fetch --full`。每次命令内部会遍历该游戏的全部分页。
+- **按时间获取增量**：五个游戏各运行一次 `fetch --since YYYY-MM-DD`（也可以带到分钟的北京时间），每次命令会抓取该时间点之后的列表项及其详情。
+- **默认日常窗口**：不提供 `--since` 或 `--full` 时，每个游戏默认回看最近 30 天。
+
+当前五个游戏都没有经过验证的持久 cursor，`checkpoint.kind` 为 `null`。`state.json` 中的 `sourceHashes` 用于记录已经看到的内容和辅助变化比对，不是 API 页码游标。因此，“每个游戏运行一次”只表示**每一轮采集各运行一次**，不是首次运行后永久不再运行；日常增量仍需要下一轮再次运行五个游戏。为了捕捉公告修订，时间窗口可以保留适当重叠，再交给 hash/review 去识别新增和变化。
+
+### 3.4 直接运行 CLI
 
 默认 runtime root 为仓库内的 `.runtime/crawl`。CLI 没有把 runtime root 暴露成命令行 flag；测试和程序调用方可通过 API options 注入临时 root。
 
-### 3.1 Fetch
+#### 3.4.1 Fetch
 
 ```bash
 node --experimental-strip-types scripts/crawl/cli.ts fetch \
@@ -131,7 +161,7 @@ Fetch 的行为：
 - 成功后才更新 `state.json` 的 source hash；
 - 同 run 任何现有 artifact 都会拒绝复用，不提供 `--force`。
 
-### 3.2 Parse、Review、Approve
+#### 3.4.2 Parse、Review、Approve
 
 ```bash
 node --experimental-strip-types scripts/crawl/cli.ts parse \
