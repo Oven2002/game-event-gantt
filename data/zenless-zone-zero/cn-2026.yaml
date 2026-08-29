@@ -18,6 +18,14 @@ events:
     related: ["3.1"]
     sources:
       - "https://zzz.mihoyo.com/news/165272"
+  - id: preview-3-2
+    name: "《绝区零》3.2版本「她与她的隐秘往事」前瞻特别节目预告"
+    type: preview
+    start: "2026-08-28T19:30:00+08:00"
+    timeCertainty:
+      start: confirmed
+    sources:
+      - "https://zzz.mihoyo.com/news/165853"
   - id: banner-3-1-first
     name: "上半卡池「复乐园」蕾米埃尔 + 爱芮复刻"
     type: banner

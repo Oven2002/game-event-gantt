@@ -1,4 +1,4 @@
-import { parseExplicitInterval } from "../common/time.ts";
+import { parseDateTimeText, parseExplicitInterval } from "../common/time.ts";
 import { parseMaintenanceText } from "./maintenance.ts";
 import { candidateHashProjection, hashCanonicalJson, sourceHashProjection } from "../common/hash.ts";
 import type { CandidateItem, RawArticle, Sha256 } from "../types.ts";
@@ -35,6 +35,14 @@ function hasConcreteVersionIdentity(title: string, content: string): boolean {
     || /(?:版本号|版本)\s*(?:为|是)?\s*\d+(?:\.\d+)+/.test(content);
 }
 
+function parseSinglePreviewStart(content: string, referenceYear?: number): string | undefined {
+  const pattern = /(?:将于|于)\s*((?:\d{4}[年/-]\d{1,2}[月/-]\d{1,2}(?:日)?|\d{1,2}月\d{1,2}日|\d{1,2}\/\d{1,2})\s*\d{1,2}:\d{2})\s*(?:正式)?(?:开启|开始|开播|直播)/g;
+  const matches = [...content.matchAll(pattern)];
+  if (matches.length !== 1) return undefined;
+  const parsed = parseDateTimeText(matches[0][1], referenceYear);
+  return parsed.status === "confirmed" ? parsed.value : undefined;
+}
+
 export function parseArticleCandidates(article: { title: string; content: string; publishedAt?: string | null }): ParsedArticleCandidate {
   const classification = classify(article.title);
   if (!classification) return { status: "needs_review", reason: "article kind is not deterministically classified" };
@@ -43,8 +51,12 @@ export function parseArticleCandidates(article: { title: string; content: string
   if (!article.content.trim() || /图片|见图|长图/.test(article.content)) return { ...base, status: "needs_review", reason: "time is image-only or content is empty" };
   const intervalPattern = /(?:\d{4}[年/-]\d{1,2}[月/-]\d{1,2}(?:日)?|\d{1,2}月\d{1,2}日)\s*\d{1,2}:\d{2}\s*(?:至|到|—|–|-)\s*(?:\d{4}[年/-]\d{1,2}[月/-]\d{1,2}(?:日)?|\d{1,2}月\d{1,2}日|\d{1,2}\/\d{1,2})?\s*\d{1,2}:\d{2}/g;
   const intervals = [...article.content.matchAll(intervalPattern)];
-  if (intervals.length !== 1) return { ...base, status: "needs_review", reason: intervals.length === 0 ? "no explicit interval" : "multiple time windows" };
   const referenceYear = article.publishedAt && /^(\d{4})-/.exec(article.publishedAt)?.[1];
+  if (intervals.length === 0 && classification.kind === "event" && classification.type === "preview") {
+    const start = parseSinglePreviewStart(article.content, referenceYear ? Number(referenceYear) : undefined);
+    if (start) return { ...base, status: "ready", name: article.title, start, certainty: "confirmed" };
+  }
+  if (intervals.length !== 1) return { ...base, status: "needs_review", reason: intervals.length === 0 ? "no explicit interval" : "multiple time windows" };
   try {
     const interval = parseExplicitInterval(intervals[0][0], referenceYear ? Number(referenceYear) : undefined);
     if (classification.kind === "event" && /维护(?:结束)?后(?:开启|开放|开始)/.test(article.content)) {

@@ -23,15 +23,37 @@ describe("crawler target map", () => {
     expect(CandidateTargetMapSchema.safeParse({ schemaVersion: 1, entries: [mapEntry, mapEntry] }).success).toBe(false);
   });
 
-  it("accepts the committed empty registry", async () => {
-    await expect(loadCandidateTargetMap("scripts/crawl/candidate-target-map.json")).resolves.toEqual([]);
-    expect(await readFile("scripts/crawl/candidate-target-map.json", "utf8")).toBe('{"schemaVersion":1,"entries":[]}\n');
+  it("accepts the committed applied registry", async () => {
+    const entries = await loadCandidateTargetMap("scripts/crawl/candidate-target-map.json");
+    expect(entries).toEqual([
+      {
+        candidateKey: "arknights/1459/primary",
+        game: "arknights",
+        region: "cn",
+        kind: "event",
+        targetFile: "data/arknights/cn-2026.yaml",
+        targetId: "maintenance-2026-08-01-version",
+        appliedRunId: "20260829-011620",
+        appliedAt: "2026-08-29T01:32:13.000Z",
+      },
+      {
+        candidateKey: "zenless-zone-zero/165853/primary",
+        game: "zenless-zone-zero",
+        region: "cn",
+        kind: "event",
+        targetFile: "data/zenless-zone-zero/cn-2026.yaml",
+        targetId: "preview-3-2",
+        appliedRunId: "20260829-012939",
+        appliedAt: "2026-08-29T01:32:13.000Z",
+      },
+    ]);
+    expect(CandidateTargetMapSchema.safeParse(JSON.parse(await readFile("scripts/crawl/candidate-target-map.json", "utf8"))).success).toBe(true);
   });
 
   it("indexes every current formal data file", async () => {
     const index = await buildDataIndex("data");
     expect(index.files).toHaveLength(15);
-    expect(index.targets.size).toBe(441);
+    expect(index.targets.size).toBe(443);
   });
 
   it("preserves a non-cn region instead of coercing it to cn", async () => {

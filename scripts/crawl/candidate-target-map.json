@@ -1,1 +1,25 @@
-{"schemaVersion":1,"entries":[]}
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "candidateKey": "arknights/1459/primary",
+      "game": "arknights",
+      "region": "cn",
+      "kind": "event",
+      "targetFile": "data/arknights/cn-2026.yaml",
+      "targetId": "maintenance-2026-08-01-version",
+      "appliedRunId": "20260829-011620",
+      "appliedAt": "2026-08-29T01:32:13.000Z"
+    },
+    {
+      "candidateKey": "zenless-zone-zero/165853/primary",
+      "game": "zenless-zone-zero",
+      "region": "cn",
+      "kind": "event",
+      "targetFile": "data/zenless-zone-zero/cn-2026.yaml",
+      "targetId": "preview-3-2",
+      "appliedRunId": "20260829-012939",
+      "appliedAt": "2026-08-29T01:32:13.000Z"
+    }
+  ]
+}

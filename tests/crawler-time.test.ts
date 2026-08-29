@@ -80,6 +80,20 @@ describe("announcement timeline semantics", () => {
     })).toMatchObject({ status: "needs_review", kind: "version", reason: "version identity is not confirmed" });
   });
 
+  it("accepts a single confirmed start for a preview notice", () => {
+    expect(parseArticleCandidates({
+      title: "3.2版本前瞻特别节目预告",
+      content: "前瞻特别节目将于8月28日 19:30正式开启！",
+      publishedAt: "2026-08-20T00:00:00+08:00",
+    })).toMatchObject({
+      status: "ready",
+      kind: "event",
+      type: "preview",
+      start: "2026-08-28T19:30:00+08:00",
+      certainty: "confirmed",
+    });
+  });
+
   it("prioritizes banner and preview markers over a version number", () => {
     const content = "时间：2026年8月20日 04:00 至 2026年8月20日 11:00";
     expect(parseArticleCandidates({ title: "4.5版本活动跃迁（其一）", content })).toMatchObject({ status: "ready", kind: "event", type: "banner" });
