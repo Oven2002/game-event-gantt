@@ -34,7 +34,9 @@ export function canonicalizeUrl(rawUrl: string): string {
   url.protocol = url.protocol.toLowerCase();
   url.hostname = url.hostname.toLowerCase();
   if ((url.protocol === "https:" && url.port === "443") || (url.protocol === "http:" && url.port === "80")) url.port = "";
-  url.hash = "";
+  // Pure anchor fragments (#section) are presentation noise, but SPA-router fragments
+  // that carry the resource id (#newsId?98) ARE the resource identity — keep them.
+  if (!url.hash.includes("?")) url.hash = "";
   return url.toString();
 }
 

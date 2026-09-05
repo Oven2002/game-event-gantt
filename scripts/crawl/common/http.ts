@@ -46,6 +46,10 @@ export interface FetchOfficialOptions {
   retryDelaysMs?: number[];
   maxRedirects?: number;
   userAgent?: string;
+  /** HTTP method; defaults to GET. Only GET and POST are allowed (fail closed otherwise). */
+  method?: "GET" | "POST";
+  /** JSON request body; only sent when method is POST. */
+  jsonBody?: unknown;
   fetchImpl?: typeof fetch;
   pinnedFetchImpl?: PinnedFetchImpl;
   lookup?: (hostname: string) => Promise<string[]>;
@@ -277,6 +281,7 @@ function fetchPinned(url: URL, init: RequestInit, address: string): Promise<Resp
     request.once("close", cleanup);
     if (signal?.aborted) onAbort();
     else signal?.addEventListener("abort", onAbort, { once: true });
+    if (typeof init.body === "string" && init.body.length > 0) request.write(init.body);
     request.end();
   });
 }
@@ -346,12 +351,27 @@ export async function fetchOfficial(rawUrl: string, options: FetchOfficialOption
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
       let response: Response;
+      const method = options.method ?? "GET";
+      if (method !== "GET" && method !== "POST") throw new CrawlerHttpError("HTTP_STATUS", `unsupported method: ${method}`);
+      const jsonBody = method === "POST" ? JSON.stringify(options.jsonBody ?? {}) : undefined;
+      const init: RequestInit = {
+        redirect: "manual",
+        signal: controller.signal,
+        method,
+        ...(jsonBody !== undefined
+          ? {
+              headers: {
+                accept: "application/json, text/html, text/plain",
+                "content-type": "application/json",
+                "user-agent": options.userAgent ?? "game-event-gantt-crawler/phase1",
+              },
+              body: jsonBody,
+            }
+          : {
+              headers: { accept: "application/json, text/html, text/plain", "user-agent": options.userAgent ?? "game-event-gantt-crawler/phase1" },
+            }),
+      };
       try {
-        const init: RequestInit = {
-          redirect: "manual",
-          signal: controller.signal,
-          headers: { accept: "application/json, text/html, text/plain", "user-agent": options.userAgent ?? "game-event-gantt-crawler/phase1" },
-        };
         if (options.pinnedFetchImpl) response = await fetchPinnedWithFallback(requestUrl, init, validated.addresses, timeoutMs, options.pinnedFetchImpl);
         else if (options.fetchImpl) response = await options.fetchImpl(requestUrl, init);
         else response = await fetchPinnedWithFallback(requestUrl, init, validated.addresses, timeoutMs, fetchPinned);

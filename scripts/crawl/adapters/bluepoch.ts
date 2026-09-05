@@ -15,6 +15,8 @@ export interface BluepochListItem {
 export interface BluepochListPage {
   total: number;
   items: BluepochListItem[];
+  /** The raw pageData entries, kept for adapters that inline full article content. */
+  rawItems: Array<Record<string, unknown>>;
 }
 
 export class BluepochAdapterError extends Error {
@@ -73,16 +75,18 @@ function getString(value: unknown, field: string, allowEmpty = false): string {
   return value;
 }
 
-function normalizeItem(item: Record<string, unknown>): BluepochListItem {
+function normalizeItem(item: Record<string, unknown>): BluepochListItem | null {
   const rawId = item.id;
   if (typeof rawId !== "number" && !(typeof rawId === "string" && /^\d+$/.test(rawId))) {
     throw new BluepochAdapterError("missing id");
   }
-  const sourceId = String(rawId);
   const informationType = item.informationType;
+  // Unknown channel types are skipped (not rejected): the official list mixes
+  // promotional/guide entries outside the announcement channels we crawl.
   if (typeof informationType !== "number" || !allowedInformationTypes.has(informationType)) {
-    throw new BluepochAdapterError(`informationType is outside the configured CN channels for ${config.game}`);
+    return null;
   }
+  const sourceId = String(rawId);
   const title = getString(item.title, "title");
   const content = normalizeCanonicalContent(getString(item.content, "content", true));
   const onlineTime = typeof item.onlineTime === "string" && item.onlineTime.length > 0 ? item.onlineTime : null;
@@ -101,27 +105,35 @@ export function parseBluepochList(body: unknown): BluepochListPage {
   if (!Array.isArray(data.pageData)) throw new BluepochAdapterError("missing data.pageData");
   const seen = new Set<string>();
   const items: BluepochListItem[] = [];
+  const rawItems: Array<Record<string, unknown>> = [];
   for (const raw of data.pageData) {
     if (typeof raw !== "object" || raw === null) throw new BluepochAdapterError("invalid list item");
     const item = normalizeItem(raw as Record<string, unknown>);
+    if (item === null) continue; // outside the crawled channels
     const key = `${item.sourceId}:${item.contentHash}`;
     if (!seen.has(key)) {
       seen.add(key);
       items.push(item);
+      rawItems.push(raw as Record<string, unknown>);
     }
   }
   const total = data.total;
   if (typeof total !== "number" || !Number.isSafeInteger(total) || total < 0) {
     throw new BluepochAdapterError("invalid total");
   }
-  return { total, items };
+  return { total, items, rawItems };
 }
 
 export function parseBluepochDetail(requestedSourceId: string, body: unknown, fetchedAt: string): RawArticle {
   if (!/^\d+$/.test(requestedSourceId)) throw new BluepochAdapterError("invalid sourceId");
-  const data = getData(body);
-  if (String(data.id ?? "") !== requestedSourceId) throw new BluepochAdapterError("detail id mismatch");
-  const item = normalizeItem(data);
+  // The detail body is either a {code, data:{...}} envelope (detail endpoint) or a bare
+  // list item (inline-detail mode reuses the pageData entry verbatim).
+  const envelope = typeof body === "object" && body !== null && "code" in (body as Record<string, unknown>)
+    ? getData(body)
+    : body as Record<string, unknown>;
+  if (String(envelope.id ?? "") !== requestedSourceId) throw new BluepochAdapterError("detail id mismatch");
+  const item = normalizeItem(envelope);
+  if (item === null) throw new BluepochAdapterError("detail item is outside the crawled channels");
   return {
     game: config.game,
     region: config.region,

@@ -70,12 +70,17 @@ describe("bluepoch list parsing", () => {
     expect(() => parseBluepochList({ code: 200, data: { pageData: [{ id: "x", title: "t", onlineTime: "2026-08-12 18:01:09", content: "c", informationType: 2 }] } })).toThrow(/id/);
   });
 
-  it("rejects items whose informationType is outside the configured channels", () => {
+  it("skips items whose informationType is outside the crawled channels", () => {
     const body = {
       code: 200,
-      data: { total: 1, pageData: [{ id: 99, title: "未知栏目", informationType: 9, onlineTime: "2026-08-12 18:01:09", content: "x" }] },
+      data: { total: 2, pageData: [
+        { id: 99, title: "未知栏目", informationType: 9, onlineTime: "2026-08-12 18:01:09", content: "x" },
+        { id: 98, title: "维护公告", informationType: 2, onlineTime: "2026-08-12 18:01:09", content: "y" },
+      ] },
     };
-    expect(() => parseBluepochList(body)).toThrow(/informationType|channel/i);
+    const page = parseBluepochList(body);
+    expect(page.items.map((item) => item.sourceId)).toEqual(["98"]);
+    expect(page.rawItems.map((raw) => raw.id)).toEqual([98]);
   });
 });
 

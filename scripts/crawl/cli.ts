@@ -14,12 +14,16 @@ import { hypergryphGames } from "./hypergryph-config.ts";
 import { buildMihoyoDetailRequest, buildMihoyoListRequest, parseMihoyoDetail, parseMihoyoList, type MihoyoListPage } from "./adapters/mihoyo.ts";
 import { mihoyoGames } from "./mihoyo-config.ts";
 import { normalizeContent as normalizeMihoyoContent } from "./common/content.ts";
+import { parseBluepochDetail, parseBluepochList, buildBluepochListRequest, buildBluepochDetailUrl, type BluepochListPage } from "./adapters/bluepoch.ts";
+import { bluepochGames } from "./bluepoch-config.ts";
+import { parsePostroomContent, parsePostroomList, parsePostroomPreview, buildPostroomListRequest, buildPostroomPreviewRequest, buildPostroomContentRequest, buildPostroomDetailPageUrl, type PostroomListPage } from "./adapters/postroom.ts";
+import { postroomGames } from "./postroom-config.ts";
 
-export type CrawlGame = "genshin-impact" | "honkai-star-rail" | "zenless-zone-zero" | "arknights" | "arknights-endfield";
+export type CrawlGame = "genshin-impact" | "honkai-star-rail" | "zenless-zone-zero" | "arknights" | "arknights-endfield" | "reverse-1999" | "light-and-night";
 export type CrawlCommand = "fetch" | "parse" | "review" | "approve";
 export interface CliArgs { command: CrawlCommand; game?: CrawlGame; since?: string; full?: boolean; run?: string; selection?: string; }
 
-const games = new Set<CrawlGame>(["genshin-impact", "honkai-star-rail", "zenless-zone-zero", "arknights", "arknights-endfield"]);
+const games = new Set<CrawlGame>(["genshin-impact", "honkai-star-rail", "zenless-zone-zero", "arknights", "arknights-endfield", "reverse-1999", "light-and-night"]);
 
 export function createRunId(date = new Date()): string {
   const pad = (value: number) => String(value).padStart(2, "0");
@@ -29,7 +33,11 @@ export function createRunId(date = new Date()): string {
 export function defaultLookbackSince(game: CrawlGame, now: Date): string {
   const config = game === "genshin-impact" || game === "honkai-star-rail" || game === "zenless-zone-zero"
     ? mihoyoGames[game]
-    : hypergryphGames[game];
+    : game === "arknights" || game === "arknights-endfield"
+      ? hypergryphGames[game]
+      : game === "reverse-1999"
+        ? bluepochGames[game]
+        : postroomGames[game];
   if (!Number.isSafeInteger(config.checkpoint.defaultLookbackDays) || config.checkpoint.defaultLookbackDays < 1) throw new Error(`invalid defaultLookbackDays for ${game}`);
   const target = new Date(now.getTime() - config.checkpoint.defaultLookbackDays * 24 * 60 * 60 * 1000);
   if (!Number.isFinite(target.getTime())) throw new Error("invalid current time");
@@ -127,17 +135,90 @@ function hypergryphAdapter(game: Extract<CrawlGame, "arknights" | "arknights-end
   };
 }
 
+function bluepochAdapter(game: Extract<CrawlGame, "reverse-1999">): AnyFetchAdapter {
+  const config = bluepochGames[game];
+  return {
+    allowedHosts: config.officialHosts,
+    allowedListContentTypes: ["application/json"],
+    allowedDetailContentTypes: ["application/json"],
+    isCanonicalContent: (content) => normalizeMihoyoContent(content) === content,
+    // The bluepoch list endpoint requires POST (GET returns code 5002); the body is the
+    // measured credential-free query shape. Detail is skipped: content is inlined in the list.
+    listRequestBody: (page, pageSize) => buildBluepochListRequest(page, pageSize).body,
+    listUrl: (page, pageSize) => buildBluepochListRequest(page, pageSize).url,
+    detailUrl: (sourceId) => buildBluepochDetailUrl(sourceId),
+    list: (_page, _pageSize, body) => parseBluepochList(body),
+    // The bluepoch list response inlines each article's full content: no per-item request.
+    inlineDetailBodies: (page) => {
+      const bodies = new Map<string, unknown>();
+      for (const raw of (page as BluepochListPage).rawItems) {
+        bodies.set(String(raw.id), raw);
+      }
+      return bodies;
+    },
+    listItems: (page) => (page as BluepochListPage).items.map((item) => ({
+      sourceId: item.sourceId,
+      url: buildBluepochDetailUrl(item.sourceId),
+      publishedAt: item.publishedAt,
+    })),
+    hasMore: (page, pageNumber, _requestedPageSize, itemCount) => pageNumber * itemCount < (page as BluepochListPage).total,
+    detail: (sourceId, body, fetchedAt) => parseBluepochDetail(sourceId, body, fetchedAt),
+  };
+}
+
+function postroomAdapter(game: Extract<CrawlGame, "light-and-night">): AnyFetchAdapter {
+  const config = postroomGames[game];
+  // Postroom chain: preview (name + publishDate) -> content (HTML body).
+  // nextDetailUrl drives the fetch loop; onDetailStep caches the preview metadata.
+  const previewMeta = new Map<string, { name: string; publishedAt: string }>();
+  return {
+    allowedHosts: config.officialHosts,
+    allowedListContentTypes: ["application/json"],
+    allowedDetailContentTypes: ["application/json"],
+    isCanonicalContent: (content) => normalizeMihoyoContent(content) === content,
+    listUrl: (_page, _pageSize) => buildPostroomListRequest().url,
+    detailUrl: (sourceId) => buildPostroomPreviewRequest(sourceId).url,
+    list: (page, _pageSize, body) => {
+      if (page > 1) return { ids: [] } satisfies PostroomListPage;
+      return parsePostroomList(body);
+    },
+    listItems: (page) => (page as PostroomListPage).ids.map((id) => ({
+      sourceId: id,
+      url: buildPostroomPreviewRequest(id).url,
+      publishedAt: null,
+    })),
+    decodeDetailResponse: (response) => JSON.parse(response.body),
+    nextDetailUrl: (sourceId, body) => {
+      if (previewMeta.has(sourceId)) return undefined;
+      // First response is the preview: cache metadata, request the content next.
+      const meta = parsePostroomPreview(sourceId, body);
+      previewMeta.set(sourceId, { name: meta.name, publishedAt: meta.publishedAt });
+      return buildPostroomContentRequest(sourceId).url;
+    },
+    detail: (sourceId, body, fetchedAt) => {
+      const meta = previewMeta.get(sourceId);
+      if (!meta) throw new Error(`postroom preview metadata is missing for ${sourceId}`);
+      // Hyperlink-only posts return null: the fetch loop skips them.
+      return parsePostroomContent(sourceId, meta.name, meta.publishedAt, body, fetchedAt);
+    },
+  };
+}
+
 export function createFetchAdapter(game: CrawlGame): AnyFetchAdapter {
   if (game === "genshin-impact" || game === "honkai-star-rail" || game === "zenless-zone-zero") return mihoyoAdapter(game);
+  if (game === "reverse-1999") return bluepochAdapter(game);
+  if (game === "light-and-night") return postroomAdapter(game);
   return hypergryphAdapter(game);
 }
 
-const checkpointKinds: Record<CrawlGame, string | null> = {
+export const checkpointKinds: Record<CrawlGame, string | null> = {
   "genshin-impact": mihoyoGames["genshin-impact"].checkpoint.checkpointKind,
   "honkai-star-rail": mihoyoGames["honkai-star-rail"].checkpoint.checkpointKind,
   "zenless-zone-zero": mihoyoGames["zenless-zone-zero"].checkpoint.checkpointKind,
   arknights: hypergryphGames.arknights.checkpoint.checkpointKind,
   "arknights-endfield": hypergryphGames["arknights-endfield"].checkpoint.checkpointKind,
+  "reverse-1999": bluepochGames["reverse-1999"].checkpoint.checkpointKind,
+  "light-and-night": postroomGames["light-and-night"].checkpoint.checkpointKind,
 };
 
 export interface AdvanceStateOptions {

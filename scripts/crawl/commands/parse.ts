@@ -10,10 +10,14 @@ import { artifactDirectory, artifactPath, assertRuntimePathSafe, assertRuntimeRo
 import { mihoyoGames } from "../mihoyo-config.ts";
 import { hypergryphGames } from "../hypergryph-config.ts";
 import { normalizeHypergryphContent } from "../adapters/hypergryph.ts";
+import { bluepochGames } from "../bluepoch-config.ts";
+import { postroomGames } from "../postroom-config.ts";
 
 const configuredGames = {
   ...mihoyoGames,
   ...hypergryphGames,
+  ...bluepochGames,
+  ...postroomGames,
 };
 
 export interface ParseCommandOptions {
@@ -85,7 +89,9 @@ function canonicalRawIssue(raw: RawArticle): string | undefined {
     ? normalizeMihoyoContent(raw.content)
     : raw.source === "hypergryph"
       ? normalizeHypergryphContent(raw.content)
-      : raw.content;
+      : raw.source === "bluepoch" || raw.source === "postroom"
+        ? normalizeMihoyoContent(raw.content)
+        : raw.content;
   return normalized === raw.content ? undefined : "raw article canonical content validation failed";
 }
 

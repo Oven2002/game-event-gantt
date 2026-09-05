@@ -1,6 +1,8 @@
 import { officialSourceAccounts } from "../source-accounts.ts";
 import { mihoyoGames } from "../mihoyo-config.ts";
 import { hypergryphGames } from "../hypergryph-config.ts";
+import { bluepochGames } from "../bluepoch-config.ts";
+import { postroomGames } from "../postroom-config.ts";
 
 export type SourceRole = "official" | "discovery" | "rejected";
 export type SourcePlatform = "bilibili" | "weibo" | "miyoushe" | "taptap";
@@ -12,6 +14,8 @@ const officialArticleHosts: Record<string, string[]> = {
   "zenless-zone-zero": [mihoyoGames["zenless-zone-zero"].articleHost],
   arknights: [hypergryphGames.arknights.officialHost],
   "arknights-endfield": [hypergryphGames["arknights-endfield"].officialHost],
+  "reverse-1999": [bluepochGames["reverse-1999"].articleHost],
+  "light-and-night": [postroomGames["light-and-night"].articleHost],
 };
 const rejectedHosts = new Set(["forum.gamer.com.tw", "news.17173.com", "m.ali213.net", "www.gamersky.com"]);
 const localePath = /(^|\/)\p{L}{2}-\p{L}{2}(?:\/|$)/u;

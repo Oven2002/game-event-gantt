@@ -32,9 +32,14 @@ describe("postroom request contract", () => {
     }
   });
 
-  it("rejects publish ids that are not the measured uuid shape", () => {
+  it("rejects publish ids that are neither the numeric nor the uuid shape", () => {
     expect(() => buildPostroomPreviewRequest("../escape")).toThrow(/publishId/i);
     expect(() => buildPostroomPreviewRequest("NOT-A-UUID")).toThrow(/publishId/i);
+  });
+
+  it("accepts the two measured id shapes (numeric legacy and uuid)", () => {
+    expect(buildPostroomPreviewRequest("18458857").url).toBe("https://press-static-love.aurora.qq.com/18458857.preview.json");
+    expect(buildPostroomContentRequest("18458857").url).toBe("https://press-static-love.aurora.qq.com/18458857.content.json");
   });
 });
 
@@ -58,9 +63,10 @@ describe("postroom list parsing", () => {
     const body = [
       { postPublishId: "cb76fed6-349d-4922-abfe-4909143bcb3b", tagIdList: ["117009", "117010"], locale: null, localeGroupId: null },
       { postPublishId: "49a16145-5604-4ce5-a693-e1491e656105", tagIdList: ["117009"], locale: null, localeGroupId: null },
+      { postPublishId: "18458857", tagIdList: ["117009", "item117008"], locale: null, localeGroupId: null },
     ];
     const page: PostroomListPage = parsePostroomList(body);
-    expect(page.ids).toEqual(["cb76fed6-349d-4922-abfe-4909143bcb3b", "49a16145-5604-4ce5-a693-e1491e656105"]);
+    expect(page.ids).toEqual(["cb76fed6-349d-4922-abfe-4909143bcb3b", "49a16145-5604-4ce5-a693-e1491e656105", "18458857"]);
   });
 
   it("rejects non-array bodies and entries with missing or malformed ids", () => {

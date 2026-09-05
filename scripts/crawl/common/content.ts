@@ -18,15 +18,29 @@ const knownTagNames = new Set([
 ]);
 const tagTokenPattern = /<\s*(\/?)\s*([A-Za-z][A-Za-z0-9:-]*)([^>]*)>/g;
 
+/** True when the text inside a tag bracket looks like real attributes, not literal prose. */
+function attributeEvidence(rawAttributes: string): boolean {
+  const trimmed = rawAttributes.replace(/\/\s*$/, "").trim();
+  if (trimmed.length === 0) return false;
+  // key=value, key="...", key='...' — a value assignment is unambiguous markup evidence.
+  if (/[\w:-]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/.test(trimmed)) return true;
+  // Bare keys are only evidence when the name is a known HTML tag (e.g. `<img src>` shapes);
+  // unknown bare words like "Part 1" are treated as literal text by the caller.
+  return false;
+}
+
 function stripMarkup(value: string): string {
   const tokens = [...value.matchAll(tagTokenPattern)];
   const opening = new Set(tokens.filter((token) => token[1] === "").map((token) => token[2].toLowerCase()));
   const closing = new Set(tokens.filter((token) => token[1] === "/").map((token) => token[2].toLowerCase()));
   const paired = new Set([...opening].filter((name) => closing.has(name)));
-  const hasMarkupEvidence = paired.size > 0 || tokens.some((token) => token[3].replace(/\/\s*$/, "").trim().length > 0);
+  const hasMarkupEvidence = paired.size > 0 || tokens.some((token) => attributeEvidence(token[3]));
   return value.replace(tagTokenPattern, (match, closingMark: string, rawName: string, rawAttributes: string) => {
     const name = rawName.toLowerCase();
-    const hasAttributes = rawAttributes.replace(/\/\s*$/, "").trim().length > 0;
+    // An attribute must look like one: key=value, key="...", key='...', or a bare key
+    // followed by another token boundary. A bare word like `<Part 1>` is literal text
+    // (HTML tag names never contain spaces), so keep it as content.
+    const hasAttributes = attributeEvidence(rawAttributes);
     const isMarkup = paired.has(name) || hasAttributes || closingMark === "/" && knownTagNames.has(name) || (voidTagNames.has(name) && hasMarkupEvidence);
     if (!isMarkup) return match;
     if (name === "br") return "\n";

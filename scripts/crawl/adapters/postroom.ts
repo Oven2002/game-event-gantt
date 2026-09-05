@@ -23,7 +23,9 @@ export class PostroomAdapterError extends Error {
 }
 
 const config: PostroomGameConfig = postroomGames["light-and-night"];
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// The official list mixes two real id shapes: numeric (legacy posts, e.g. 18458857)
+// and UUID (newer posts). Both hit the same preview/content endpoints.
+const publishIdPattern = /^(?:\d+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
 const officialAuthor = "光与夜之恋官方";
 
 export { normalizeContent as normalizePostroomContent } from "../common/content.ts";
@@ -41,7 +43,7 @@ export function buildPostroomListRequest(): { method: "GET"; url: string } {
 }
 
 function assertPublishId(publishId: string): string {
-  if (!uuidPattern.test(publishId)) throw new PostroomAdapterError(`invalid publishId: ${publishId}`);
+  if (!publishIdPattern.test(publishId)) throw new PostroomAdapterError(`invalid publishId: ${publishId}`);
   return publishId;
 }
 
@@ -109,7 +111,7 @@ export function parsePostroomList(body: unknown): PostroomListPage {
     if (typeof raw !== "object" || raw === null) throw new PostroomAdapterError("invalid list item");
     const item = raw as Record<string, unknown>;
     const publishId = item.postPublishId;
-    if (typeof publishId !== "string" || !uuidPattern.test(publishId)) {
+    if (typeof publishId !== "string" || !publishIdPattern.test(publishId)) {
       throw new PostroomAdapterError("missing or malformed postPublishId");
     }
     if (!seen.has(publishId)) {
@@ -149,11 +151,14 @@ export function parsePostroomContent(
   publishedAt: string,
   body: unknown,
   fetchedAt: string,
-): RawArticle {
+): RawArticle | null {
   const id = assertPublishId(publishId);
   if (typeof body !== "object" || body === null) throw new PostroomAdapterError("invalid content envelope");
   const envelope = body as Record<string, unknown>;
   const rawContent = envelope.content;
+  // Hyperlink-style posts (e.g. brand collabs) carry content: null; the real article
+  // lives at the preview's hyperlink target. Nothing to extract here — skip the entry.
+  if (rawContent === null || rawContent === undefined) return null;
   if (typeof rawContent !== "string") throw new PostroomAdapterError("missing content");
   const content = normalizeCanonicalContent(rawContent);
   return {

@@ -16,16 +16,34 @@ export interface FetchListItem {
 export interface FetchAdapter<TPage> {
   list(page: number, pageSize: number, body: unknown): TPage;
   listItems(page: TPage): FetchListItem[];
-  detail(sourceId: string, body: unknown, fetchedAt: string, publishedAtFallback?: string | null): RawArticle;
+  /** Return null to skip the item entirely (e.g. hyperlink-only posts without inline content). */
+  detail(sourceId: string, body: unknown, fetchedAt: string, publishedAtFallback?: string | null): RawArticle | null;
   allowedListContentTypes?: readonly string[];
   allowedDetailContentTypes?: readonly string[];
   isCanonicalContent?: (content: string) => boolean;
+  /** POST JSON body for the list request; omit for GET (the default). */
+  listRequestBody?: (page: number, pageSize: number) => Record<string, unknown>;
+  /**
+   * When the list response already inlines each article's full content (no per-item
+   * detail request needed), return the per-sourceId detail bodies extracted from the
+   * parsed list page. The fetch loop then skips its per-item detail GET entirely.
+   */
+  inlineDetailBodies?: (page: TPage) => Map<string, unknown>;
   listUrl(page: number, pageSize: number): string;
   detailUrl(sourceId: string): string;
   hasMore?: (page: TPage, pageNumber: number, requestedPageSize: number, itemCount: number) => boolean;
   allowedHosts: string[];
   decodeListResponse?: (response: OfficialHttpResponse) => unknown;
   decodeDetailResponse?: (response: OfficialHttpResponse) => unknown;
+  /**
+   * Multi-step detail fetches (e.g. metadata request followed by content request):
+   * return the NEXT request URL for this item after each detail response, or undefined
+   * when the chain is complete and `detail` should be called with the final body.
+   * When present, `detail` is invoked once with the LAST chained response body.
+   */
+  nextDetailUrl?: (sourceId: string, body: unknown) => string | undefined;
+  /** Invoked for every detail-chain response before the final one; optional. */
+  onDetailStep?: (sourceId: string, body: unknown) => void;
 }
 
 export interface FetchCommandOptions<TPage> {
@@ -35,7 +53,7 @@ export interface FetchCommandOptions<TPage> {
   pageSize?: number;
   maxPages?: number;
   since?: string;
-  fetcher?: (url: string, allowedHosts: string[]) => Promise<OfficialHttpResponse>;
+  fetcher?: (url: string, allowedHosts: string[], init?: { method: "GET" | "POST"; jsonBody?: unknown }) => Promise<OfficialHttpResponse>;
   adapter: FetchAdapter<TPage>;
   writeRaw?: (article: RawArticle) => Promise<boolean>;
   now?: () => string;
@@ -96,7 +114,13 @@ export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Pro
   await mkdir(dirname(rawPath), { recursive: true });
   const temporary = `${rawPath}.tmp-${process.pid}-${randomUUID()}`;
   const writeRaw = options.writeRaw ?? ((article: RawArticle) => appendJsonlIfUnique(temporary, article, (value) => `${value.game}/${value.sourceId}/${value.contentHash}`));
-  const get = options.fetcher ?? (async (url, allowedHosts) => fetchOfficial(url, { allowedHosts }));
+  const fetcher = options.fetcher;
+  const get: (url: string, allowedHosts: string[]) => Promise<OfficialHttpResponse> = fetcher
+    ? (url, allowedHosts) => fetcher(url, allowedHosts)
+    : (url, allowedHosts) => fetchOfficial(url, { allowedHosts });
+  const postJson: (url: string, allowedHosts: string[], jsonBody: unknown) => Promise<OfficialHttpResponse> = fetcher
+    ? (url, allowedHosts, jsonBody) => fetcher(url, allowedHosts, { method: "POST", jsonBody })
+    : (url, allowedHosts, jsonBody) => fetchOfficial(url, { allowedHosts, method: "POST", jsonBody });
   const fetchedAt = options.now ?? (() => new Date().toISOString());
   let count = 0;
   let pages = 0;
@@ -106,7 +130,10 @@ export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Pro
     await writeFile(temporary, "", "utf8");
     for (let pageNumber = 1; pageNumber <= maxPages; pageNumber += 1) {
       pages = pageNumber;
-      const listResponse = await get(options.adapter.listUrl(pageNumber, pageSize), options.adapter.allowedHosts);
+      const listUrl = options.adapter.listUrl(pageNumber, pageSize);
+      const listResponse = options.adapter.listRequestBody
+        ? await postJson(listUrl, options.adapter.allowedHosts, options.adapter.listRequestBody(pageNumber, pageSize))
+        : await get(listUrl, options.adapter.allowedHosts);
       assertResponseContentType(listResponse, options.adapter.allowedListContentTypes, "list");
       const listBody = options.adapter.decodeListResponse?.(listResponse) ?? decodeJson(listResponse);
       const parsed = options.adapter.list(pageNumber, pageSize, listBody);
@@ -121,16 +148,43 @@ export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Pro
           const timestamp = publishedTimestamp(item.publishedAt);
           return timestamp === undefined || timestamp >= sinceMs;
         });
+      const inlineBodies = options.adapter.inlineDetailBodies?.(parsed);
       for (const item of items) {
-        const detailResponse = await get(item.url || options.adapter.detailUrl(item.sourceId), options.adapter.allowedHosts);
-        assertResponseContentType(detailResponse, options.adapter.allowedDetailContentTypes, "detail");
-        const detailBody = options.adapter.decodeDetailResponse?.(detailResponse) ?? decodeJson(detailResponse);
+        let detailBody: unknown;
+        if (inlineBodies) {
+          // The list response inlined the full article content: no per-item request.
+          const inlineBody = inlineBodies.get(item.sourceId);
+          if (inlineBody === undefined) throw new Error(`inline detail body is missing for ${item.sourceId}`);
+          detailBody = inlineBody;
+        } else {
+          const detailResponse = await get(item.url || options.adapter.detailUrl(item.sourceId), options.adapter.allowedHosts);
+          assertResponseContentType(detailResponse, options.adapter.allowedDetailContentTypes, "detail");
+          detailBody = options.adapter.decodeDetailResponse?.(detailResponse) ?? decodeJson(detailResponse);
+        }
+        // Multi-step detail chains (e.g. postroom preview -> content): keep requesting
+        // nextDetailUrl until it returns undefined; intermediate bodies go to onDetailStep
+        // (e.g. preview metadata caching) and detail() receives the final body.
+        // Note: nextDetailUrl is called exactly ONCE per response — it may have side
+        // effects (caching intermediate metadata), so its return value is reused.
+        if (options.adapter.nextDetailUrl) {
+          for (;;) {
+            const nextUrl = options.adapter.nextDetailUrl(item.sourceId, detailBody);
+            if (nextUrl === undefined) break;
+            const chainedResponse = await get(nextUrl, options.adapter.allowedHosts);
+            assertResponseContentType(chainedResponse, options.adapter.allowedDetailContentTypes, "detail");
+            options.adapter.onDetailStep?.(item.sourceId, detailBody);
+            detailBody = options.adapter.decodeDetailResponse?.(chainedResponse) ?? decodeJson(chainedResponse);
+          }
+        }
         const article = options.adapter.detail(item.sourceId, detailBody, fetchedAt(), item.publishedAt);
+        if (article === null) continue; // adapter chose to skip this item (e.g. no inline content)
         const checked = RawArticleSchema.safeParse(article);
         if (!checked.success) throw new Error(`RawArticle schema validation failed: ${checked.error.message}`);
         if (sha256Utf8(checked.data.content) !== checked.data.contentHash) throw new Error("RawArticle contentHash does not match content");
         if (canonicalizeUrl(checked.data.url) !== checked.data.url) throw new Error("RawArticle url is not canonical");
-        if (options.adapter.isCanonicalContent && !options.adapter.isCanonicalContent(checked.data.content)) throw new Error("RawArticle canonical content validation failed");
+        if (options.adapter.isCanonicalContent && !options.adapter.isCanonicalContent(checked.data.content)) {
+          throw new Error(`RawArticle canonical content validation failed for sourceId=${checked.data.sourceId}`);
+        }
         if (checked.data.game !== options.game) throw new Error(`RawArticle game does not match fetch game: ${checked.data.game}`);
         if (await writeRaw(checked.data as RawArticle)) count += 1;
       }
