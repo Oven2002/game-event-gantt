@@ -1,4 +1,4 @@
-function decodeHtmlEntities(value: string): string {
+function decodeHtmlEntitiesOnce(value: string): string {
   return value
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
@@ -7,6 +7,22 @@ function decodeHtmlEntities(value: string): string {
     .replace(/&quot;/gi, '"')
     .replace(/&#(\d+);/g, (_, digits: string) => String.fromCodePoint(Number(digits)))
     .replace(/&#x([0-9a-f]+);/gi, (_, digits: string) => String.fromCodePoint(Number.parseInt(digits, 16)));
+}
+
+/**
+ * Decode one OR MORE escaping layers. CMS content sometimes arrives double-escaped
+ * (`&amp;amp;` in a URL); decoding exactly once would make normalizeContent
+ * non-idempotent, breaking the canonical-content re-check. Each pass strictly
+ * shrinks the string, so the fixpoint loop terminates; cap it as belt-and-braces.
+ */
+function decodeHtmlEntities(value: string): string {
+  let current = value;
+  for (let pass = 0; pass < 10; pass++) {
+    const next = decodeHtmlEntitiesOnce(current);
+    if (next === current) return current;
+    current = next;
+  }
+  return current;
 }
 
 const voidTagNames = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]);

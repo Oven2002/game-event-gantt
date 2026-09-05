@@ -170,6 +170,19 @@ describe("Mihoyo fixture adapter", () => {
     expect(normalizeContent(escaped)).toBe(escaped);
   });
 
+  it("keeps literal bracketed prose like <Part 1> and decodes double-escaped entities to a fixpoint", () => {
+    // Literal prose inside brackets: `&lt;Part 1&gt;` decodes to `<Part 1>`, which is NOT
+    // markup (tag names never contain spaces), so re-normalizing must keep it verbatim.
+    const once = normalizeContent("<p><span>&nbsp;&lt;Part 1&gt; 限定收信</span><br><span>开放时间：4月7日 05:00</span></p>");
+    expect(normalizeContent(once)).toBe(once);
+    expect(once).toContain("<Part 1> 限定收信");
+    // CMS content sometimes arrives double-escaped (`&amp;amp;` inside a URL); decoding
+    // exactly one layer would make normalizeContent non-idempotent.
+    const url = normalizeContent("<p>传送门：http://tb.cn/POINT?backurl=http://gyyzl.tmall.com&amp;amp;spm=a310v.4.88.1</p>");
+    expect(normalizeContent(url)).toBe(url);
+    expect(url).toContain("gyyzl.tmall.com&spm=a310v.4.88.1");
+  });
+
   it("deduplicates the same source article by sourceId and contentHash", async () => {
     const body = await fixture(`${root}/genshin-impact/list-page-1.json`);
     const duplicated = { ...body, data: { ...body.data, list: [body.data.list[0], body.data.list[0]] } };
