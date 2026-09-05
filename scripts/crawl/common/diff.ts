@@ -29,10 +29,14 @@ import { mergeSources } from "./sources.ts";
 import { loadEventTypeIds, validateCandidate } from "./candidate-validation.ts";
 import { mihoyoGames } from "../mihoyo-config.ts";
 import { hypergryphGames } from "../hypergryph-config.ts";
+import { bluepochGames } from "../bluepoch-config.ts";
+import { postroomGames } from "../postroom-config.ts";
 
 const configuredGames: Record<string, { supportsVersions: boolean }> = {
   ...mihoyoGames,
   ...hypergryphGames,
+  ...bluepochGames,
+  ...postroomGames,
 };
 
 export interface IndexedTarget {

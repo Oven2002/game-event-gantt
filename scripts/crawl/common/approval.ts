@@ -34,6 +34,8 @@ import { mergeSources } from "./sources.ts";
 import { evaluateSource } from "./source-policy.ts";
 import { normalizeContent as normalizeMihoyoContent } from "./content.ts";
 import { normalizeHypergryphContent } from "../adapters/hypergryph.ts";
+// bluepoch and postroom share the same canonical content normalizer.
+const normalizeBluepochContent = normalizeMihoyoContent;
 import { loadEventTypeIds } from "./candidate-validation.ts";
 import { buildDataIndex, loadCandidateTargetMap, readRunCandidates, type DataIndex, type IndexedTarget } from "./diff.ts";
 import { withFileLock } from "./files.ts";
@@ -109,8 +111,10 @@ async function readSelection(selectionPath: string): Promise<ApprovalSelection> 
 
 function assertRawCanonical(raw: RawArticle): void {
   if (canonicalizeUrl(raw.url) !== raw.url) throw new Error(`raw URL is not canonical: ${raw.sourceId}`);
-  if (raw.source !== "mihoyo" && raw.source !== "hypergryph") throw new Error(`unsupported raw source for approval: ${raw.source}`);
-  const normalized = raw.source === "mihoyo" ? normalizeMihoyoContent(raw.content) : normalizeHypergryphContent(raw.content);
+  const normalizers = { mihoyo: normalizeMihoyoContent, hypergryph: normalizeHypergryphContent, bluepoch: normalizeBluepochContent, postroom: normalizeBluepochContent } as Record<string, (content: string) => string>;
+  const normalize = normalizers[raw.source];
+  if (!normalize) throw new Error(`unsupported raw source for approval: ${raw.source}`);
+  const normalized = normalize(raw.content);
   if (normalized !== raw.content) throw new Error(`raw content is not canonical: ${raw.sourceId}`);
   if (sha256Utf8(raw.content) !== raw.contentHash) throw new Error(`raw contentHash is stale: ${raw.sourceId}`);
 }

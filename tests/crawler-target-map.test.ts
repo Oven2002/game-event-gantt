@@ -53,7 +53,8 @@ describe("crawler target map", () => {
   it("indexes every current formal data file", async () => {
     const index = await buildDataIndex("data");
     expect(index.files).toHaveLength(15);
-    expect(index.targets.size).toBe(443);
+    // 443 baseline + 9 light-and-night crawler approvals (2026-09-05, run 20260905-075146).
+    expect(index.targets.size).toBe(452);
   });
 
   it("preserves a non-cn region instead of coercing it to cn", async () => {

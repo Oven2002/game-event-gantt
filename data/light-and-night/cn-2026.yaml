@@ -202,3 +202,69 @@ events:
     sources:
       - "https://love.qq.com/m/web202106/newsdetail.html?newsid=7dcfd730-23e8-4762-9c55-28fc89383ed5"
     note: 返还素材领取窗口另为 8月28日05:00 至 9月10日04:59。
+  - id: event-fm520-radio-chiye
+    name: "限时活动「FM5.20午夜电台・驰野」"
+    type: event
+    start: "2026-01-10T05:00:00+08:00"
+    end: "2026-01-18T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=31aa7e37-845f-4826-9ae8-31581b5a233e"
+  - id: banner-mengyu-chiye
+    name: "限定收信「羁梦幻谕・驰野」（萧逸・驰野）"
+    type: banner
+    start: "2026-01-10T05:00:00+08:00"
+    end: "2026-01-18T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=8894f750-e35b-4963-a81a-89797478c29b"
+  - id: event-fm520-radio-huoyu
+    name: "限时活动「FM5.20午夜电台・惑欲」"
+    type: event
+    start: "2026-02-27T05:00:00+08:00"
+    end: "2026-03-07T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=52d26123-ae4e-4eeb-bf40-8db9f0e13fdf"
+  - id: banner-mengyu-huoyu
+    name: "限定收信「羁梦幻谕・惑欲」"
+    type: banner
+    start: "2026-02-27T05:00:00+08:00"
+    end: "2026-03-07T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=d4dbd0df-9b8d-45b7-b634-5ac6e9598de4"
+  - id: event-jiguang-pianyu-qidu
+    name: "限时活动「吉光片羽&羁梦鎏珍・栖渡」"
+    type: event
+    start: "2026-03-30T05:00:00+08:00"
+    end: "2026-04-07T04:59:00+08:00"
+    note: "兑换商店截止4月8日04:59"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=cedcfd11-b9a3-4145-ba49-120844c64e4e"
+  - id: event-zhentan-jiuwei
+    name: "限时活动「侦探请就位」（活动限定灵犀）"
+    type: event
+    start: "2026-04-07T05:00:00+08:00"
+    end: "2026-04-17T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=66456f26-d5dd-409c-ac10-7e02d631cb6c"
+  - id: event-jiguang-pianyu-zhenh
+    name: "限时活动「吉光片羽&羁梦鎏珍・镇厄」"
+    type: event
+    start: "2026-05-14T05:00:00+08:00"
+    end: "2026-05-22T04:59:00+08:00"
+    note: "兑换商店截止5月23日04:59"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=245ad10b-997d-4281-af6d-5f1f6a73f40d"
+  - id: banner-linjie-yuetao
+    name: "限定收信预告「临界跃迁」"
+    type: banner
+    start: "2026-06-08T05:00:00+08:00"
+    end: "2026-06-16T04:59:00+08:00"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=4fe24ff5-3511-4e4c-ad08-bf261b30950e"
+  - id: event-jiguang-pianyu-jinghan
+    name: "限时活动「吉光片羽&羁梦鎏珍・惊寒」"
+    type: event
+    start: "2026-06-26T05:00:00+08:00"
+    end: "2026-07-04T04:59:00+08:00"
+    note: "兑换商店截止7月5日04:59；含本期活动工作室奖励一览"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=0fd59aca-52b4-4eb2-b381-0d88bbc387f4"
