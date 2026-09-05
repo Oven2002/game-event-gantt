@@ -19,7 +19,7 @@
 
 ## 2. 选择 game adapter
 
-CLI 的 `--game` 只接受下面五个 machine ID。米哈游三作使用 `mihoyo` adapter；明日方舟和终末地使用 `hypergryph` adapter。具体配置以 `mihoyo-config.ts`、`hypergryph-config.ts` 和对应 fixture sidecar 为准，不要因为站点看起来相似就复用另一个游戏的参数。
+CLI 的 `--game` 只接受下面七个 machine ID。米哈游三作使用 `mihoyo` adapter；明日方舟和终末地使用 `hypergryph` adapter；重返未来：1999 使用 `bluepoch` adapter；光与夜之恋使用 `postroom` adapter。具体配置以 `mihoyo-config.ts`、`hypergryph-config.ts`、`bluepoch-config.ts`、`postroom-config.ts` 和对应 fixture sidecar 为准，不要因为站点看起来相似就复用另一个游戏的参数。
 
 | game | adapter | 官方文章 URL | 实测响应/字段 | supportsVersions | checkpoint kind | 已冻结 fixture 的 blocker |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -28,6 +28,8 @@ CLI 的 `--game` 只接受下面五个 machine ID。米哈游三作使用 `mihoy
 | `zenless-zone-zero` | Mihoyo | `https://zzz.mihoyo.com/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime/sChanId` | `true` | `null` | `null` |
 | `arknights` | Hypergryph | `https://ak.hypergryph.com/news/{cid}` | `code/data/list`; `cid/title/tab/displayTime/brief`; `total/current/pageSize` | `false` | `null` | `null` |
 | `arknights-endfield` | Hypergryph | `https://endfield.hypergryph.com/news/{cid}` | `code/data/list`; `cid/title/tab/displayTime/brief`; `total/current/pageSize` | `true` | `null` | `null` |
+| `reverse-1999` | Bluepoch | `https://re.bluepoch.com/home/detail.html#newsId?{id}` | `code/data.pageData`; `id/title/informationType/onlineTime/content`（content 内联全文，无逐条详情请求） | `true` | `null` | `null` |
+| `light-and-night` | Postroom | `https://love.qq.com/m/web202106/newsdetail.html?newsid={publishId}` | list 数组 `postPublishId`; preview `name/publishDate/tags/authorName`; content `content`（HTML） | `true` | `null` | `null` |
 
 上述 blocker 是已提交 sidecar 中的 endpoint blocker 记录；当前固定 fixture 均为 `null`，不表示未来 endpoint 永远不会变化。若实测接口需要认证、浏览器渲染或未在计划中允许的能力，应停止受影响的 adapter，记录脱敏 blocker，不得猜测替代接口。
 
@@ -69,7 +71,37 @@ GET https://web-news.hypergryph.com/api/bulletin
 
 响应必须满足 `code === 0`、`data.list` 为数组，且 `data.total`、`data.current`、`data.pageSize` 为合法整数。列表项使用 `cid`、`title`、`tab`、`displayTime` 和可选 `brief`；`cid` 必须为数字字符串，`displayTime` 必须是秒级且整分钟。详情响应在 transport 层为 `text/html`，运行时以 `{ status, contentType, body }` envelope 交给 parser；parser 会校验文章内嵌 `cid`、标题、日期和正文。
 
-### 2.3 国服区域硬校验
+### 2.3 Bluepoch（reverse-1999）的实测请求合同
+
+列表是 **POST JSON**（GET 会返回 `code: 5002`，fail closed）：
+
+```text
+POST https://re.bluepoch.com/activity/official/websites/information/query
+body: {"informationType":"", "current": <page>, "pageSize": <pageSize>}
+```
+
+- `informationType`：`""`=最新全量，`2`=公告，`3`=活动，`4`=新闻；不在 {2,3,4} 集合内的条目直接跳过（官方列表混有运营/引导类栏目）。
+- 响应 envelope：`code === 200`、`data.pageData` 数组、非负整数 `data.total`。
+- 列表项字段：`id`（数字）、`title`、`informationType`、`onlineTime`（无时区北京时间字符串）、`content`（**内联全文 HTML**，无需逐条详情请求；fetch 用 `inlineDetailBodies` 直接复用列表项）。
+- 正式 source URL 是 `https://re.bluepoch.com/home/detail.html#newsId?{id}` —— 站点是 SPA hash 路由，`#newsId?N` 承载资源 ID，`canonicalizeUrl` 会保留带 `?` 的 fragment（纯锚点仍剥除）。
+
+### 2.4 Postroom（light-and-night）的实测请求合同
+
+三步静态 JSON，全部 GET、免鉴权：
+
+```text
+1. 列表:   https://press-static-love.aurora.qq.com/6lvxlBd9id/latest.list.json
+2. 元数据: https://press-static-love.aurora.qq.com/{publishId}.preview.json
+3. 全文:   https://press-static-love.aurora.qq.com/{publishId}.content.json
+```
+
+- `postPublishId` 有两种实测形态：纯数字（老公告）与 UUID（新公告），二者都接受；其他形状 fail closed。
+- preview 必须有 `name`、`publishDate`（`GMT+0800` JS 日期串，转换为北京时间分钟）和 `authorName === "光与夜之恋官方"`；非官方作者 fail closed。
+- 链式抓取：list → preview（缓存 name/publishDate）→ content；`FetchAdapter.nextDetailUrl` 驱动，每个响应只调用一次。
+- `content.json` 的 `content` 为 `null` 表示外链型公告（正文在 hyperlink 指向的文章里），该条目跳过（`detail` 返回 null）。
+- 正式 source URL 是 `https://love.qq.com/m/web202106/newsdetail.html?newsid={publishId}`。
+
+### 2.5 国服区域硬校验
 
 `zh-cn` 只表示语言，不单独代表服务器区域。每次 fetch 必须同时满足：
 
@@ -78,11 +110,11 @@ GET https://web-news.hypergryph.com/api/bulletin
 - API transport host、CDN CNAME、DNS 地址和 CDN POP 只说明网络承载，不得单独作为 region 判据。
 - `zh-tw`、`en-us`、`api-os-*`、`sg-public-*`、HoYoverse 国际文章 host 和不匹配的 channel 必须 fail closed。
 
-当前五个游戏的正常 source host 为：`ys.mihoyo.com`、`sr.mihoyo.com`、`zzz.mihoyo.com`、`ak.hypergryph.com`、`endfield.hypergryph.com`。旧的 ZZZ HoYoverse 样本保留在 fixture 目录中，但 sidecar 标为 `blocker`，不参与正常 fetch/parse 合同。
+当前七个游戏的正常 source host 为：`ys.mihoyo.com`、`sr.mihoyo.com`、`zzz.mihoyo.com`、`ak.hypergryph.com`、`endfield.hypergryph.com`、`re.bluepoch.com`、`love.qq.com`。旧的 ZZZ HoYoverse 样本保留在 fixture 目录中，但 sidecar 标为 `blocker`，不参与正常 fetch/parse 合同。
 
-### 2.4 checkpoint 现状
+### 2.6 checkpoint 现状
 
-五个游戏当前都记录：
+七个游戏当前都记录：
 
 ```text
 checkpoint.kind = null
