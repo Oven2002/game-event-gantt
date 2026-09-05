@@ -37,7 +37,7 @@ function queryParameters(url: string): Record<string, string> {
 describe("crawler fixture sidecars", () => {
   it("validates every response fixture and its metadata as an offline contract", async () => {
     const files = (await fixtureFiles(fixtureRoot)).sort();
-    expect(files).toHaveLength(13);
+    expect(files).toHaveLength(15);
     for (const dataPath of files) {
       const metadataPath = dataPath.replace(/\.json$/, ".meta.json");
       const metadata = await json(metadataPath);
@@ -57,7 +57,7 @@ describe("crawler fixture sidecars", () => {
       if (value.fixtureRole === "list") expect(value.pagination).not.toBeNull();
       if (value.fixtureRole === "detail") {
         expect(value.pagination).toBeNull();
-        expect(value.detailSourceId).toMatch(/^\d+$/);
+        expect(value.detailSourceId).toMatch(/^(?:\d+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
       }
       expect(value.response.redirects).toEqual([]);
       expect(value.response.finalUrl).toBe(value.request.url);
@@ -73,7 +73,7 @@ describe("crawler fixture sidecars", () => {
       const provider = parts[0];
       const game = parts[1];
       let expectedUrl: string;
-      if (provider === "bluepoch") continue; // POST list contract is covered by crawler-bluepoch.test.ts
+      if (provider === "bluepoch" || provider === "postroom") continue; // POST/3-step contracts covered by their own adapter tests
       if (metadata.fixtureRole === "list") {
         const page = Number(metadata.request.parameters.iPage ?? metadata.request.parameters.page);
         const pageSize = Number(metadata.request.parameters.iPageSize ?? metadata.request.parameters.pageSize);

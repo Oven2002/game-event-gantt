@@ -1,0 +1,27 @@
+[
+  {
+    "postPublishId": "cb76fed6-349d-4922-abfe-4909143bcb3b",
+    "tagIdList": [
+      "117009",
+      "117010"
+    ],
+    "locale": null,
+    "localeGroupId": null
+  },
+  {
+    "postPublishId": "49a16145-5604-4ce5-a693-e1491e656105",
+    "tagIdList": [
+      "117009"
+    ],
+    "locale": null,
+    "localeGroupId": null
+  },
+  {
+    "postPublishId": "8b3e1ac9-1e3f-4c22-9041-55cd5b626ed1",
+    "tagIdList": [
+      "117009"
+    ],
+    "locale": null,
+    "localeGroupId": null
+  }
+]

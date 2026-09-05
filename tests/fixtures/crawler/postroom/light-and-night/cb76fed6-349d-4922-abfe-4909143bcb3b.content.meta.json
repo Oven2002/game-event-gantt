@@ -1,0 +1,27 @@
+{
+  "fixtureKind": "real",
+  "fixtureRole": "detail",
+  "game": "light-and-night",
+  "capturedAt": "2026-09-04T16:20:00+00:00",
+  "request": {
+    "method": "GET",
+    "url": "https://press-static-love.aurora.qq.com/cb76fed6-349d-4922-abfe-4909143bcb3b.content.json",
+    "parameters": {}
+  },
+  "response": {
+    "status": 200,
+    "contentType": "application/json",
+    "finalUrl": "https://press-static-love.aurora.qq.com/cb76fed6-349d-4922-abfe-4909143bcb3b.content.json",
+    "redirects": []
+  },
+  "responseFormat": "json",
+  "pagination": null,
+  "urlDerivation": "https://love.qq.com/m/web202106/newsdetail.html?newsid={publishId} (formal source); content.json carries the HTML body",
+  "detailSourceId": "cb76fed6-349d-4922-abfe-4909143bcb3b",
+  "checkpoint": {
+    "kind": null,
+    "reusable": false,
+    "reason": "Phase 1 crawler uses lookback scans without checkpoints"
+  },
+  "blocker": null
+}
