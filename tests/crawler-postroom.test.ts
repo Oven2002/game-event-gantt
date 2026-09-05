@@ -124,14 +124,14 @@ describe("postroom content parsing", () => {
       body,
       "2026-09-04T12:00:00.000Z",
     );
-    expect(article.game).toBe("light-and-night");
-    expect(article.region).toBe("cn");
-    expect(article.sourceId).toBe("cb76fed6-349d-4922-abfe-4909143bcb3b");
-    expect(article.url).toBe("https://love.qq.com/m/web202106/newsdetail.html?newsid=cb76fed6-349d-4922-abfe-4909143bcb3b");
-    expect(article.title).toBe("8月27日不停服更新说明");
-    expect(article.publishedAt).toBe("2026-08-26 20:00:00");
-    expect(article.content).toBe("亲爱的设计师：\n开放时间：8月27日 05:00 - 9月10日 04:59");
-    expect(article.contentHash).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect(article?.game).toBe("light-and-night");
+    expect(article?.region).toBe("cn");
+    expect(article?.sourceId).toBe("cb76fed6-349d-4922-abfe-4909143bcb3b");
+    expect(article?.url).toBe("https://love.qq.com/m/web202106/newsdetail.html?newsid=cb76fed6-349d-4922-abfe-4909143bcb3b");
+    expect(article?.title).toBe("8月27日不停服更新说明");
+    expect(article?.publishedAt).toBe("2026-08-26 20:00:00");
+    expect(article?.content).toBe("亲爱的设计师：\n开放时间：8月27日 05:00 - 9月10日 04:59");
+    expect(article?.contentHash).toMatch(/^sha256:[0-9a-f]{64}$/);
   });
 
   it("rejects missing content and canonicalizes literal escapes idempotently", () => {
