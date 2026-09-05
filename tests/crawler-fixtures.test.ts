@@ -37,7 +37,7 @@ function queryParameters(url: string): Record<string, string> {
 describe("crawler fixture sidecars", () => {
   it("validates every response fixture and its metadata as an offline contract", async () => {
     const files = (await fixtureFiles(fixtureRoot)).sort();
-    expect(files).toHaveLength(12);
+    expect(files).toHaveLength(13);
     for (const dataPath of files) {
       const metadataPath = dataPath.replace(/\.json$/, ".meta.json");
       const metadata = await json(metadataPath);
@@ -73,6 +73,7 @@ describe("crawler fixture sidecars", () => {
       const provider = parts[0];
       const game = parts[1];
       let expectedUrl: string;
+      if (provider === "bluepoch") continue; // POST list contract is covered by crawler-bluepoch.test.ts
       if (metadata.fixtureRole === "list") {
         const page = Number(metadata.request.parameters.iPage ?? metadata.request.parameters.page);
         const pageSize = Number(metadata.request.parameters.iPageSize ?? metadata.request.parameters.pageSize);

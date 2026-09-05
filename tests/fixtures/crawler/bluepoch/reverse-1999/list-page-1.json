@@ -1,0 +1,26 @@
+{
+  "code": 200,
+  "msg": "成功",
+  "data": {
+    "current": 1,
+    "pageSize": 2,
+    "total": 95,
+    "pageData": [
+      {
+        "id": 98,
+        "title": "3.9「重燃！流金之海」版本更新维护公告",
+        "shortTitle": null,
+        "collectionId": 10,
+        "status": 1,
+        "informationType": 2,
+        "onlineTime": "2026-08-12 18:01:09",
+        "offlineTime": "2035-09-21 23:59:59",
+        "digest": null,
+        "isTop": false,
+        "updateTime": "2026-08-12 17:32:19",
+        "guideUrl": "https://gamecms-res.sl916.com/official_website_resource/50001/4/INFORMATION/20260812/更新公告banner_1000×562_a293e0a501cf4d38aec318577d8d8970.jpg",
+        "content": "<p style=\"text-align: start; line-height: 2;\"><img src=\"https://gamecms-res.sl916.com/official_website_resource/x.png\"><br></p><p style=\"text-align: center;\">亲爱的旅伴：</p><p>维护时间：2026年8月13日 06:00 - 10:00</p>"
+      }
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "fixtureKind": "real",
+  "fixtureRole": "list",
+  "game": "reverse-1999",
+  "capturedAt": "2026-09-04T16:00:00+00:00",
+  "request": {
+    "method": "GET",
+    "url": "https://re.bluepoch.com/activity/official/websites/information/query",
+    "parameters": {
+      "current": "1",
+      "pageSize": "2",
+      "informationType": ""
+    }
+  },
+  "response": {
+    "status": 200,
+    "contentType": "application/json",
+    "finalUrl": "https://re.bluepoch.com/activity/official/websites/information/query",
+    "redirects": []
+  },
+  "responseFormat": "json-envelope",
+  "pagination": {
+    "kind": "current-page",
+    "termination": "pageData empty or since boundary"
+  },
+  "urlDerivation": "https://re.bluepoch.com/home/detail.html#newsId?{id}",
+  "detailSourceId": "98",
+  "checkpoint": {
+    "kind": null,
+    "reusable": false,
+    "reason": "Phase 1 crawler uses lookback scans without checkpoints"
+  },
+  "blocker": null
+}
