@@ -29,6 +29,20 @@ export const eventTypesSchema = z.object({
   types: z.array(namedMachineIdSchema).min(1),
 }).strict();
 
+// Site-wide data meta lives in data/meta.yaml so the footer timestamp comes
+// from the repository itself instead of the build machine's git history.
+// Unlike game event times (seconds pinned to 00), git commit timestamps carry
+// real seconds, so both digits are accepted here.
+const isoTimestamp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|\+08:00)$/;
+const shortCommit = /^[0-9a-f]{7}$/;
+
+export const dataMetaSchema = z.object({
+  dataUpdatedAt: z.string().regex(isoTimestamp, "必须为 ISO 8601 时间（Z 或 +08:00）"),
+  dataCommit: z.string().regex(shortCommit, "必须为 7 位小写十六进制短 SHA"),
+}).strict();
+
+export type DataMetaValue = z.infer<typeof dataMetaSchema>;
+
 const timeCertaintySchema = z.object({
   start: z.enum(["confirmed", "inferred", "estimated", "unknown"]),
   end: z.enum(["confirmed", "inferred", "estimated", "unknown"]).optional(),
@@ -137,6 +151,19 @@ export function parseBeijingTimestamp(value: string): number {
   const timestamp = Date.parse(value);
   if (!Number.isFinite(timestamp)) throw new Error("无法解析时间");
   return timestamp;
+}
+
+// Read data/meta.yaml (dataUpdatedAt/dataCommit). Missing file or invalid
+// fields throw DataValidationError, mirroring loadTimelineData's fail-closed
+// behavior. Timezone-agnostic here; formatting happens at the call site.
+export function loadDataMeta(dataRoot = path.resolve(process.cwd(), "data")): DataMetaValue {
+  const issues: string[] = [];
+  const metaFile = path.join(dataRoot, "meta.yaml");
+  const value = readYaml(metaFile, issues);
+  if (value === undefined) throw new DataValidationError(issues);
+  const result = dataMetaSchema.safeParse(value);
+  if (!result.success) throw new DataValidationError(formatZodIssues(path.relative(dataRoot, metaFile), result.error));
+  return result.data;
 }
 
 // Return undefined on parse failure and record the syntax error in issues.
