@@ -8,14 +8,8 @@ import { fileURLToPath } from "node:url";
 import { formatBeijingDate } from "../src/lib/calendar.ts";
 import { loadDataMeta, loadTimelineData } from "../src/lib/data.ts";
 import type { DataMetaValue } from "../src/lib/data.ts";
+import type { SiteMeta } from "../src/lib/site-meta.ts";
 import type { TimelinePayload } from "../src/lib/types.ts";
-
-export interface SiteMeta {
-  dataUpdatedAtLabel: string;
-  groups: number;
-  items: number;
-  dataCommit: string;
-}
 
 // Pure projection: meta + payload -> footer values. Returns null when the
 // tracked meta is unavailable so the page can omit the line instead of

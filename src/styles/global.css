@@ -181,6 +181,7 @@ footer p { margin: 18px 0 0; }
 .live2d-notice { max-width: 900px; margin-right: auto; margin-left: auto; color: #8a8297; font-size: 10px; line-height: 1.6; }
 .made-with { font-family: "LXGW WenKai Lite", serif; color: #65537f; font-size: 14px; }
 .made-with span { color: #f04f91; text-shadow: 0 0 10px rgba(240,79,145,.45); }
+.data-meta { font-family: "LXGW WenKai Lite", serif; color: #65537f; letter-spacing: .02em; }
 .thanks { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; }
 .thanks > span { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .thanks ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
