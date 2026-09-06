@@ -11,7 +11,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "npm run validate:data && astro check && astro build",
+    "build": "npm run validate:data && node --experimental-strip-types scripts/build-data-meta.ts && astro check && astro build",
     "build:live2d": "node scripts/build-live2d.mjs",
     "preview": "astro preview",
     "check": "astro check",
