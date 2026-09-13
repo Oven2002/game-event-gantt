@@ -212,6 +212,16 @@ start: "2026-08-28T06:00:00+08:00"
 - 官方时间公布后，应修改原条目、更新来源并移除过时的预估说明。
 - `note` 只写必要摘要，不复制公告正文。
 
+## 数据元信息自动维护
+
+`data/meta.yaml` 记录最近一次正式数据提交的时间和 7 位短 SHA，用于网站 Footer。仓库的 `.githooks/post-commit` 会在每次提交后自动检查并生成元数据 follow-up commit；`npm ci` 会通过 `prepare` 自动启用 hooks，也可以手动运行：
+
+```bash
+npm run setup:hooks
+```
+
+不要把 token、cookie 或其他凭据写入 `data/meta.yaml`。CI 会用完整 Git 历史校验元数据是否指向最近一次修改 `data/`（排除 `data/meta.yaml`）的提交。
+
 ## 提交前检查
 
 数据修改至少运行：

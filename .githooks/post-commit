@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+
+[ "${GAME_EVENT_GANTT_META_HOOK:-}" = "1" ] && exit 0
+
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null || exit 0)
+cd "$repo_root"
+
+if ! git diff --cached --quiet --; then
+  echo "post-commit: staged changes remain; data metadata was not auto-committed" >&2
+  exit 0
+fi
+
+node --experimental-strip-types scripts/update-data-meta.ts
+if git diff --quiet -- data/meta.yaml; then
+  exit 0
+fi
+
+git add data/meta.yaml
+GAME_EVENT_GANTT_META_HOOK=1 git commit --no-verify -m "chore(data): update tracked data metadata"

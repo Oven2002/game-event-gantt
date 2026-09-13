@@ -16,6 +16,9 @@
     "preview": "astro preview",
     "check": "astro check",
     "validate:data": "node --experimental-strip-types scripts/validate-data.ts",
+    "update:data-meta": "node --experimental-strip-types scripts/update-data-meta.ts",
+    "setup:hooks": "node scripts/setup-git-hooks.mjs",
+    "prepare": "npm run setup:hooks",
     "test": "vitest run"
   },
   "dependencies": {
