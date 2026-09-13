@@ -27,6 +27,16 @@ describe("crawler target map", () => {
     const entries = await loadCandidateTargetMap("scripts/crawl/candidate-target-map.json");
     expect(entries).toEqual([
       {
+        candidateKey: "arknights/1457/primary",
+        game: "arknights",
+        region: "cn",
+        kind: "event",
+        targetFile: "data/arknights/cn-2026.yaml",
+        targetId: "banner-shibai-shenlan-2026-09",
+        appliedRunId: "20260913-064603",
+        appliedAt: "2026-09-13T10:51:37.000Z",
+      },
+      {
         candidateKey: "arknights/1459/primary",
         game: "arknights",
         region: "cn",
@@ -35,6 +45,26 @@ describe("crawler target map", () => {
         targetId: "maintenance-2026-08-01-version",
         appliedRunId: "20260829-011620",
         appliedAt: "2026-08-29T01:32:13.000Z",
+      },
+      {
+        candidateKey: "arknights/5102/primary",
+        game: "arknights",
+        region: "cn",
+        kind: "event",
+        targetFile: "data/arknights/cn-2026.yaml",
+        targetId: "maintenance-2026-09-04-version",
+        appliedRunId: "20260913-064603",
+        appliedAt: "2026-09-13T10:51:37.000Z",
+      },
+      {
+        candidateKey: "honkai-star-rail/165983/primary",
+        game: "honkai-star-rail",
+        region: "cn",
+        kind: "event",
+        targetFile: "data/honkai-star-rail/cn-2026.yaml",
+        targetId: "event-weimian-fenli-2026-09",
+        appliedRunId: "20260913-064519",
+        appliedAt: "2026-09-13T10:51:37.000Z",
       },
       {
         candidateKey: "zenless-zone-zero/165853/primary",
@@ -53,8 +83,8 @@ describe("crawler target map", () => {
   it("indexes every current formal data file", async () => {
     const index = await buildDataIndex("data");
     expect(index.files).toHaveLength(15);
-    // 443 baseline + 9 light-and-night crawler approvals (2026-09-05, run 20260905-075146).
-    expect(index.targets.size).toBe(452);
+    // 443 baseline + 9 light-and-night approvals + September crawl additions.
+    expect(index.targets.size).toBe(489);
   });
 
   it("preserves a non-cn region instead of coercing it to cn", async () => {

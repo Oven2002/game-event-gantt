@@ -13,10 +13,10 @@ versions:
   - id: "4.5"
     name: "4.5 挥掷千星的筹码"
     start: "2026-08-26T06:00:00+08:00"
-    end: "2026-10-07T06:00:00+08:00"
-    note: "start 为 4.5 维护开始（4.4 更新说明官方版本持续时间终点 08/26 06:00）；end 按 42 天版本周期推算，4.5 更新公告未发布"
+    end: "2026-09-28T06:00:00+08:00"
+    note: "官方 4.5 更新说明明确版本持续至 2026/09/28 06:00；start 为官方维护开始时刻，替换此前按周期推算的 10/07 结束时间。"
     sources:
-      - "https://www.miyoushe.com/sr/article/77328417"
+      - "https://sr.mihoyo.com/news/165896"
       - "https://sr.mihoyo.com/news/165210"
 
 events:
@@ -209,3 +209,144 @@ events:
     related: ["4.5"]
     sources:
       - "https://sr.mihoyo.com/news/124155"
+  - id: event-weimian-fenli-2026-09
+    name: "「位面分裂」活动：位面饰品限时双倍掉落"
+    type: event
+    start: "2026-09-07T04:00:00+08:00"
+    end: "2026-09-21T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://sr.mihoyo.com/news/165983"
+  - id: event-chaoxian-4-5
+    name: "「超限：狂飙大奖赛」限时活动"
+    type: event
+    start: "2026-08-26T06:00:00+08:00"
+    end: "2026-09-28T03:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方活动公告写「4.5版本更新后」；4.5更新说明明确维护于 08/26 06:00 开始，实际开服/活动开放分钟未由活动公告单独确认。限时奖励结束后玩法收录至常时传略。"
+    related: ["4.5"]
+    sources:
+      - "https://sr.mihoyo.com/news/165885"
+  - id: event-qianxing-task-4-5
+    name: "开拓任务「千星城」-「挥掷千星的筹码」"
+    type: event
+    lifecycle: permanent
+    start: "2026-08-26T06:00:00+08:00"
+    timeCertainty:
+      start: inferred
+    note: "官方写 4.5 版本更新后永久开放；起点以 4.5 官方维护开始 08/26 06:00 作为推算锚点，实际开放分钟未单独确认。"
+    related: ["4.5"]
+    sources:
+      - "https://sr.mihoyo.com/news/165847"
+  - id: event-qianxing-story-4-5
+    name: "开拓续闻「千星城」-「亏成首富，从不要钱开始」"
+    type: event
+    lifecycle: permanent
+    start: "2026-08-26T06:00:00+08:00"
+    timeCertainty:
+      start: inferred
+    note: "官方写 4.5 版本更新后永久开放；起点以 4.5 官方维护开始 08/26 06:00 作为推算锚点，实际开放分钟未单独确认。"
+    related: ["4.5"]
+    sources:
+      - "https://sr.mihoyo.com/news/165848"
+  - id: banner-4-5-qingyin
+    name: "「晴音和鸣」角色活动跃迁"
+    type: banner
+    start: "2026-08-26T06:00:00+08:00"
+    end: "2026-09-12T11:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方写 4.5 版本更新后；起点以 4.5 官方维护开始 08/26 06:00 作为推算锚点。"
+    related: ["4.5"]
+    sources:
+      - "https://sr.mihoyo.com/news/165883"
+  - id: banner-4-5-lc-qingyin
+    name: "「流光定影·你将起身歌唱」光锥活动跃迁"
+    type: banner
+    start: "2026-08-26T06:00:00+08:00"
+    end: "2026-09-12T11:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方写 4.5 版本更新后；起点以 4.5 官方维护开始 08/26 06:00 作为推算锚点。"
+    related: ["4.5"]
+    sources:
+      - "https://sr.mihoyo.com/news/165883"
+  - id: banner-4-5-hongjun
+    name: "「虹隽晨昏」角色活动跃迁"
+    type: banner
+    start: "2026-08-26T06:00:00+08:00"
+    end: "2026-09-12T11:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方写 4.5 版本更新后；起点以 4.5 官方维护开始 08/26 06:00 作为推算锚点。"
+    related: ["4.5"]
+    sources:
+      - "https://sr.mihoyo.com/news/165883"
+  - id: banner-4-5-lc-hongjun
+    name: "「溯回忆象·愿虹光永驻天空」光锥活动跃迁"
+    type: banner
+    start: "2026-08-26T06:00:00+08:00"
+    end: "2026-09-12T11:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方写 4.5 版本更新后；起点以 4.5 官方维护开始 08/26 06:00 作为推算锚点。"
+    related: ["4.5"]
+    sources:
+      - "https://sr.mihoyo.com/news/165883"
+  - id: event-fengmang-trial-4-5
+    name: "「锋芒崭露」角色试用活动"
+    type: event
+    start: "2026-08-26T06:00:00+08:00"
+    end: "2026-09-12T11:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方写 4.5 版本更新后；起点以 4.5 官方维护开始 08/26 06:00 作为推算锚点。"
+    related: ["4.5"]
+    sources:
+      - "https://sr.mihoyo.com/news/165883"
+  - id: event-mori-2026-08
+    name: "「末日幻影·仙客天狼」"
+    type: event
+    lifecycle: permanent
+    cadence: rotating
+    start: "2026-08-31T04:00:00+08:00"
+    end: "2026-10-05T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["4.5"]
+    sources:
+      - "https://sr.mihoyo.com/news/165896"
+  - id: event-xugou-2026-09
+    name: "「虚构叙事·立界开篇」"
+    type: event
+    lifecycle: permanent
+    cadence: rotating
+    start: "2026-09-14T04:00:00+08:00"
+    end: "2026-10-19T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["4.5"]
+    sources:
+      - "https://sr.mihoyo.com/news/165896"
+  - id: event-fangcun-4-5
+    name: "「方寸大冒险」"
+    type: event
+    start: "2026-09-12T12:00:00+08:00"
+    end: "2026-09-28T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["4.5"]
+    sources:
+      - "https://sr.mihoyo.com/news/166045"

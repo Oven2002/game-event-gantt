@@ -40,8 +40,8 @@ export function canonicalizeUrl(rawUrl: string): string {
   return url.toString();
 }
 
-export function sourceHashProjection(raw: Pick<RawArticle, "game" | "region" | "source" | "sourceId" | "url" | "title" | "publishedAt" | "contentHash">): Record<string, unknown> {
-  return {
+export function sourceHashProjection(raw: Pick<RawArticle, "game" | "region" | "source" | "sourceId" | "url" | "title" | "publishedAt" | "contentHash"> & { imageUrls?: readonly string[] }): Record<string, unknown> {
+  const projection: Record<string, unknown> = {
     game: raw.game,
     region: raw.region,
     source: raw.source,
@@ -51,6 +51,8 @@ export function sourceHashProjection(raw: Pick<RawArticle, "game" | "region" | "
     publishedAt: raw.publishedAt,
     contentHash: raw.contentHash,
   };
+  if (raw.imageUrls !== undefined) projection.imageUrls = raw.imageUrls;
+  return projection;
 }
 
 const evidenceOrder = ["name", "type", "start", "end", "related", "source", "lifecycle", "cadence", "subtype"];

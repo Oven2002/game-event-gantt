@@ -208,7 +208,7 @@ node --experimental-strip-types scripts/crawl/cli.ts approve \
   --selection .runtime/crawl/selections/20260827-000001.selection.json
 ```
 
-Parse 会读取该 run 的全部 raw JSONL，输出 ready/needs_review candidates 和 rejections。Review 会生成人类可读的 diff 报告与 selection template。Approve 不信任 template 或 selection 中的 hash，而会重新读取并校验 raw、candidate、source policy、当前 `data/` 索引、旧值和相关引用；成功后只生成 approved manifest，绝不写 YAML。
+Parse 会读取该 run 的全部 raw JSONL，先执行高置信度的确定性范围过滤，再输出 ready/needs_review candidates 和 rejections。明确的角色档案、音乐/配音媒体、壁纸/视频媒体、周边/手办商品和制作组/研发通讯会以 `reasonCode: article_out_of_scope` 记录为 `skip`，不会进入 candidate；raw 仍然保留，便于审计。普通文章只检查标题；列表标题为“官方网站”等占位值时，才检查正文前两行标题，避免把活动正文中提到的“周边”误判为周边公告。Review 会生成人类可读的 diff 报告与 selection template。Approve 不信任 template 或 selection 中的 hash，而会重新读取并校验 raw、candidate、source policy、当前 `data/` 索引、旧值和相关引用；成功后只生成 approved manifest，绝不写 YAML。
 
 同一个 run 的阶段 artifact 是不可覆盖的。若需要重新抓取或重新解析，使用新的 run ID；不要删除一个仍有待处理 selection 的 run 的 raw/candidate 来“绕过” stale 检查。
 
@@ -370,5 +370,7 @@ npm run build
 - 不在 GitHub Actions 中实时抓官网；
 - 不自动 commit、push 或更新 durable applied-target registry；
 - 不用未来周期规则生成未官宣活动。
+
+文本时间解析会识别官方常见的 `至`、`到`、`-`、`~`、`～` 等区间符号，并对正文中重复出现的同一时间窗口去重。`版本更新后` 这类相对边界只提取可确认的一端，另一端没有可验证的具体分钟时不会擅自补齐；一篇公告包含多个不同窗口时也不会压成一条候选。米哈游 raw 会保留正文中的绝对图片 URL，图片内时间仍需独立 OCR 证据，不因正文为空就判定为非时间表文章。
 
 YAML merge、注释/引号/字段顺序保持、原子替换、回滚、merge 后全量校验和变更白名单属于单独的 Phase 2 计划。

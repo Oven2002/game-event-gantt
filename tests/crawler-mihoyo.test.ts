@@ -73,6 +73,8 @@ describe("Mihoyo fixture adapter", () => {
     expect(page.items[0].sourceId).toBe("165690");
     expect(page.items[0].url).toBe("https://ys.mihoyo.com/main/news/detail/165690");
     expect(page.items[0].contentHash).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect(page.items[0].imageUrls?.length).toBeGreaterThan(0);
+    expect(page.items[0].imageUrls?.[0]).toMatch(/^https:\/\//);
     expect(page.items[0].content).not.toMatch(/<\/?p|<img/);
   });
 

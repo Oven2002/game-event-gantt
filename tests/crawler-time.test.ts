@@ -27,6 +27,10 @@ describe("Beijing time parser", () => {
       start: "2026-08-20T04:00:00+08:00",
       end: "2026-09-03T05:59:00+08:00",
     });
+    expect(parseExplicitInterval("2026年09月11日16:00 ～ 16:10")).toMatchObject({
+      start: "2026-09-11T16:00:00+08:00",
+      end: "2026-09-11T16:10:00+08:00",
+    });
   });
 
   it("marks missing year, non-minute and foreign-offset text for review", () => {
@@ -91,6 +95,42 @@ describe("announcement timeline semantics", () => {
       type: "preview",
       start: "2026-08-28T19:30:00+08:00",
       certainty: "confirmed",
+    });
+  });
+
+  it("keeps a relative version-update start explicit instead of calling it a missing interval", () => {
+    expect(parseArticleCandidates({
+      title: "4.5版本活动跃迁（其一）",
+      content: "本期活动跃迁时间为 2026/08/26 4.5版本更新后 - 2026/09/12 11:59",
+      publishedAt: "2026-08-25T10:40:00+08:00",
+    })).toMatchObject({
+      status: "needs_review",
+      end: "2026-09-12T11:59:00+08:00",
+      reason: "relative version start after update requires version start",
+    });
+  });
+
+  it("parses an explicit flash-maintenance window", () => {
+    expect(parseArticleCandidates({
+      title: "09月11日16:00闪断更新公告",
+      content: "计划将于2026年09月11日16:00 ~ 16:10期间进行服务器闪断更新。闪断更新时间：2026年09月11日16:00 ~ 16:10期间。",
+    })).toMatchObject({
+      status: "ready",
+      kind: "event",
+      type: "maintenance",
+      start: "2026-09-11T16:00:00+08:00",
+      end: "2026-09-11T16:10:00+08:00",
+    });
+  });
+
+  it("keeps image-backed articles auditable instead of calling them out of scope", () => {
+    expect(parseArticleCandidates({
+      title: "「神铸赋形」活动祈愿现已开启",
+      content: "活动期间",
+      imageUrls: ["https://fastcdn.mihoyo.com/content-v2/hk4e/165913/example.jpg"],
+    })).toMatchObject({
+      status: "needs_review",
+      reason: "time may be image-only; OCR required",
     });
   });
 

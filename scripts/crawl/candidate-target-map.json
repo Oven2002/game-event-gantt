@@ -20,6 +20,36 @@
       "targetId": "preview-3-2",
       "appliedRunId": "20260829-012939",
       "appliedAt": "2026-08-29T01:32:13.000Z"
+    },
+    {
+      "candidateKey": "honkai-star-rail/165983/primary",
+      "game": "honkai-star-rail",
+      "region": "cn",
+      "kind": "event",
+      "targetFile": "data/honkai-star-rail/cn-2026.yaml",
+      "targetId": "event-weimian-fenli-2026-09",
+      "appliedRunId": "20260913-064519",
+      "appliedAt": "2026-09-13T10:51:37.000Z"
+    },
+    {
+      "candidateKey": "arknights/5102/primary",
+      "game": "arknights",
+      "region": "cn",
+      "kind": "event",
+      "targetFile": "data/arknights/cn-2026.yaml",
+      "targetId": "maintenance-2026-09-04-version",
+      "appliedRunId": "20260913-064603",
+      "appliedAt": "2026-09-13T10:51:37.000Z"
+    },
+    {
+      "candidateKey": "arknights/1457/primary",
+      "game": "arknights",
+      "region": "cn",
+      "kind": "event",
+      "targetFile": "data/arknights/cn-2026.yaml",
+      "targetId": "banner-shibai-shenlan-2026-09",
+      "appliedRunId": "20260913-064603",
+      "appliedAt": "2026-09-13T10:51:37.000Z"
     }
   ]
 }

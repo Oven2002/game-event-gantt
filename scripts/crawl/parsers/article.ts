@@ -43,22 +43,34 @@ function parseSinglePreviewStart(content: string, referenceYear?: number): strin
   return parsed.status === "confirmed" ? parsed.value : undefined;
 }
 
-export function parseArticleCandidates(article: { title: string; content: string; publishedAt?: string | null }): ParsedArticleCandidate {
+function parseRelativeVersionInterval(content: string, referenceYear?: number): { end?: string } | undefined {
+  const date = "(?:\\d{4}[年/-]\\d{1,2}[月/-]\\d{1,2}(?:日)?|\\d{1,2}月\\d{1,2}日|\\d{1,2}\\/\\d{1,2})";
+  const pattern = new RegExp(`(${date})\\s+\\d+(?:\\.\\d+)+\\s*版本更新后\\s*(?:至|到|—|–|~|～|\\s+-\\s+)\\s*(${date}\\s*\\d{1,2}:\\d{2})`);
+  const match = pattern.exec(content);
+  if (!match) return undefined;
+  const end = parseDateTimeText(match[2], referenceYear);
+  return end.status === "confirmed" ? { end: end.value } : undefined;
+}
+
+export function parseArticleCandidates(article: { title: string; content: string; publishedAt?: string | null; imageUrls?: readonly string[] }): ParsedArticleCandidate {
   const classification = classify(article.title);
   if (!classification) return { status: "needs_review", reason: "article kind is not deterministically classified" };
   const base = classification.kind === "event" ? classification : { kind: classification.kind };
   if (classification.kind === "version" && !hasConcreteVersionIdentity(article.title, article.content)) return { ...base, status: "needs_review", reason: "version identity is not confirmed" };
   if (!article.content.trim() || /图片|见图|长图/.test(article.content)) return { ...base, status: "needs_review", reason: "time is image-only or content is empty" };
-  const intervalPattern = /(?:\d{4}[年/-]\d{1,2}[月/-]\d{1,2}(?:日)?|\d{1,2}月\d{1,2}日)\s*\d{1,2}:\d{2}\s*(?:至|到|—|–|-)\s*(?:\d{4}[年/-]\d{1,2}[月/-]\d{1,2}(?:日)?|\d{1,2}月\d{1,2}日|\d{1,2}\/\d{1,2})?\s*\d{1,2}:\d{2}/g;
-  const intervals = [...article.content.matchAll(intervalPattern)];
+  const intervalPattern = /(?:\d{4}[年/-]\d{1,2}[月/-]\d{1,2}(?:日)?|\d{1,2}月\d{1,2}日)\s*\d{1,2}:\d{2}\s*(?:至|到|—|–|~|～|-)\s*(?:\d{4}[年/-]\d{1,2}[月/-]\d{1,2}(?:日)?|\d{1,2}月\d{1,2}日|\d{1,2}\/\d{1,2})?\s*\d{1,2}:\d{2}/g;
+  const intervals = [...new Set([...article.content.matchAll(intervalPattern)].map((match) => match[0]))];
   const referenceYear = article.publishedAt && /^(\d{4})-/.exec(article.publishedAt)?.[1];
+  const relativeVersionInterval = parseRelativeVersionInterval(article.content, referenceYear ? Number(referenceYear) : undefined);
+  if (relativeVersionInterval) return { ...base, status: "needs_review", end: relativeVersionInterval.end, reason: "relative version start after update requires version start" };
   if (intervals.length === 0 && classification.kind === "event" && classification.type === "preview") {
     const start = parseSinglePreviewStart(article.content, referenceYear ? Number(referenceYear) : undefined);
     if (start) return { ...base, status: "ready", name: article.title, start, certainty: "confirmed" };
   }
+  if (intervals.length === 0 && (article.imageUrls?.length ?? 0) > 0) return { ...base, status: "needs_review", reason: "time may be image-only; OCR required" };
   if (intervals.length !== 1) return { ...base, status: "needs_review", reason: intervals.length === 0 ? "no explicit interval" : "multiple time windows" };
   try {
-    const interval = parseExplicitInterval(intervals[0][0], referenceYear ? Number(referenceYear) : undefined);
+    const interval = parseExplicitInterval(intervals[0], referenceYear ? Number(referenceYear) : undefined);
     if (classification.kind === "event" && /维护(?:结束)?后(?:开启|开放|开始)/.test(article.content)) {
       const inferred = parseMaintenanceText(article.content, { maintenanceEnd: interval.end });
       if (inferred.status === "ready" && inferred.start && inferred.certainty) {
@@ -88,7 +100,10 @@ export function parseArticleCandidate(raw: RawArticle, runId: string, semanticSl
     game: raw.game, region: raw.region, candidateKey, sourceId: raw.sourceId, semanticSlot,
     rawRef: { runId, game: raw.game, sourceId: raw.sourceId }, sourceHash, name: raw.title,
     sources: [raw.url],
-    evidence: parsed.start ? [{ field: "start" as const, text: parsed.start }, ...(parsed.end ? [{ field: "end" as const, text: parsed.end }] : [])] : [],
+    evidence: [
+      ...(parsed.start ? [{ field: "start" as const, text: parsed.start }] : []),
+      ...(parsed.end ? [{ field: "end" as const, text: parsed.end }] : []),
+    ],
     reviewReasons: parsed.reason ? [parsed.reason] : [],
   };
   const candidate = parsed.status === "ready" && parsed.kind && parsed.start

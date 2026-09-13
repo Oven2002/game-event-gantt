@@ -82,6 +82,23 @@ export function normalizeContent(html: string): string {
     .trim();
 }
 
+/** Preserve absolute image URLs for later OCR/audit without putting markup in content. */
+export function extractImageUrls(html: string): string[] {
+  const decoded = decodeHtmlEntities(html);
+  const urls = new Set<string>();
+  for (const tag of decoded.matchAll(/<img\b[^>]*>/gi)) {
+    for (const match of tag[0].matchAll(/\b(?:src|data-src|data-original)\s*=\s*["']([^"']+)["']/gi)) {
+      try {
+        const url = new URL(match[1]);
+        if (url.protocol === "http:" || url.protocol === "https:") urls.add(url.toString());
+      } catch {
+        // Ignore malformed CMS image attributes; the text remains auditable.
+      }
+    }
+  }
+  return [...urls];
+}
+
 export function isCanonicalContent(value: string): boolean {
   return normalizeContent(value) === value;
 }

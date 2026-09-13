@@ -12,6 +12,7 @@ import { hypergryphGames } from "../hypergryph-config.ts";
 import { normalizeHypergryphContent } from "../adapters/hypergryph.ts";
 import { bluepochGames } from "../bluepoch-config.ts";
 import { postroomGames } from "../postroom-config.ts";
+import { classifyArticleScope } from "../common/article-scope.ts";
 
 const configuredGames = {
   ...mihoyoGames,
@@ -95,15 +96,16 @@ function canonicalRawIssue(raw: RawArticle): string | undefined {
   return normalized === raw.content ? undefined : "raw article canonical content validation failed";
 }
 
-function rejectionForRaw(runId: string, game: string, raw: unknown, detail: string, reasonCode: CandidateRejection["reasonCode"] = "candidate_validation_failed"): CandidateRejection {
+function rejectionForRaw(runId: string, game: string, raw: unknown, detail: string, reasonCode: CandidateRejection["reasonCode"] = "candidate_validation_failed", candidateKeyOverride?: string): CandidateRejection {
   const value = typeof raw === "object" && raw !== null ? raw as Record<string, unknown> : {};
   const sourceId = typeof value.sourceId === "string" && value.sourceId.length > 0 ? value.sourceId : "unknown";
-  const candidateKey = typeof value.candidateKey === "string" && /^[^/]+\/[^/]+\/[^/]+$/.test(value.candidateKey) ? value.candidateKey : undefined;
+  const rawCandidateKey = typeof value.candidateKey === "string" && /^[^/]+\/[^/]+\/[^/]+$/.test(value.candidateKey) ? value.candidateKey : undefined;
   const result: CandidateRejection = {
     rawRef: { runId, game, sourceId },
     reasonCode,
     detail,
   };
+  const candidateKey = candidateKeyOverride ?? rawCandidateKey;
   if (candidateKey) result.candidateKey = candidateKey;
   return result;
 }
@@ -144,6 +146,18 @@ async function parseRawFile(rawPath: string, options: ParseCommandOptions, event
     const canonicalIssue = canonicalRawIssue(raw);
     if (canonicalIssue) {
       rejections.push(checkedRejection(rejectionForRaw(options.runId, game, raw, canonicalIssue, "unsupported_official_format")));
+      continue;
+    }
+    const scopeSkip = classifyArticleScope(raw.title, raw.content);
+    if (scopeSkip) {
+      rejections.push(checkedRejection(rejectionForRaw(
+        options.runId,
+        game,
+        raw,
+        `skip: ${scopeSkip.label}`,
+        "article_out_of_scope",
+        `${game}/${raw.sourceId}/primary`,
+      )));
       continue;
     }
     try {

@@ -47,7 +47,7 @@ export interface ExplicitInterval {
 }
 
 export function parseExplicitInterval(text: string, referenceYear?: number): ExplicitInterval {
-  const match = text.match(/^\s*(.*?)\s*(?:至|到|—|–|\s+-\s+)\s*(.*?)\s*$/);
+  const match = text.match(/^\s*(.*?)\s*(?:至|到|—|–|~|～|\s+-\s+)\s*(.*?)\s*$/);
   if (!match) throw new Error("explicit interval not found");
   const start = parseDateTimeText(match[1], referenceYear);
   const endText = match[2].trim();

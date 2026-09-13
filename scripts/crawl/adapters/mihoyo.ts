@@ -1,5 +1,5 @@
 import { sha256Utf8 } from "../common/hash.ts";
-import { normalizeContent as normalizeCanonicalContent } from "../common/content.ts";
+import { extractImageUrls, normalizeContent as normalizeCanonicalContent } from "../common/content.ts";
 import type { RawArticle, Sha256 } from "../types.ts";
 import { mihoyoGames, type MihoyoGameConfig } from "../mihoyo-config.ts";
 
@@ -10,6 +10,7 @@ export interface MihoyoListItem {
   publishedAt: string | null;
   content: string;
   contentHash: Sha256;
+  imageUrls?: string[];
 }
 
 export interface MihoyoListPage {
@@ -101,8 +102,10 @@ function normalizeItem(game: MihoyoGameConfig["game"], item: Record<string, unkn
   const sourceId = String(item.iInfoId ?? "");
   if (!/^\d+$/.test(sourceId)) throw new MihoyoAdapterError("missing iInfoId");
   const title = getString(item.sTitle, "sTitle");
-  const content = normalizeCanonicalContent(getString(item.sContent, "sContent", true));
+  const sourceContent = getString(item.sContent, "sContent", true);
+  const content = normalizeCanonicalContent(sourceContent);
   const contentHash = sha256Utf8(content) as Sha256;
+  const imageUrls = extractImageUrls(sourceContent);
   const normalized = {
     sourceId,
     title,
@@ -110,6 +113,7 @@ function normalizeItem(game: MihoyoGameConfig["game"], item: Record<string, unkn
     publishedAt: typeof item.dtCreateTime === "string" ? item.dtCreateTime : null,
     content,
     contentHash,
+    ...(imageUrls.length > 0 ? { imageUrls } : {}),
   };
   if (fetchedAt === undefined) return normalized;
   return {
@@ -123,6 +127,7 @@ function normalizeItem(game: MihoyoGameConfig["game"], item: Record<string, unkn
     content,
     contentHash,
     fetchedAt,
+    ...(normalized.imageUrls ? { imageUrls: normalized.imageUrls } : {}),
   } satisfies RawArticle;
 }
 

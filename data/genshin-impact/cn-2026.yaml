@@ -66,6 +66,12 @@ events:
     related: ["7.0"]
     sources:
       - "https://ys.mihoyo.com/main/news/detail/165422"
+  - id: preview-7-1
+    name: "7.1「往冥府的安魂歌」前瞻特别节目"
+    type: preview
+    start: "2026-09-12T20:00:00+08:00"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166006"
   # 月之八 卡池
   - id: banner-luna-8-p1
     name: "月之八 第一期角色祈愿（桑多涅+茜特菈莉）"
@@ -132,14 +138,26 @@ events:
       - "https://ys.mihoyo.com/main/news/detail/165472"
   # 7.0 活动
   - id: event-7-0-main
-    name: "7.0 主活动「险境征奇竞锋大赛」"
+    name: "7.0 主活动「险境征者竞锋大赛」"
     type: event
-    start: "2026-08-12T06:00:00+08:00"
+    start: "2026-08-28T10:00:00+08:00"
     end: "2026-09-22T14:59:00+08:00"
-    note: "名称来自官方前瞻回顾长图；活动说明公告未发布，时间按 7.0 版本周期估算（版本更新后 ~ 版本末日）"
+    timeCertainty:
+      start: confirmed
+      end: estimated
+    note: "官方活动介绍明确 08/28 10:00 开放；end 仍为 7.0 版本末日 09/22 14:59 的既有估计，等待官方结束时间公告。"
     related: ["7.0"]
     sources:
       - "https://ys.mihoyo.com/main/news/detail/165472"
+      - "https://ys.mihoyo.com/main/news/detail/165910"
+  - id: event-7-0-qisheng-liezhen
+    name: "七圣召唤·热斗模式：列阵斗巧"
+    type: event
+    start: "2026-08-29T10:00:00+08:00"
+    end: "2026-09-14T03:59:00+08:00"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165908"
   - id: event-7-0-chuxue
     name: "新芽相助·初探雪原：至冬探索行动"
     type: event
@@ -290,6 +308,14 @@ events:
     type: event
     start: "2026-08-19T10:00:00+08:00"
     end: "2026-09-22T03:59:00+08:00"
+    related: ["7.0"]
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165757"
+  - id: event-7-0-youjing-luanmai-burst
+    name: "「幽境危战」紊乱爆发期"
+    type: event
+    start: "2026-08-19T10:00:00+08:00"
+    end: "2026-08-29T03:59:00+08:00"
     related: ["7.0"]
     sources:
       - "https://ys.mihoyo.com/main/news/detail/165757"

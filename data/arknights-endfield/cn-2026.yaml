@@ -5,10 +5,11 @@ versions:
   - id: "1.4"
     name: "1.4 武陵决战篇·向渊行"
     start: "2026-07-16T12:00:00+08:00"
-    end: "2026-09-03T12:00:00+08:00"
-    note: "维护 07/16 06:00-12:00；end 未公布，按版本周期（约41-49天）推算 08下旬-09初"
+    end: "2026-09-02T12:00:00+08:00"
+    note: "1.5 版本维护公告明确 09/02 06:00-12:00；版本切换边界取维护完成时刻，替换此前按周期推算的 09/03 12:00。"
     sources:
       - "https://endfield.hypergryph.com/news/9335"
+      - "https://endfield.hypergryph.com/news/2653"
 
 events:
   - id: preview-1-4
@@ -206,3 +207,84 @@ events:
     sources:
       - "https://www.bilibili.com/video/BV1VQ8i6uEr4/"
     note: 官方B站简介写明 09月04日19:30 前登录可领取；邮件有效期14天。
+  - id: maintenance-2026-09-02-version
+    name: "「雪凇幽梦」版本更新维护"
+    type: maintenance
+    start: "2026-09-02T06:00:00+08:00"
+    end: "2026-09-02T12:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://endfield.hypergryph.com/news/2653"
+      - "https://endfield.hypergryph.com/news/1164"
+  - id: banner-donglie-1-5
+    name: "「冬猎」特许寻访"
+    type: banner
+    start: "2026-09-02T12:00:00+08:00"
+    end: "2026-09-30T11:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方写「雪凇幽梦」版本开启后；起点取 09/02 维护完成时刻，实际开服/寻访开放分钟未单独确认。"
+    sources:
+      - "https://endfield.hypergryph.com/news/6097"
+  - id: event-xuejiang-shenlin-1-5
+    name: "「雪降深林」引入活动"
+    type: event
+    start: "2026-09-02T12:00:00+08:00"
+    end: "2026-09-30T12:00:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方写「雪凇幽梦」版本更新后；起点取 09/02 维护完成时刻，实际开服/活动开放分钟未单独确认。"
+    sources:
+      - "https://endfield.hypergryph.com/news/2653"
+  - id: event-jicheng-bubble-1-5
+    name: "「集成援助·泡泡出击」集成生产活动"
+    type: event
+    start: "2026-09-16T12:00:00+08:00"
+    end: "2026-09-30T16:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://endfield.hypergryph.com/news/2653"
+  - id: event-jicheng-bubble-shop-1-5
+    name: "「集成援助·泡泡出击」物资兑换处"
+    type: event
+    start: "2026-09-16T12:00:00+08:00"
+    end: "2026-10-07T04:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://endfield.hypergryph.com/news/2653"
+  - id: event-lizhi-3-4-1-5
+    name: "「理智补给」限时活动（第3、4期）"
+    type: event
+    lifecycle: limited
+    cadence: rotating
+    start: "2026-09-17T04:00:00+08:00"
+    end: "2026-10-15T04:00:00+08:00"
+    periods:
+      - start: "2026-09-17T04:00:00+08:00"
+        end: "2026-09-24T04:00:00+08:00"
+      - start: "2026-10-08T04:00:00+08:00"
+        end: "2026-10-15T04:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方同一公告给出两段独立开放窗口，按 periods 保留间隔，不合并为连续活动。"
+    sources:
+      - "https://endfield.hypergryph.com/news/2653"
+  - id: event-fengbei-keying-1-5
+    name: "「丰碑留名·刻影」限时挑战"
+    type: event
+    start: "2026-10-05T12:00:00+08:00"
+    end: "2026-10-19T04:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://endfield.hypergryph.com/news/2653"

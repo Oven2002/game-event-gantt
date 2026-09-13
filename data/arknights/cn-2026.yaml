@@ -252,3 +252,117 @@ events:
     sources:
       - "https://ak.hypergryph.com/news/2810"
     note: 官方公告确认的闪断维护窗口。
+  - id: maintenance-2026-09-04-version
+    name: "[明日方舟]09月04日06:00版本更新停机维护公告"
+    type: maintenance
+    start: "2026-09-04T06:00:00+08:00"
+    end: "2026-09-04T12:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/5102"
+  - id: banner-shibai-shenlan-2026-09
+    name: "[圣城春日学生寻访]【石白深蓝之夜】限时寻访即将开启"
+    type: banner
+    start: "2026-09-04T12:00:00+08:00"
+    end: "2026-09-18T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/1457"
+  - id: maintenance-2026-09-11-flash
+    name: "09月11日闪断更新维护"
+    type: maintenance
+    start: "2026-09-11T16:00:00+08:00"
+    end: "2026-09-11T16:10:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/7367"
+    note: "官方公告确认的闪断维护窗口。"
+  - id: side-story-yuexing-shuishang
+    name: "SideStory「月行水上」限时活动"
+    type: event
+    start: "2026-09-04T12:00:00+08:00"
+    end: "2026-09-25T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9681"
+  - id: side-story-yuexing-shuishang-tongxuelu
+    name: "「月行水上」活动关卡·通学路"
+    type: event
+    start: "2026-09-04T12:00:00+08:00"
+    end: "2026-09-18T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9681"
+  - id: side-story-yuexing-shuishang-binyitang
+    name: "「月行水上」活动关卡·殡仪堂"
+    type: event
+    start: "2026-09-11T16:00:00+08:00"
+    end: "2026-09-18T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9681"
+  - id: side-story-yuexing-shuishang-market
+    name: "「月行水上」校园商店"
+    type: event
+    start: "2026-09-04T12:00:00+08:00"
+    end: "2026-09-25T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9681"
+  - id: event-yuexing-shuishang-signin
+    name: "「月行水上」签到活动"
+    type: event
+    start: "2026-09-04T12:00:00+08:00"
+    end: "2026-09-18T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9681"
+  - id: event-yuexing-shuishang-mail
+    name: "「月行水上」每日邮件发放"
+    type: event
+    start: "2026-09-04T12:00:00+08:00"
+    end: "2026-09-17T23:59:00+08:00"
+    note: "每日 12:00 发放一张寻访凭证，共发放 10 张；官方公告注明邮件有效期至 09/17 23:59。"
+    sources:
+      - "https://ak.hypergryph.com/news/9681"
+  - id: event-yuexing-shuishang-outfits
+    name: "「月行水上」新增时装限时上架"
+    type: event
+    start: "2026-09-04T12:00:00+08:00"
+    end: "2026-09-25T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9681"
+  - id: event-yuexing-shuishang-packages
+    name: "「月行水上」组合包限时上架"
+    type: event
+    start: "2026-09-04T12:00:00+08:00"
+    end: "2026-09-25T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9681"
+  - id: event-yuexing-shuishang-rerun-outfit
+    name: "「月行水上」复刻时装限时上架"
+    type: event
+    start: "2026-09-04T12:00:00+08:00"
+    end: "2026-09-18T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9681"
+  - id: event-yuexing-shuishang-furniture
+    name: "「月行水上」主题家具限时获取"
+    type: event
+    start: "2026-09-04T12:00:00+08:00"
+    end: "2026-09-18T03:59:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9681"
+  - id: event-yuexing-shuishang-warehouse
+    name: "「月行水上」仓库功能优化升级"
+    type: event
+    start: "2026-09-04T12:00:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9681"
+  - id: event-yuexing-shuishang-shop-update
+    name: "「月行水上」采购中心兑换内容追加"
+    type: event
+    start: "2026-09-04T12:00:00+08:00"
+    sources:
+      - "https://ak.hypergryph.com/news/9681"
