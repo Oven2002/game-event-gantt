@@ -112,6 +112,20 @@ describe("扩展数据语义", () => {
     expect(event.timeCertainty).toEqual({ start: "inferred", end: "confirmed" });
   });
 
+  it("解析常驻轮换分组字段", () => {
+    const root = fixture("", `events:\n  - id: rotating-event\n    name: 当前轮换期\n    type: event\n    start: "2026-08-20T04:00:00+08:00"\n    end: "2026-09-20T04:00:00+08:00"\n    lifecycle: permanent\n    cadence: rotating\n    rotationGroup: spiral-abyss\n    rotationLabel: 深境螺旋\n    sources:\n      - https://example.com/event\n`);
+
+    const event = loadTimelineData(root).groups[0].events[0];
+    expect(event.rotationGroup).toBe("spiral-abyss");
+    expect(event.rotationLabel).toBe("深境螺旋");
+  });
+
+  it("拒绝缺少分组信息的常驻轮换", () => {
+    const root = fixture("", `events:\n  - id: rotating-without-group\n    name: 缺少分组\n    type: event\n    start: "2026-08-20T04:00:00+08:00"\n    end: "2026-09-20T04:00:00+08:00"\n    lifecycle: permanent\n    cadence: rotating\n    sources:\n      - https://example.com/event\n`);
+
+    expect(() => loadTimelineData(root)).toThrow(DataValidationError);
+  });
+
   it("普通常驻内容拥有 permanent 生命周期但没有 rotating cadence", () => {
     const root = fixture("", `events:\n  - id: permanent-event\n    name: 常驻内容\n    type: event\n    start: "2026-08-20T04:00:00+08:00"\n    lifecycle: permanent\n    sources:\n      - https://example.com/event\n`);
 

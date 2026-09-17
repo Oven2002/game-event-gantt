@@ -84,6 +84,8 @@ export const eventSchema = z.object({
   related: z.array(z.string().regex(entryId)).optional(),
   lifecycle: z.enum(["limited", "permanent"]).optional(),
   cadence: z.enum(["one_off", "rotating", "recurring"]).optional(),
+  rotationGroup: z.string().regex(machineId).optional(),
+  rotationLabel: z.string().trim().min(1).optional(),
   periods: z.array(periodSchema).min(1).optional(),
   subtype: subtypeSchema.optional(),
 }).strict().refine(
@@ -101,6 +103,11 @@ export const eventSchema = z.object({
     return !certainty || ![certainty.start, certainty.end].some((item) => item === "inferred" || item === "estimated") || value.note !== undefined;
   },
   { message: "inferred 或 estimated 时间必须提供 note 说明依据" },
+).refine(
+  (value) => value.lifecycle !== "permanent"
+    || value.cadence !== "rotating"
+    || (value.rotationGroup !== undefined && value.rotationLabel !== undefined),
+  { message: "常驻轮换必须提供 rotationGroup 和 rotationLabel" },
 );
 
 export const dataFileSchema = z.object({
@@ -264,6 +271,8 @@ function normalizeItem(
     periods,
     lifecycle: event?.lifecycle,
     cadence: event?.cadence,
+    rotationGroup: event?.rotationGroup,
+    rotationLabel: event?.rotationLabel,
     subtype: event?.subtype as EventSubtype | undefined,
     // Default to "unknown" rather than "confirmed": legacy files were written
     // before certainty existed, so assuming official confirmation would be wrong.

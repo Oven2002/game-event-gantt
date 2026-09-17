@@ -141,6 +141,9 @@ main { max-width: 1480px; margin: 0 auto; padding: 0 32px 48px; }
 .event-bar--preview { fill: var(--amber); }
 .item-ended { opacity: .72; filter: saturate(.48); }
 .item-upcoming { opacity: .9; }
+.rotation-placeholder { cursor: default; }
+.rotation-placeholder-line { stroke: #9aa2b2; stroke-width: 2; stroke-dasharray: 2 3; }
+.placeholder-label { fill: #8b94a3; font-size: 10px; font-weight: 600; pointer-events: none; }
 .item-shape { cursor: pointer; transition: filter .15s ease, opacity .15s ease; }
 .item-shape:hover { filter: brightness(1.05) saturate(1.18) drop-shadow(0 3px 5px rgba(92,60,160,.22)); }
 .item-shape:focus { outline: none; }

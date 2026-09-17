@@ -28,6 +28,8 @@ export interface TimelineItem {
   periods: Array<{ start: number; end: number }>;
   lifecycle?: "limited" | "permanent";
   cadence?: "one_off" | "rotating" | "recurring";
+  rotationGroup?: string;
+  rotationLabel?: string;
   subtype?: EventSubtype;
   timeCertainty?: { start: TimeCertainty; end?: TimeCertainty };
   related: string[];

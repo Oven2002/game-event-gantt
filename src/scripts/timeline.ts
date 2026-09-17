@@ -17,6 +17,7 @@ import {
   formatTimelineTick,
   isBeijingWeekend,
 } from "../lib/calendar";
+import { buildRotationRows, type RotationChartItem, type RotationRow } from "../lib/rotation";
 
 const NS = "http://www.w3.org/2000/svg";
 const INITIAL_SPAN = 28 * DAY;
@@ -135,7 +136,12 @@ function tickStep(span: number): number {
   return candidates.find((candidate) => span / candidate <= 10) ?? 365 * DAY;
 }
 
-function filteredGroups(): Array<{ group: TimelineGroup; versions: TimelineItem[]; events: TimelineItem[] }> {
+function filteredGroups(): Array<{
+  group: TimelineGroup;
+  versions: TimelineItem[];
+  events: TimelineItem[];
+  rotationRows: RotationRow[];
+}> {
   const gameIds = selected("game");
   const regionIds = selected("region");
   const typeIds = selected("type");
@@ -143,8 +149,25 @@ function filteredGroups(): Array<{ group: TimelineGroup; versions: TimelineItem[
   return payload.groups.flatMap((group) => {
     if (!gameIds.has(group.game.id) || !regionIds.has(group.region.id)) return [];
     const versions = group.versions.filter((item) => statuses.has(statusAt(item, now)));
-    const events = group.events.filter((item) => typeIds.has(item.typeId) && statuses.has(statusAt(item, now)));
-    return versions.length || events.length ? [{ group, versions, events }] : [];
+    const candidateEvents = group.events.filter((item) => typeIds.has(item.typeId));
+    const allRotationRows = buildRotationRows(candidateEvents, now);
+    const rotationItemKeys = new Set(
+      allRotationRows.flatMap((row) => row.items
+        .filter((item): item is TimelineItem => item.kind !== "rotation-placeholder")
+        .map((item) => item.key)),
+    );
+    const rotationRows = allRotationRows
+      .map((row) => ({
+        ...row,
+        items: row.items.filter((item) =>
+          item.kind === "rotation-placeholder" || statuses.has(statusAt(item, now))),
+      }))
+      .filter((row) => row.items.length);
+    const events = candidateEvents.filter((item) =>
+      !rotationItemKeys.has(item.key) && statuses.has(statusAt(item, now)));
+    return versions.length || events.length || rotationRows.length
+      ? [{ group, versions, events, rotationRows }]
+      : [];
   });
 }
 
@@ -359,20 +382,31 @@ function installNavigation(chart: SVGSVGElement, chartLeft: number, chartWidth: 
   chart.addEventListener("pointercancel", finish);
 }
 
+function eventSegments(event: TimelineItem): TimelineItem[] {
+  return event.periods.length
+    ? event.periods.map((period) => ({ ...event, start: period.start, end: period.end, periods: [period] }))
+    : [event];
+}
+
+function chartItemKey(item: RotationChartItem): string {
+  return item.kind === "rotation-placeholder" ? item.key : item.id;
+}
+
 function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGroups>[number]): void {
-  const { group, versions, events } = entry;
+  const { group, versions, events, rotationRows } = entry;
   const width = Math.max(container.clientWidth, 620);
   const chartLeft = width < 760 ? 130 : 170;
   const right = 18;
   const plotWidth = width - chartLeft - right;
   const axisHeight = 38;
   const rowHeight = 42;
-  const rows: Array<{ label: string; type: string; items: TimelineItem[]; priority: number; kindOrder: number; start: number }> = [];
-  if (versions.length) rows.push({ label: "版本", type: "版本轨道", items: versions, priority: Number.POSITIVE_INFINITY, kindOrder: 0, start: versions[0].start });
+  const rows: Array<{ key: string; label: string; type: string; items: RotationChartItem[]; priority: number; kindOrder: number; start: number }> = [];
+  if (versions.length) rows.push({ key: `${group.key}/versions`, label: "版本", type: "版本轨道", items: versions, priority: Number.POSITIVE_INFINITY, kindOrder: 0, start: versions[0].start });
   const banners = events.filter((event) => event.typeId === "banner");
   const otherEvents = events.filter((event) => event.typeId !== "banner");
   packIntoLanes(banners).forEach((items, index) => {
     rows.push({
+      key: `${group.key}/banners/${index}`,
       label: index === 0 ? "卡池" : `卡池 ${index + 1}`,
       type: "卡池轨道",
       items,
@@ -381,10 +415,23 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
       start: Math.min(...items.map((item) => item.start)),
     });
   });
+  for (const rotationRow of rotationRows) {
+    const items: RotationChartItem[] = rotationRow.items.flatMap<RotationChartItem>((item) =>
+      item.kind === "rotation-placeholder" ? [item] : eventSegments(item));
+    const typeName = rotationRow.items.find(
+      (item): item is TimelineItem => item.kind !== "rotation-placeholder",
+    )?.typeName ?? "活动";
+    rows.push({
+      key: `${group.key}/${rotationRow.key}`,
+      label: rotationRow.label,
+      type: `${typeName} · 常驻轮换`,
+      items,
+      priority: rotationRow.priority,
+      kindOrder: 2,
+      start: rotationRow.start,
+    });
+  }
   for (const event of otherEvents) {
-    const segments = event.periods.length
-      ? event.periods.map((period) => ({ ...event, start: period.start, end: period.end, periods: [period] }))
-      : [event];
     const lifecycleLabel = event.typeId === "event"
       ? event.lifecycle === "permanent" && event.cadence === "rotating"
         ? "常驻轮换"
@@ -395,9 +442,10 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
           : "限时活动"
       : undefined;
     rows.push({
+      key: event.key,
       label: event.name,
       type: lifecycleLabel ? `${event.typeName} · ${lifecycleLabel}` : event.typeName,
-      items: segments,
+      items: eventSegments(event),
       priority: event.priority ?? 0,
       kindOrder: 2,
       start: event.start,
@@ -407,7 +455,7 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
     b.priority - a.priority
     || a.kindOrder - b.kindOrder
     || a.start - b.start
-    || a.items[0].id.localeCompare(b.items[0].id)
+    || chartItemKey(a.items[0]).localeCompare(chartItemKey(b.items[0]))
   );
   const height = axisHeight + rows.length * rowHeight + 10;
   const labelOverlay = html("div", "chart-label-overlay");
@@ -513,19 +561,47 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
     const top = axisHeight + index * rowHeight;
     const centerY = top + rowHeight / 2;
     chart.append(svg("line", { class: "row-line", x1: 0, x2: width, y1: top, y2: top }));
-    const label = svg("text", { class: "row-label", x: 14, y: centerY - 2 });
+    const label = svg("text", { class: "row-label", x: 14, y: centerY - 2, "data-row-key": row.key });
     setText(label, row.label.length > 15 ? `${row.label.slice(0, 14)}…` : row.label);
-    const type = svg("text", { class: "row-type", x: 14, y: centerY + 13 });
+    const type = svg("text", { class: "row-type", x: 14, y: centerY + 13, "data-row-key": row.key });
     setText(type, row.type);
     chart.append(label, type);
 
     for (const item of row.items) {
+      if (item.kind === "rotation-placeholder") {
+        const pointX = x(item.start);
+        const markerX = Math.max(chartLeft + 9, Math.min(chartLeft + plotWidth - 9, pointX));
+        const groupNode = svg("g", {
+          class: "item-shape rotation-placeholder",
+          "data-row-key": row.key,
+          role: "img",
+          "aria-label": `${item.rotationLabel}：下一期待更新`,
+        });
+        groupNode.append(svg("line", {
+          class: "rotation-placeholder-line",
+          x1: markerX,
+          x2: markerX,
+          y1: centerY - 12,
+          y2: centerY + 12,
+        }));
+        const placeholderLabel = svg("text", {
+          class: "placeholder-label",
+          x: markerX + 8,
+          y: centerY + 4,
+        });
+        setText(placeholderLabel, "下一期待更新");
+        const title = svg("title");
+        setText(title, `${item.rotationLabel}：下一期待更新`);
+        groupNode.append(placeholderLabel, title);
+        clipped.append(groupNode);
+        continue;
+      }
       const status = statusAt(item, now);
       const itemEnd = item.end ?? item.start;
       if (itemEnd < domainStart || item.start > domainEnd) {
         const onLeft = itemEnd < domainStart;
         const markerX = onLeft ? chartLeft + 9 : chartLeft + plotWidth - 9;
-        const groupNode = svg("g", { class: `item-shape offscreen-item item-${status}` });
+        const groupNode = svg("g", { class: `item-shape offscreen-item item-${status}`, "data-row-key": row.key });
         const points = onLeft
           ? `${markerX - 7},${centerY} ${markerX + 3},${centerY - 7} ${markerX + 3},${centerY + 7}`
           : `${markerX + 7},${centerY} ${markerX - 3},${centerY - 7} ${markerX - 3},${centerY + 7}`;
@@ -548,7 +624,7 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
         const visibleStartX = Math.max(chartLeft, startX);
         const visibleEndX = Math.min(chartLeft + plotWidth, endX);
         const visibleWidth = Math.max(0, visibleEndX - visibleStartX);
-        const groupNode = svg("g", { class: `item-shape item-${status}` });
+        const groupNode = svg("g", { class: `item-shape item-${status}`, "data-row-key": row.key });
         const rect = svg("rect", {
           class: item.kind === "version" ? "version-bar" : `event-bar event-bar--${item.typeId}`,
           x: startX,
@@ -572,7 +648,7 @@ function drawChart(container: HTMLElement, entry: ReturnType<typeof filteredGrou
         clipped.append(groupNode);
       } else {
         const pointX = x(item.start);
-        const groupNode = svg("g", { class: `item-shape item-${status}` });
+        const groupNode = svg("g", { class: `item-shape item-${status}`, "data-row-key": row.key });
         groupNode.append(svg("line", { class: "point-stem", x1: pointX, x2: pointX, y1: centerY - 15, y2: centerY + 15 }));
         groupNode.append(svg("polygon", { class: "point-marker", points: `${pointX},${centerY - 7} ${pointX + 7},${centerY} ${pointX},${centerY + 7} ${pointX - 7},${centerY}`, style: `fill:url(#${gradientForItem(item)})` }));
         bindItemInteraction(groupNode, group, item);

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { TimelinePayload } from "../src/lib/types";
+import type { TimelineItem, TimelinePayload } from "../src/lib/types";
 
 // ── Lightweight DOM and browser API shims ───────────────────────────────────
 // jsdom has no layout engine or pointer capture. These shims cover only the
@@ -78,6 +78,54 @@ function timelinePayloadFixture(): TimelinePayload {
   };
 }
 
+function rotationTimelinePayloadFixture(): TimelinePayload {
+  const now = Date.now();
+  const cycleStart = now - 2 * 86_400_000;
+  const cycleEnd = now - 86_400_000;
+  return {
+    generatedAt: now,
+    eventTypes: [{ id: "event", name: "活动" }],
+    groups: [{
+      key: "demo/cn",
+      game: { id: "demo", name: "演示游戏", priority: 1 },
+      region: { id: "cn", name: "国服" },
+      versions: [],
+      events: [
+        {
+          ...eventItem("cycle", "深境螺旋（当前期）", cycleStart, cycleEnd),
+          lifecycle: "permanent",
+          cadence: "rotating",
+          rotationGroup: "abyss",
+          rotationLabel: "深境螺旋",
+        },
+        {
+          ...eventItem("burst", "紊乱爆发期", now - 3_600_000, now + 3_600_000),
+          rotationGroup: "abyss",
+          rotationLabel: "深境螺旋",
+        },
+      ],
+    }],
+    bounds: { start: cycleStart, end: now + 86_400_000 },
+  };
+}
+
+function eventItem(id: string, name: string, start: number, end: number): TimelineItem {
+  return {
+    key: `demo/cn/event/${id}`,
+    id,
+    kind: "event",
+    name,
+    typeId: "event",
+    typeName: "活动",
+    start,
+    end,
+    periods: [{ start, end }],
+    related: [],
+    sources: [`https://example.com/${id}`],
+    sourceFile: "demo/cn.yaml",
+  };
+}
+
 function flushFrames(count = 1): void {
   for (let i = 0; i < count && rafQueue.length; i += 1) {
     rafQueue.shift()!(Date.now());
@@ -130,6 +178,20 @@ describe("时间轴客户端行为", () => {
     const sourceHrefs = [...document.querySelectorAll(".detail-grid a")]
       .map((link) => link.getAttribute("href"));
     expect(sourceHrefs).toContain("https://example.com/v1");
+  });
+
+  it("合并常驻轮换与阶段，并在尾部显示待更新占位", async () => {
+    installTimelineFixture(rotationTimelinePayloadFixture());
+    await import("../src/scripts/timeline");
+
+    const labels = [...document.querySelectorAll<SVGTextElement>(".row-label")];
+    expect(labels).toHaveLength(1);
+    expect(labels[0].textContent).toBe("深境螺旋");
+
+    const rowKey = labels[0].getAttribute("data-row-key")!;
+    const rowItems = document.querySelectorAll(`.item-shape[data-row-key="${rowKey}"]`);
+    expect(rowItems).toHaveLength(2);
+    expect(document.querySelector(`.rotation-placeholder[data-row-key="${rowKey}"]`)).toBeTruthy();
   });
 
   it("筛选变化写入偏好并在动画帧合并重渲染", async () => {
