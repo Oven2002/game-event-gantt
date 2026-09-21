@@ -104,3 +104,35 @@ events:
     sources:
       - "https://world.qq.com/web202603/newsDetail.html?newsid=18838035"
     note: 官方公告确认国服电脑版及手机版不停服维护。
+  - id: maintenance-2026-09-17-shadow-trial
+    name: 9月17日暗影试炼临时维护
+    type: maintenance
+    start: "2026-09-17T04:50:00+08:00"
+    end: "2026-09-17T08:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: estimated
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18863605"
+    note: 官方公告明确暗影试炼于9月17日04:50起关闭，预计08:00结束；实际结束时间以游戏内为准。
+  - id: maintenance-2026-09-17
+    name: 9月17日不停服维护
+    type: maintenance
+    start: "2026-09-17T05:00:00+08:00"
+    end: "2026-09-17T06:00:00+08:00"
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18863605"
+  - id: miaoshou-huichun-2026-09-17
+    name: "「妙手回春」活动"
+    type: event
+    start: "2026-09-17T10:00:00+08:00"
+    end: "2026-10-08T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18863657"
+    note: 官方公告配图明确活动开启时间为9月17日10:00，结束时间为10月8日23:59。

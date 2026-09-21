@@ -255,3 +255,10 @@ events:
     end: "2026-10-09T04:00:00+08:00"
     sources:
       - "https://www.bilibili.com/video/BV1zveP6eEif"
+  - id: event-pika-tiankong-youju-0925
+    name: "皮卡月刊「天空邮局」限时上架"
+    type: banner
+    start: "2026-09-25T04:00:00+08:00"
+    end: "2026-10-09T04:00:00+08:00"
+    sources:
+      - "https://www.taptap.cn/moment/850761243533774540?group_id=228326"

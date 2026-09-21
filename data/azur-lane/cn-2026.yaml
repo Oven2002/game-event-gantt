@@ -265,3 +265,14 @@ events:
     note: "官方公告原文为“9月17日维护后~9月30日23:59”；起始取同公告明确的维护结束时刻15:00。"
     sources:
       - "https://www.biligame.com/detail/?id=97&sourceFrom=2000310011#!news/18356"
+  - id: event-shop-trial-packs-0917-0923
+    name: "商店限时上架换装体验礼包（9月17日批次）"
+    type: event
+    start: "2026-09-17T15:00:00+08:00"
+    end: "2026-09-23T23:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方公告原文为“9月17日维护后~9月23日23:59”；起始取同公告明确的维护结束时刻15:00。"
+    sources:
+      - "https://www.biligame.com/detail/?id=97&sourceFrom=2000310011#!news/18356"
