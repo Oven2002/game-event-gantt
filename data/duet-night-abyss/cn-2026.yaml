@@ -600,3 +600,10 @@ events:
     sources:
       - https://www.taptap.cn/moment/829384951978786861
       - https://www.taptap.cn/moment/834794743480192816
+  - id: xing-yao-xun-you-sep
+    name: 星耀巡游
+    type: event
+    start: "2026-09-17T10:00:00+08:00"
+    end: "2026-09-30T05:00:00+08:00"
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/880892261783569784

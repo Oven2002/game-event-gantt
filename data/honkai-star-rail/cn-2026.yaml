@@ -366,3 +366,14 @@ events:
     related: ["4.5"]
     sources:
       - "https://sr.mihoyo.com/news/166045"
+  - id: event-yiqi-yingjie-2026-09
+    name: "「异器盈界」活动（隧洞遗器限时双倍掉落）"
+    type: event
+    start: "2026-09-19T04:00:00+08:00"
+    end: "2026-09-28T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["4.5"]
+    sources:
+      - "https://sr.mihoyo.com/news/166178"
