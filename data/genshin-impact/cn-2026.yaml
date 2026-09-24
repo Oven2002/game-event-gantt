@@ -221,6 +221,26 @@ events:
     related: ["7.0"]
     sources:
       - "https://ys.mihoyo.com/main/news/detail/165688"
+  - id: event-7-0-jinjie-nixiang
+    name: "「禁界拟想阵地战」活动：阵地保卫挑战"
+    type: event
+    start: "2026-09-07T10:00:00+08:00"
+    end: "2026-09-17T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/165985"
+  - id: event-7-0-shengcai-yiyong
+    name: "「盛材移涌」活动：天赋培养素材、武器突破素材双倍掉落"
+    type: event
+    start: "2026-09-14T04:00:00+08:00"
+    end: "2026-09-21T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166079"
   # 月之八 活动（既有，未变）
   - id: event-luna-8-main
     name: "映夏！归乡？千灵节！（含夏洛蒂衣装）"

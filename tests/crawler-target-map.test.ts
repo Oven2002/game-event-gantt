@@ -57,6 +57,26 @@ describe("crawler target map", () => {
         appliedAt: "2026-09-13T10:51:37.000Z",
       },
       {
+        candidateKey: "genshin-impact/165985/primary",
+        game: "genshin-impact",
+        region: "cn",
+        kind: "event",
+        targetFile: "data/genshin-impact/cn-2026.yaml",
+        targetId: "event-7-0-jinjie-nixiang",
+        appliedRunId: "20260924-011405",
+        appliedAt: "2026-09-24T10:52:11+08:00",
+      },
+      {
+        candidateKey: "genshin-impact/166079/primary",
+        game: "genshin-impact",
+        region: "cn",
+        kind: "event",
+        targetFile: "data/genshin-impact/cn-2026.yaml",
+        targetId: "event-7-0-shengcai-yiyong",
+        appliedRunId: "20260924-011405",
+        appliedAt: "2026-09-24T10:52:11+08:00",
+      },
+      {
         candidateKey: "honkai-star-rail/165983/primary",
         game: "honkai-star-rail",
         region: "cn",
@@ -83,8 +103,8 @@ describe("crawler target map", () => {
   it("indexes every current formal data file", async () => {
     const index = await buildDataIndex("data");
     expect(index.files).toHaveLength(15);
-    // 443 baseline + 9 light-and-night approvals + September crawl additions + current increment.
-    expect(index.targets.size).toBe(508);
+    // 443 baseline + 9 light-and-night approvals + September crawl additions + current increment + 2 reviewed Genshin events.
+    expect(index.targets.size).toBe(510);
   });
 
   it("preserves a non-cn region instead of coercing it to cn", async () => {
