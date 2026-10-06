@@ -1,4 +1,17 @@
 #!/bin/sh
+# Gate every push on a full build: validate:data -> site-meta -> astro check -> astro build.
+# Catches type/import breakage (e.g. missing imports) that vitest alone does not.
 set -eu
 
-node --experimental-strip-types scripts/update-data-meta.ts --check
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
+cd "$repo_root"
+
+echo "pre-push: full build (validate:data + astro check + astro build)..."
+if ! npm run --silent build > /tmp/gameg-pre-push-build.log 2>&1; then
+  echo "pre-push: BUILD FAILED — push aborted. Log:" >&2
+  tail -40 /tmp/gameg-pre-push-build.log >&2
+  exit 1
+fi
+
+tail -3 /tmp/gameg-pre-push-build.log
+echo "pre-push: build OK"
