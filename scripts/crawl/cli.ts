@@ -7,7 +7,7 @@ import { approveRun } from "./commands/approve.ts";
 import { createRun, artifactPath, assertRuntimeRootSafe, assertRunId } from "./common/run.ts";
 import { readJsonl } from "./common/files.ts";
 import { sha256Utf8 } from "./common/hash.ts";
-import { beginStateTransaction, markStateTransactionPending, recoverStateTransactions, removeStateTransaction, abortStateTransaction, loadState, updateStateAtomic, stateTransactionPath, withRunLock, lastSuccessDateCheckpoint, builtinCheckpointSchemas, type AdapterCheckpoint, type CrawlerState } from "./common/state.ts";
+import { beginStateTransaction, markStateTransactionPending, recoverStateTransactions, removeStateTransaction, abortStateTransaction, loadState, updateStateAtomic, writeStateAtomic, stateTransactionPath, withRunLock, lastSuccessDateCheckpoint, builtinCheckpointSchemas, type AdapterCheckpoint, type CrawlerState } from "./common/state.ts";
 import { RawArticleSchema, type Sha256 } from "./types.ts";
 import { buildHypergryphListRequest, displayTimeToBeijing, normalizeHypergryphContent, parseHypergryphDetail, parseHypergryphList, type HypergryphListPage } from "./adapters/hypergryph.ts";
 import { hypergryphGames } from "./hypergryph-config.ts";
