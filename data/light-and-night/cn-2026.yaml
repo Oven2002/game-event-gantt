@@ -268,3 +268,14 @@ events:
     note: "兑换商店截止7月5日04:59；含本期活动工作室奖励一览"
     sources:
       - "https://love.qq.com/m/web202106/newsdetail.html?newsid=0fd59aca-52b4-4eb2-b381-0d88bbc387f4"
+
+  - id: event-xunri-liechao-rerun-1
+    name: "绚日烈潮 | 限定复刻活动预告"
+    type: event
+    start: "2026-09-25T05:00:00+08:00"
+    end: "2026-10-08T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=a2812526-3edb-44fc-ae4f-a5de0afa1e04"

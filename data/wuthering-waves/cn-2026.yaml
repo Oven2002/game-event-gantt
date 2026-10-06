@@ -15,11 +15,18 @@ versions:
     name: "3.6 蜃云灯影，凡尘剑心"
     start: "2026-08-20T11:00:00+08:00"
     end: "2026-09-30T04:00:00+08:00"
-    note: "维护 08-20 04:00~11:00 官方已确认（11:00 开服即版本开始）；end 09-30 为预估（3.5 共 41 天惯例），待官方公告"
+    note: "维护 08-20 04:00~11:00 官方已确认（11:00 开服即版本开始）；end 09-30 04:00 已由官方 3.7 版本内容说明确认（3.7 维护 09-30 04:00~11:00）。"
     sources:
       - "https://www.taptap.cn/moment/836917677271287865"
       - "https://www.taptap.cn/moment/834851999445944775"
-      - "https://weibo.com/7730797357/RcjWZ3lox"
+      - "https://mc.kurogames.com/main/news/detail/5569"
+  - id: "3.7"
+    name: "3.7 镜锁妄世，心照红尘"
+    start: "2026-09-30T11:00:00+08:00"
+    end: "2026-11-10T04:00:00+08:00"
+    note: "start 取 3.7 维护结束时刻（官方确认维护 09-30 04:00~11:00，开服即版本开始）；end 官方未公布，按约 41 天版本周期推算 11-10 04:00 维护，待官方公告。"
+    sources:
+      - "https://mc.kurogames.com/main/news/detail/5569"
 
 events:
   - id: preview-3-5
@@ -226,3 +233,77 @@ events:
     sources:
       - "https://www.taptap.cn/moment/839202965418936567"
     note: 官方鸣潮账号发布；投稿开启时间与版本开服时间一致。
+  - id: maintenance-3-7
+    name: 3.7「镜锁妄世，心照红尘」版本更新维护
+    type: maintenance
+    start: "2026-09-30T04:00:00+08:00"
+    end: "2026-09-30T11:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方 3.7 版本内容说明：更新维护时间 2026年9月30日04:00 ~ 11:00（UTC+8）。"
+    sources:
+      - "https://mc.kurogames.com/main/news/detail/5569"
+  - id: event-3-7-tuantuan
+    name: "3.7「团团勇者大乱斗」休闲活动"
+    type: event
+    start: "2026-09-30T11:00:00+08:00"
+    end: "2026-11-11T11:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「3.7版本更新后 ~ 2026年11月11日11:59（服务器时间）」；start 取维护结束时刻作锚点（推算）。"
+    sources:
+      - "https://mc.kurogames.com/main/news/detail/5569"
+  - id: event-3-7-menggou-xiangzhong
+    name: "3.7「梦构匣中」区域探索活动"
+    type: event
+    start: "2026-09-30T11:00:00+08:00"
+    end: "2026-11-11T03:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「3.7版本更新后 ~ 2026年11月11日03:59（服务器时间）」；start 按维护结束时刻推算。"
+    sources:
+      - "https://mc.kurogames.com/main/news/detail/5569"
+  - id: event-3-7-tiangong-xunwu
+    name: "3.7「天工寻物」限时战斗活动"
+    type: event
+    start: "2026-10-08T04:00:00+08:00"
+    end: "2026-10-26T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://mc.kurogames.com/main/news/detail/5569"
+  - id: event-3-7-wuyin-xiaochu
+    name: "3.7「无音消除」休闲活动"
+    type: event
+    start: "2026-10-22T10:00:00+08:00"
+    end: "2026-11-09T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://mc.kurogames.com/main/news/detail/5569"
+  - id: event-3-7-taochao-tanli
+    name: "3.7「踏潮探历·玄方地界」限时探索委托活动"
+    type: event
+    start: "2026-10-29T04:00:00+08:00"
+    end: "2026-11-11T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://mc.kurogames.com/main/news/detail/5569"
+  - id: event-3-7-chaoyue-yuyong
+    name: "3.7「朝月鱼涌」网页活动"
+    type: event
+    start: "2026-10-15T10:00:00+08:00"
+    end: "2026-11-01T09:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方原文标注为 UTC+8。"
+    sources:
+      - "https://mc.kurogames.com/main/news/detail/5569"

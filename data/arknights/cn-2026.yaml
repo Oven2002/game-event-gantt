@@ -381,3 +381,115 @@ events:
     sources:
       - "https://ak.hypergryph.com/news/4922"
     note: "官方公告确认的闪断维护窗口。"
+  - id: maintenance-2026-09-29-flash
+    name: "[明日方舟]09月29日16:00闪断更新公告"
+    type: maintenance
+    start: "2026-09-29T16:00:00+08:00"
+    end: "2026-09-29T16:10:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/8577"
+  - id: event-zhuying-jiqu
+    name: "「逐影集趣」限时活动"
+    type: event
+    start: "2026-09-20T16:00:00+08:00"
+    end: "2026-09-30T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/2819"
+  - id: event-zhuying-zhili
+    name: "「逐影集趣」逐影之礼"
+    type: event
+    start: "2026-09-20T16:00:00+08:00"
+    end: "2026-10-03T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/2819"
+  - id: event-jinfeng-yingyue
+    name: "「锦枫映月」签到"
+    type: event
+    start: "2026-09-23T04:00:00+08:00"
+    end: "2026-09-30T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/2819"
+  - id: event-wentai-ceding
+    name: "「稳态测定」签到"
+    type: event
+    start: "2026-09-28T04:00:00+08:00"
+    end: "2026-10-08T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/2819"
+  - id: event-shiliangtupo-3
+    name: "矢量突破#3「拟生态」（含资源收集全天开放）"
+    type: event
+    start: "2026-09-29T16:00:00+08:00"
+    end: "2026-10-20T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/1455"
+  - id: event-shiliang-milestone-3
+    name: "矢量突破#3「拟生态」突破里程碑"
+    type: event
+    start: "2026-09-29T16:00:00+08:00"
+    end: "2026-10-23T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/1455"
+  - id: banner-dingxiang-zhenxuan-3
+    name: "「定向甄选」限时寻访（矢量突破#3）"
+    type: banner
+    start: "2026-09-29T16:00:00+08:00"
+    end: "2026-10-13T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/1455"
+  - id: event-zuorihai
+    name: "SideStory「昨日海」活动关卡（含分段「雷亚-伊比利亚」「我们的伊比利亚」）"
+    type: event
+    start: "2026-10-09T12:00:00+08:00"
+    end: "2026-10-30T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方预告明确开启时间存在提前或延迟的可能；「雷亚-伊比利亚」10/09 12:00-10/23 03:59、「我们的伊比利亚」10/16 16:00-10/23 03:59。"
+    sources:
+      - "https://ak.hypergryph.com/news/5101"
+  - id: event-zuorihai-laogong
+    name: "「昨日海」劳工配给所"
+    type: event
+    start: "2026-10-09T12:00:00+08:00"
+    end: "2026-10-30T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/5101"
+  - id: banner-haiyuan-xunyou
+    name: "「海渊巡游」限时寻访（昨日海）"
+    type: banner
+    start: "2026-10-09T12:00:00+08:00"
+    end: "2026-10-23T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "该寻访为【标准寻访】类型；10月22日04:00后其余干员加入常驻标准寻访。"
+    sources:
+      - "https://ak.hypergryph.com/news/5101"

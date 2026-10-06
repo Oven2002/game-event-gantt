@@ -29,12 +29,21 @@ versions:
   - id: "7.0"
     name: "7.0 无神怜爱的雪国"
     start: "2026-08-12T06:00:00+08:00"
-    end: "2026-09-22T18:00:00+08:00"
-    note: "预估结束（官方未公布）：按 42 天周期推 8.0 维护日 09-23 06:00，end 取惯例前一天 18:00；佐证：魔神任务时限奖励官方截止 09-22 14:59、超话签到 09-22 23:59、区域探索奖励 09-22 14:59、霜游纪行 09-21 03:59；维护 08/12 06:00 预计 5 小时"
+    end: "2026-09-23T06:00:00+08:00"
+    note: "7.1 维护预告确认 09-23 06:00 起进行 7.1 版本维护，7.0 于该时刻结束（替换此前按 42 天周期推算的 09-22 18:00）；维护预计 5 小时。"
     sources:
       - "https://ys.mihoyo.com/main/news/detail/165618"
       - "https://ys.mihoyo.com/main/news/detail/165682"
       - "https://ys.mihoyo.com/main/news/detail/165475"
+      - "https://ys.mihoyo.com/main/news/detail/166385"
+  - id: "7.1"
+    name: "7.1 往冥府的安魂歌"
+    start: "2026-09-23T06:00:00+08:00"
+    end: "2026-11-04T06:00:00+08:00"
+    note: "维护窗口 09-23 06:00 起预计 5 小时（官方维护预告确认）；end 官方未公布，按 42 天版本周期推算 11-04 06:00 维护，待官方公告。"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166385"
+      - "https://ys.mihoyo.com/main/news/detail/166259"
 
 events:
   # 前瞻直播
@@ -391,3 +400,120 @@ events:
     note: "官方公告明确活动时间为 2026-10-01 04:00 至 2026-10-19 03:59。"
     sources:
       - "https://ys.mihoyo.com/main/news/detail/166252"
+  - id: banner-7-1-phase1
+    name: "7.1 第一期活动祈愿（煦风欢舞时/涌浪叙歌/神铸赋形）"
+    type: banner
+    start: "2026-09-23T06:00:00+08:00"
+    end: "2026-10-13T17:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方预告原文为「2026/09/23 7.1版本更新后 ~ 2026/10/13 17:59」；start 取 7.1 维护开始时刻作锚点（维护预告 9/23 06:00 起、预计 5 小时），实际开放以维护完成为准。"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166385"
+      - "https://ys.mihoyo.com/main/news/detail/166246"
+      - "https://ys.mihoyo.com/main/news/detail/166249"
+      - "https://ys.mihoyo.com/main/news/detail/166251"
+  - id: event-7-1-zhuyuejie
+    name: "「银翎溯月，玄鸟结璘」（逐月节活动）"
+    type: event
+    start: "2026-09-24T10:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+    note: "官方活动介绍明确 2026/09/24 10:00 开放；本公告未给出结束时间，待后续官方公告补充。"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166334"
+  - id: event-7-1-suyue-jixing
+    name: "「溯月纪行」（7.1 纪行）"
+    type: event
+    start: "2026-09-23T06:00:00+08:00"
+    end: "2026-11-02T03:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「7.1版本更新后 ~ 2026/11/02 03:59」；start 取 7.1 维护开始时刻作锚点，属推算。"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166259"
+  - id: event-7-1-moshen-jiangli
+    name: "魔神任务第七章限时奖励（往冥府的安魂歌）"
+    type: event
+    start: "2026-09-23T06:00:00+08:00"
+    end: "2026-11-03T14:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「7.1版本更新后 ~ 2026/11/03 14:59」；start 按维护开始时刻推算。"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166253"
+  - id: event-7-1-zhuoshang-jutuan
+    name: "「桌上剧团·冒险的前夜会」（自选邀请限定5星）"
+    type: event
+    start: "2026-09-23T06:00:00+08:00"
+    end: "2026-11-03T14:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「7.1版本更新后 ~ 2026/11/03 14:59」；start 按维护开始时刻推算。"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166257"
+  - id: event-7-1-xunli-xuejing
+    name: "「巡历雪境，凝铸锋锐」（自选邀请常驻5星）"
+    type: event
+    start: "2026-09-23T06:00:00+08:00"
+    end: "2026-11-03T14:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「7.1版本更新后 ~ 2026/11/03 14:59」；start 按维护开始时刻推算。"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166256"
+      - "https://ys.mihoyo.com/main/news/detail/166263"
+  - id: event-6th-anniv-weibo-qiandao
+    name: "6周年微博专属超话签到"
+    type: event
+    start: "2026-09-23T10:00:00+08:00"
+    end: "2026-11-03T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方公告原文「2026年9月23日10:00-2026年11月3日23:59」；超话系列活动其余分段窗口以图片呈现，未逐段录入。"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166394"
+  - id: event-6th-anniv-shiguang
+    name: "「周年拾光册」网页活动"
+    type: event
+    start: "2026-09-28T00:00:00+08:00"
+    end: "2026-10-18T23:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「2026年9月28日-2026年10月18日 23:59」；起始仅给出日期，00:00 为日期级推定。"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166508"
+  - id: event-7-1-youjing
+    name: "「幽境危战」活动：紊乱地脉挑战（7.1期）"
+    type: event
+    lifecycle: permanent
+    cadence: rotating
+    rotationGroup: "youjing-weizhan"
+    rotationLabel: "幽境危战"
+    start: "2026-09-30T10:00:00+08:00"
+    end: "2026-11-03T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方公告明确整体 2026/09/30 10:00 ~ 2026/11/03 03:59。"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166513"
+  - id: event-7-1-youjing-burst
+    name: "「幽境危战」紊乱爆发期（7.1期）"
+    type: event
+    rotationGroup: "youjing-weizhan"
+    rotationLabel: "幽境危战"
+    start: "2026-09-30T10:00:00+08:00"
+    end: "2026-10-10T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166513"

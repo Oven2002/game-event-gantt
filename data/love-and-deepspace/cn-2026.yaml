@@ -47,3 +47,74 @@ events:
     note: "官方TapTap公告明确兑换商店截止时间为9月1日04:59；起始按维护预计结束时间记录。"
     sources:
       - "https://www.taptap.cn/moment/837302936542382367"
+
+  - id: event-ruoruo-wuye-wumian-up
+    name: "「如若午夜无眠」五星限时UP许愿（NO.01）"
+    type: banner
+    start: "2026-09-22T10:00:00+08:00"
+    end: "2026-10-10T04:59:00+08:00"
+    note: 官方活动一览：09/22 更新后 ▶ 10/10 04:59AM；五选三限定五星（沈星回·如栖璨空/黎深·繁夜让渡/祁煜·赴予醺色/秦彻·华筵和奏/夏以昼·盛宵尽夺），占五星概率75%；起始按官方维护预计结束时间10:00记录。
+    sources:
+      - "https://deepspace.papegames.com/news/84"
+  - id: event-huanxiang-xinji-huanzhuang
+    name: "幻象（NO.02 五星思念心迹自定义换装）"
+    type: event
+    start: "2026-09-22T10:00:00+08:00"
+    end: "2026-10-10T04:59:00+08:00"
+    note: 官方活动一览：09/22 更新后 ▶ 10/10 04:59AM。
+    sources:
+      - "https://deepspace.papegames.com/news/84"
+  - id: event-muye-zhuoguang
+    name: "幕夜酌光（NO.03 限定剧情活动）"
+    type: event
+    start: "2026-09-22T10:00:00+08:00"
+    end: "2026-10-10T04:59:00+08:00"
+    note: 官方活动一览：09/22 更新后 ▶ 10/10 04:59AM；免费获取深空许愿券·限时×10、钻石×500、限定藏品“我”的耳饰套装等。
+    sources:
+      - "https://deepspace.papegames.com/news/84"
+  - id: event-quanxin-fushi-shangjia-0922
+    name: "全新服饰上架（NO.04 多款日常装扮限时特惠）"
+    type: event
+    start: "2026-09-22T10:00:00+08:00"
+    end: "2026-10-10T04:59:00+08:00"
+    note: 官方活动一览：服饰套装/男装永久3.9折/2.4折常驻，钜惠礼盒限时 9月22日更新后~10月10日上午4:59。
+    sources:
+      - "https://deepspace.papegames.com/news/84"
+  - id: event-shouchong-jiazeng-chongzhi-0922
+    name: "首充加赠重置（NO.05）"
+    type: event
+    start: "2026-09-22T10:00:00+08:00"
+    note: 官方活动一览：09/22 更新后，全档位等量钻石加赠；无截止时间。
+    sources:
+      - "https://deepspace.papegames.com/news/84"
+  - id: event-zhixin-liji
+    name: "挚心礼集（NO.06 限时累计充值加赠）"
+    type: event
+    start: "2026-09-22T10:00:00+08:00"
+    end: "2026-10-10T04:59:00+08:00"
+    note: 官方活动一览：09/22 更新后 ▶ 10/10 04:59AM。
+    sources:
+      - "https://deepspace.papegames.com/news/84"
+  - id: event-chunzhen-paidui
+    name: "醇真派对（NO.07 活动礼包超值上架）"
+    type: event
+    start: "2026-09-22T10:00:00+08:00"
+    end: "2026-10-10T04:59:00+08:00"
+    note: 官方活动一览：09/22 更新后 ▶ 10/10 04:59AM；¥30礼包返利1000%。
+    sources:
+      - "https://deepspace.papegames.com/news/84"
+  - id: event-yuehui-shangdian-0922
+    name: "月晖商店上新（NO.08）"
+    type: event
+    start: "2026-09-22T10:00:00+08:00"
+    note: 官方活动一览：09/22 更新后，进阶五星月晖思念兑换全新服饰；图中未标注结束时间。
+    sources:
+      - "https://deepspace.papegames.com/news/84"
+  - id: event-guiying-yingfang
+    name: "桂影盈芳（NO.09 短信&邮件福利）"
+    type: event
+    start: "2026-09-25T00:00:00+08:00"
+    end: "2026-10-01T04:59:00+08:00"
+    note: 官方活动一览：他的短信/市政贺礼 9月25日0:00~9月27日23:59；累计签到 即日起至10月1日上午4:59。
+    sources:
+      - "https://deepspace.papegames.com/news/84"

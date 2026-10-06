@@ -18,6 +18,14 @@ versions:
     sources:
       - "https://sr.mihoyo.com/news/165896"
       - "https://sr.mihoyo.com/news/165210"
+  - id: "4.6"
+    name: "4.6 暮色裹挟的秘辛"
+    start: "2026-09-28T06:00:00+08:00"
+    end: "2026-11-09T06:00:00+08:00"
+    note: "start 为 4.6 维护开始时刻（官方维护预告 06:00 起、预计 5 小时）；end 官方未公布，按约 6 周版本周期推算 11-09 06:00 维护，待官方公告。"
+    sources:
+      - "https://sr.mihoyo.com/news/166487"
+      - "https://sr.mihoyo.com/news/166489"
 
 events:
   - id: event-nameless-honor-4-5
@@ -377,3 +385,124 @@ events:
     related: ["4.5"]
     sources:
       - "https://sr.mihoyo.com/news/166178"
+  - id: banner-4-6-canghaicuizhu
+    name: "「沧海萃珠」真珠 + 「流光定影·献给明日的色彩」光锥跃迁"
+    type: banner
+    start: "2026-09-28T06:00:00+08:00"
+    end: "2026-11-10T15:00:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    related: ["4.6"]
+    note: "官方原文「2026/09/28 4.6版本更新后 - 2026/11/10 15:00」；start 取 4.6 维护开始时刻作锚点（维护预告 9/28 06:00 起、预计 5 小时）。"
+    sources:
+      - "https://sr.mihoyo.com/news/166487"
+  - id: banner-4-6-shaoaicaiying
+    name: "「韶艾裁英」绯英复刻 + 「溯回忆象·邂逅于下一个花季」光锥跃迁"
+    type: banner
+    start: "2026-09-28T06:00:00+08:00"
+    end: "2026-10-21T11:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    related: ["4.6"]
+    note: "官方原文「2026/09/28 4.6版本更新后 - 2026/10/21 11:59」；start 按维护开始时刻推算。"
+    sources:
+      - "https://sr.mihoyo.com/news/166487"
+  - id: event-nameless-honor-4-6
+    name: "4.6版本「无名勋礼」"
+    type: event
+    start: "2026-09-28T06:00:00+08:00"
+    end: "2026-11-09T03:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    related: ["4.6"]
+    note: "官方原文「2026/09/28 4.6版本更新后 - 2026/11/09 03:59」；start 按维护开始时刻推算。"
+    sources:
+      - "https://sr.mihoyo.com/news/166485"
+  - id: event-aiyouling-jiqiren-4-6
+    name: "「爱，幽灵与机器人」经营机铠工坊"
+    type: event
+    start: "2026-09-28T06:00:00+08:00"
+    end: "2026-11-11T03:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    related: ["4.6"]
+    note: "官方原文「2026/09/28 4.6版本更新后 - 2026/11/11 03:59」，之后收录常时传略；start 按维护开始时刻推算。"
+    sources:
+      - "https://sr.mihoyo.com/news/166488"
+  - id: event-hundun-laisheng
+    name: "「混沌回忆·来生泅渡」"
+    type: event
+    lifecycle: permanent
+    cadence: rotating
+    rotationGroup: "forgotten-hall"
+    rotationLabel: "忘却之庭"
+    start: "2026-09-28T06:00:00+08:00"
+    end: "2026-11-02T03:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    related: ["4.6"]
+    note: "官方 4.6 版本说明原文「2026/09/28 4.6版本更新后 - 2026/11/02 03:59」；start 按维护开始时刻推算。"
+    sources:
+      - "https://sr.mihoyo.com/news/166489"
+  - id: event-mori-zhipei-yiwang
+    name: "「末日幻影·支配遗忘」"
+    type: event
+    lifecycle: permanent
+    cadence: rotating
+    rotationGroup: "apocalyptic-shadow"
+    rotationLabel: "末日幻影"
+    start: "2026-10-05T04:00:00+08:00"
+    end: "2026-11-16T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["4.6"]
+    sources:
+      - "https://sr.mihoyo.com/news/166489"
+  - id: event-xugou-quxiang
+    name: "「虚构叙事·取象为文」"
+    type: event
+    lifecycle: permanent
+    cadence: rotating
+    rotationGroup: "pure-fiction"
+    rotationLabel: "虚构叙事"
+    start: "2026-10-19T04:00:00+08:00"
+    end: "2026-11-30T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["4.6"]
+    sources:
+      - "https://sr.mihoyo.com/news/166489"
+  - id: event-hundun-wujing-tianze
+    name: "「混沌回忆·物竞天择」"
+    type: event
+    lifecycle: permanent
+    cadence: rotating
+    rotationGroup: "forgotten-hall"
+    rotationLabel: "忘却之庭"
+    start: "2026-11-02T04:00:00+08:00"
+    end: "2026-12-14T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["4.6"]
+    sources:
+      - "https://sr.mihoyo.com/news/166489"
+  - id: event-shengdian-yijingdaodi
+    name: "「星际和平盛典：一镜到底」"
+    type: event
+    start: "2026-10-21T12:00:00+08:00"
+    end: "2026-11-11T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["4.6"]
+    note: "官方 4.6 版本说明给出 2026/10/21 12:00 起，截止 2026/11/11 03:59。"
+    sources:
+      - "https://sr.mihoyo.com/news/166489"

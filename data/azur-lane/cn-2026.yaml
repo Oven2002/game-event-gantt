@@ -276,3 +276,62 @@ events:
     note: "官方公告原文为“9月17日维护后~9月23日23:59”；起始取同公告明确的维护结束时刻15:00。"
     sources:
       - "https://www.biligame.com/detail/?id=97&sourceFrom=2000310011#!news/18356"
+  - id: maintenance-2026-09-24
+    name: 9月24日港区改建（幽影迷城版本）
+    type: maintenance
+    start: "2026-09-24T10:00:00+08:00"
+    end: "2026-09-24T16:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年9月24日10:00港区改建"
+  - id: event-youying-micheng
+    name: "「幽影迷城」EX海域（大型活动）"
+    type: event
+    start: "2026-09-24T16:00:00+08:00"
+    end: "2026-10-08T23:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方改建公告：EX海域于9月24日维护后开放至10月8日23:59；start 取公告明确的维护结束时刻 16:00。"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年9月24日10:00港区改建"
+  - id: event-biyi-shuangfei-0924
+    name: "商店限时优惠礼盒「比翼双飞」"
+    type: event
+    start: "2026-09-24T16:00:00+08:00"
+    end: "2026-10-07T23:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文“9月24日维护后~10月7日23:59”；start 取维护结束时刻 16:00。"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年9月24日10:00港区改建"
+  - id: event-shijie-xunyou-0910
+    name: "「世界巡游」（2026年9-10月期）"
+    type: event
+    lifecycle: limited
+    cadence: recurring
+    start: "2026-10-01T00:00:00+08:00"
+    end: "2026-11-30T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方改建公告：新一期世界巡游 10月1日00:00~11月30日23:59；基础巡游奖励含灵敏·META、特装型布里MKIII等；特许巡游凭证 11/30 22:59 停售。"
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年9月24日10:00港区改建"
+  - id: event-xianjie-tiaozhan-tiancheng
+    name: "「限界挑战：天秤座」限时复刻"
+    type: event
+    lifecycle: permanent
+    cadence: rotating
+    rotationGroup: "limit-challenge"
+    rotationLabel: "限界挑战"
+    start: "2026-10-01T00:00:00+08:00"
+    end: "2026-10-31T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://wiki.biligame.com/blhx/2026年9月24日10:00港区改建"

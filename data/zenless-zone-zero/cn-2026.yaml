@@ -253,3 +253,100 @@ events:
     related: ["3.1"]
     sources:
       - "https://zzz.mihoyo.com/news/165415"
+
+  - id: preview-3-3
+    name: "《绝区零》3.3版本「重返天空的旅程」前瞻特别节目预告"
+    type: preview
+    start: "2026-10-09T19:30:00+08:00"
+    timeCertainty:
+      start: confirmed
+    sources:
+      - "https://zzz.mihoyo.com/news/166583"
+  - id: event-3-2-danqiu-yongzhe
+    name: "主题活动「『弹球勇者』哐哐当！」"
+    type: event
+    start: "2026-09-10T10:00:00+08:00"
+    end: "2026-10-19T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方 3.2 内容一览（上期）配图标注的服务器时间。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166027"
+  - id: event-3-2-xujing-zhuying
+    name: "限时活动「虚境逐影争锋」"
+    type: event
+    start: "2026-09-16T10:00:00+08:00"
+    end: "2026-10-05T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方 3.2 内容一览（上期）配图标注的服务器时间。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166027"
+  - id: event-3-2-jingxi-fangying
+    name: "签到活动「惊喜放映企划」"
+    type: event
+    start: "2026-09-23T10:00:00+08:00"
+    end: "2026-10-20T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方 3.2 内容一览（上期）配图标注的服务器时间。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166027"
+  - id: event-3-2-xianqian-shangjin
+    name: "限时活动「先遣赏金·区域巡防」"
+    type: event
+    start: "2026-09-23T04:00:00+08:00"
+    end: "2026-09-28T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方 3.2 内容一览（上期）配图标注的服务器时间。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166027"
+  - id: event-3-2-ennen-congtianjiang
+    name: "签到活动「『嗯呢』从天降」"
+    type: event
+    start: "2026-09-30T10:00:00+08:00"
+    end: "2026-10-20T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方 3.2 内容一览（下期）配图标注的服务器时间。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166549"
+  - id: event-3-2-qiangqiang-qiuzai
+    name: "限时活动「锵锵！球仔成长日记」"
+    type: event
+    start: "2026-09-30T10:00:00+08:00"
+    end: "2026-10-19T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方 3.2 内容一览（下期）配图标注的服务器时间。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166549"
+  - id: event-3-2-bole-wuya
+    name: "限时活动「跛脚乌鸦奇探录」"
+    type: event
+    start: "2026-10-03T10:00:00+08:00"
+    end: "2026-10-19T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方 3.2 内容一览（下期）配图标注的服务器时间。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166549"
+  - id: event-3-2-shuju-xuanshang
+    name: "限时活动「数据悬赏-实战模拟」"
+    type: event
+    start: "2026-10-14T04:00:00+08:00"
+    end: "2026-10-19T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方 3.2 内容一览（下期）配图标注的服务器时间。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166549"

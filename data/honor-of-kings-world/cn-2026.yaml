@@ -136,3 +136,94 @@ events:
     sources:
       - "https://world.qq.com/web202603/newsDetail.html?newsid=18863657"
     note: 官方公告配图明确活动开启时间为9月17日10:00，结束时间为10月8日23:59。
+  - id: maintenance-2026-09-24
+    name: 9月24日版本更新停服维护
+    type: maintenance
+    start: "2026-09-24T02:00:00+08:00"
+    end: "2026-09-24T10:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18880717"
+    note: 官方 9/24 版本更新公告：9月24日02:00-10:00 停服维护，维护结束后开启新版本内容。
+  - id: event-tianxia-ruqi
+    name: "「天下如棋」活动"
+    type: event
+    start: "2026-09-24T10:00:00+08:00"
+    end: "2026-10-28T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18880717"
+  - id: event-jinqiu-lijian
+    name: "「金秋礼笺」活动"
+    type: event
+    start: "2026-09-24T10:00:00+08:00"
+    end: "2026-10-25T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18880717"
+  - id: event-shoumeng-lying
+    name: "「狩梦猎影」活动"
+    type: event
+    start: "2026-09-30T04:00:00+08:00"
+    end: "2026-10-26T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18880717"
+    note: "官方公告内部两处标注不一致：概要面板显示 9/30 10:00、正文明细为 2026年9月30日04:00；按正文明细取 04:00，实际以游戏内为准。"
+  - id: event-toude-fusheng
+    name: "「偷得浮生」活动"
+    type: event
+    start: "2026-10-01T04:00:00+08:00"
+    end: "2026-10-04T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18880717"
+  - id: event-cifu-fuyou
+    name: "「赐福·附佑」活动"
+    type: event
+    start: "2026-10-01T04:00:00+08:00"
+    end: "2026-10-08T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18880717"
+  - id: event-cifu-liaoyan
+    name: "「赐福·缭宴」活动"
+    type: event
+    start: "2026-10-09T04:00:00+08:00"
+    end: "2026-10-15T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18880717"
+  - id: event-shop-shangxin-0930
+    name: "商城系统上新（花木兰武器皮肤【华翎扬旌】等）"
+    type: event
+    start: "2026-09-30T10:00:00+08:00"
+    end: "2026-10-27T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18891724"
+    note: 官方商城上新公告：华翎扬旌上架时间 9/30 10:00 - 10/27 23:59，限时优惠至 10/13 23:59。

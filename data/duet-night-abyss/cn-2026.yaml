@@ -26,11 +26,22 @@ versions:
   - id: le-yuan-xu-qu
     name: 乐园序曲
     start: "2026-07-28T11:00:00+08:00"
-    end: "2026-09-22T04:00:00+08:00"
-    note: 维护 07-28 04:00-11:00（11:00 开服）；新角色 艾达（？？）；end 未官宣，按前几版本 56 天（8周）周期推算 09-22（官方活动「绯色梦魇」持续至 09-29 05:00 跨版本）
+    end: "2026-09-08T15:00:00+08:00"
+    note: 维护 07-28 04:00-11:00（11:00 开服）；新角色 艾达（？？）；end=下版本「第22只乐园的白兔」维护结束开服时刻（官方9/8版本更新说明：维护 09-08 08:00-15:00）
     sources:
       - https://www.taptap.cn/moment/829384951978786861
       - https://dna.yingxiong.com/index.html
+
+  - id: di-22-zhi-le-yuan-de-bai-tu
+    name: 第22只乐园的白兔
+    start: "2026-09-08T15:00:00+08:00"
+    end: "2026-10-21T15:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: estimated
+    note: 官方9/8版本更新说明（皎皎角）：维护 2026年9月8日 08:00-15:00（UTC+8），开服即版本开启；新角色 法露茜（9/8）、梦中的少年/少女（9/8）；圣血·鞭刃/血染织羽 9/29 10:00。end未官宣，按乐园序曲 42 天周期推算 10-21 15:00，待官方下版本公告修正。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
 
 events:
   # ===== 维护（maintenance）=====
@@ -614,3 +625,146 @@ events:
     end: "2026-10-18T17:00:00+08:00"
     sources:
       - https://dnabbs.yingxiong.com/pc/detail/881269749269401479
+  - id: maintenance-2026-09-08
+    name: 9月8日版本更新停服维护（第22只乐园的白兔）
+    type: maintenance
+    start: "2026-09-08T08:00:00+08:00"
+    end: "2026-09-08T15:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-qingdian-manyou-zhinan
+    name: 庆典漫游指南（泊暮篇主线剧情）
+    type: event
+    start: "2026-09-08T15:00:00+08:00"
+    end: "2026-10-19T17:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年9月8日更新后 ~ 2026年10月19日 17:00」；起始按维护结束开服时刻记录。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-chenjinshi-ju-faluqian
+    name: 沉浸式戏剧（法露茜委托密函）
+    type: event
+    start: "2026-09-08T15:00:00+08:00"
+    end: "2026-09-29T10:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年9月8日更新后 ~ 2026年9月29日 10:00」；9/29 10:00 起由「沉浸式戏剧（血染织羽设计稿）」接档。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-zuizhe-de-guitu
+    name: 罪者的归途（累计签到）
+    type: event
+    start: "2026-09-08T15:00:00+08:00"
+    end: "2026-10-19T17:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年9月8日更新后 ~ 2026年10月19日 17:00」。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-xunzhen-yanlian
+    name: 寻珍演练
+    type: event
+    start: "2026-09-08T15:00:00+08:00"
+    end: "2026-10-20T05:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年9月8日更新后 ~ 2026年10月20日 05:00」。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-yinghua-fanli
+    name: 盈华返利
+    type: event
+    start: "2026-09-08T15:00:00+08:00"
+    end: "2026-10-19T17:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年9月8日更新后 ~ 2026年10月19日 17:00」。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-yide-fujiao
+    name: 以德服皎
+    type: event
+    start: "2026-09-08T15:00:00+08:00"
+    end: "2026-09-29T05:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年9月8日更新后 ~ 2026年9月29日 05:00」。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-huacai-tuji
+    name: 华彩图记
+    type: event
+    start: "2026-09-08T15:00:00+08:00"
+    end: "2026-10-19T17:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年9月8日更新后 ~ 2026年10月19日 17:00」。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-dingde-wangshi
+    name: 定格的往事
+    type: event
+    start: "2026-09-10T10:00:00+08:00"
+    end: "2026-09-29T05:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年9月10日 10:00 ~ 2026年9月29日 05:00」。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-shouhuori-2
+    name: 收获日
+    type: event
+    start: "2026-09-10T10:00:00+08:00"
+    end: "2026-09-17T05:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告第一期「2026年9月10日 10:00 ~ 2026年9月17日 05:00」；第二期 10/1 10:00 ~ 10/8 05:00 另列。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-shouhuori-3
+    name: 收获日（第二期）
+    type: event
+    start: "2026-10-01T10:00:00+08:00"
+    end: "2026-10-08T05:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告第二期「2026年10月1日 10:00 ~ 2026年10月8日 05:00」。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-xingyao-jinian-sep
+    name: 星耀纪念
+    type: event
+    start: "2026-09-24T10:00:00+08:00"
+    end: "2026-10-12T05:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年9月24日 10:00 ~ 2026年10月12日 05:00」。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-chenjinshi-ju-xueran
+    name: 沉浸式戏剧（血染织羽设计稿）
+    type: event
+    start: "2026-09-29T10:00:00+08:00"
+    end: "2026-10-19T17:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年9月29日 10:00 ~ 2026年10月19日 17:00」。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-qixiang-yuezhang
+    name: 奇想乐章（贝蕾妮卡&赛琪全新形象）
+    type: event
+    start: "2026-09-29T10:00:00+08:00"
+    end: "2026-11-09T17:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年9月29日 10:00 ~ 2026年11月9日 17:00」。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-weimang-zhenzang-sep
+    name: 微茫珍藏
+    type: event
+    start: "2026-10-01T10:00:00+08:00"
+    end: "2026-10-13T05:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年10月1日 10:00 ~ 2026年10月13日 05:00」。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: event-shouyue-renzhijie-oct
+    name: 狩月人之阶
+    type: event
+    start: "2026-10-07T10:00:00+08:00"
+    end: "2026-10-17T00:00:00+08:00"
+    related: [di-22-zhi-le-yuan-de-bai-tu]
+    note: 官方公告「2026年10月7日 10:00 ~ 2026年10月17日 00:00」。
+    sources:
+      - https://dnabbs.yingxiong.com/pc/detail/876890907809416277

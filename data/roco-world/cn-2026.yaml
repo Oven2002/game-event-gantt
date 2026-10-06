@@ -27,6 +27,19 @@ versions:
       - https://www.bilibili.com/opus/1222663810683240612
       - https://www.bilibili.com/opus/1225261488451616775
 
+  - id: s4
+    name: S4赛季「月涌狂想」
+    start: "2026-09-10T10:00:00+08:00"
+    end: "2026-11-05T10:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: estimated
+    note: 官网S4赛季预告图明确「9月10日✦正式开启」，start按S4停机维护窗口（9月10日00:00-10:00）结束开服时刻记录。end未官宣，按S2/S3两季各56天周期推算11-05 10:00，待官方公告修正。
+    sources:
+      - https://rocom.qq.com/main/index.html
+      - https://www.taptap.cn/moment/846771989690453365
+      - https://www.taptap.cn/moment/846848060746107324
+
 events:
   - id: maintenance-s2
     name: S2赛季版本停机维护（客户端升至1.101）
@@ -262,3 +275,21 @@ events:
     end: "2026-10-09T04:00:00+08:00"
     sources:
       - "https://www.taptap.cn/moment/850761243533774540?group_id=228326"
+  - id: maintenance-s4
+    name: S4赛季版本停机维护（9月10日）
+    type: maintenance
+    start: "2026-09-10T00:00:00+08:00"
+    end: "2026-09-10T10:00:00+08:00"
+    related: [s4]
+    note: 9月10日版本更新公告：更新时间 2026年09月10日00:00-09月10日10:00。
+    sources:
+      - https://www.taptap.cn/moment/846848060746107324
+  - id: event-pika-yuzhou-tuohuangzhe-0910
+    name: "皮卡月刊「宇宙拓荒者」限时上架"
+    type: banner
+    start: "2026-09-10T10:00:00+08:00"
+    end: "2026-09-25T04:00:00+08:00"
+    note: 9月10日更新完成后上架，09月25日 04:00下架（天空邮局上架预告中官方确认下架时间）。
+    sources:
+      - https://www.taptap.cn/moment/846848060746107324
+      - https://www.taptap.cn/moment/850761243533774540

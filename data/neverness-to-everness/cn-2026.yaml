@@ -11,11 +11,19 @@ versions:
   - id: "1.3"
     name: "1.3 雾中朔望星回"
     start: "2026-08-13T11:00:00+08:00"
-    end: "2026-09-24T05:59:00+08:00"
-    note: "维护窗口 8/13 06:00-11:00 官方确认，开服按维护结束 11:00；版本 end 官方未直接宣布，按官方活动时间表（全部活动统一 9/24 05:59 结束、环期赏令 9/23 23:59 截止）预估"
+    end: "2026-09-30T06:00:00+08:00"
+    note: "维护窗口 8/13 06:00-11:00 官方确认，开服按维护结束 11:00；end 原按官方活动时间表预估 9/24 05:59，后由 1.4 更新公告确认 1.4 维护于 9/30 06:00-11:00 进行，1.3 实际结束于 9/30 06:00（维护开始）。"
     sources:
       - "https://yh.wanmei.com/news/gamebroad/20260812/263537.html"
       - "https://www.taptap.cn/moment/836615080601715421"
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+  - id: "1.4"
+    name: "1.4 祷歌为谁而诵"
+    start: "2026-09-30T11:00:00+08:00"
+    end: "2026-11-11T05:59:00+08:00"
+    note: "start 取 1.4 维护结束时刻（官方公告维护 9/30 06:00-11:00，维护完成后开启）；end 官方未直接宣布，按官方活动时间表（黑羽的邀请函/全站深境/骏影疾驰统一 11/11 05:59 截止）预估。"
+    sources:
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
 
 events:
   - id: preview-1-3
@@ -384,3 +392,125 @@ events:
     sources:
       - "https://yh.wanmei.com/news/gamebroad/20260821/263671.html"
     note: 官方公告确认预计 02:00-06:00 更新。
+  - id: maintenance-1-4
+    name: 1.4「祷歌为谁而诵」版本更新维护
+    type: maintenance
+    start: "2026-09-30T06:00:00+08:00"
+    end: "2026-09-30T11:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方 1.4 更新公告：维护时间 2026年9月30日06:00 - 11:00（UTC+8），维护完成后开启 1.4 版本。"
+    sources:
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+  - id: banner-1-4-yuyan-zhongmu
+    name: "「预言终幕时」限定棋盘·黑羽（1.4 上半）"
+    type: banner
+    start: "2026-09-30T11:00:00+08:00"
+    end: "2026-10-21T05:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「9月30日版本更新后-10月21日05:59(UTC+8)」；start 取维护结束时刻作锚点（推算）。"
+    sources:
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+  - id: banner-1-4-jiumeng-chuxing
+    name: "「久梦初醒时」限定棋盘·安魂曲返场（1.4 上半）"
+    type: banner
+    start: "2026-09-30T11:00:00+08:00"
+    end: "2026-10-21T05:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「9月30日版本更新后-10月21日05:59(UTC+8)」；start 按维护结束时刻推算。"
+    sources:
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+  - id: banner-1-4-zuiyufa
+    name: "「栖羽特刊」弧盘研募·罪与罚（1.4 上半）"
+    type: banner
+    start: "2026-09-30T11:00:00+08:00"
+    end: "2026-10-21T05:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「9月30日版本更新后-10月21日05:59(UTC+8)」；start 按维护结束时刻推算。"
+    sources:
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+  - id: banner-1-4-yequ-meigui
+    name: "「夜曲特刊」弧盘研募·最后一朵玫瑰返场（1.4 上半）"
+    type: banner
+    start: "2026-09-30T11:00:00+08:00"
+    end: "2026-10-21T05:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「9月30日版本更新后-10月21日05:59(UTC+8)」；start 按维护结束时刻推算。"
+    sources:
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+  - id: event-1-4-heiyu-yaoqinghan
+    name: "「黑羽的邀请函」网页活动"
+    type: event
+    subtype: web_event
+    start: "2026-09-30T11:00:00+08:00"
+    end: "2026-11-11T05:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方原文「活动时间：9月30日11:00 - 11月11日05:59(UTC+8)」。"
+    sources:
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+  - id: event-1-4-huanqi-shangling
+    name: "1.4「环期赏令」"
+    type: event
+    subtype: season
+    start: "2026-09-30T11:00:00+08:00"
+    end: "2026-11-10T23:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「9月30日版本更新后 - 11月10日23:59(UTC+8)」；start 按维护结束时刻推算。"
+    sources:
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+  - id: event-1-4-quanzhan-shenjing
+    name: "「全站深境」限时活动"
+    type: event
+    start: "2026-09-30T11:00:00+08:00"
+    end: "2026-11-11T05:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方原文「9月30日版本更新后-11月11日05:59(UTC+8)」；start 按维护结束时刻推算。"
+    sources:
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+  - id: event-1-4-tantuan-baocang
+    name: "「炭团的宝藏」限时活动"
+    type: event
+    start: "2026-10-08T10:00:00+08:00"
+    end: "2026-11-11T05:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+  - id: event-1-4-huolineng
+    name: "「活力焕能」限时活动"
+    type: event
+    start: "2026-10-05T05:00:00+08:00"
+    end: "2026-10-19T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方原文标注为服务器时间。"
+    sources:
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+  - id: event-1-4-xiangsu-yichu
+    name: "「像素溢出」限时活动"
+    type: event
+    start: "2026-10-19T05:00:00+08:00"
+    end: "2026-10-26T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方原文标注为服务器时间。"
+    sources:
+      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"

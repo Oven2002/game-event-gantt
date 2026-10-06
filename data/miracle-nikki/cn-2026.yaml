@@ -338,3 +338,67 @@ events:
     end: "2026-10-05T23:59:00+08:00"
     sources:
       - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202609/991284.shtml"
+  - id: maintenance-2026-09-24
+    name: 9月24日停服更新（13.4.0版本）
+    type: maintenance
+    start: "2026-09-24T00:00:00+08:00"
+    end: "2026-09-24T08:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23148/m14777/202609/991431.shtml"
+    note: "官方维护公告：9月24日0:00—8:00 停服更新至 13.4.0 版本，开服时间可能因维护进度提前或延迟。"
+  - id: event-liandong-taoci-bowuguan
+    name: "奇迹暖暖×中国陶瓷博物馆联动（彩瓷春韵）"
+    type: event
+    start: "2026-09-24T08:00:00+08:00"
+    end: "2026-10-03T23:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方公告「9月24日更新后—10月3日23:59」；start 取公告明确的停服结束时刻 08:00。"
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23148/m14777/202609/991431.shtml"
+  - id: event-bila-mengjing-924
+    name: "全新萤光之灵·彼世的狂宴（梅拉全新梦境）"
+    type: event
+    start: "2026-09-24T08:00:00+08:00"
+    end: "2026-09-28T23:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方公告「9月24日更新后—9月28日23:59」；start 取停服结束时刻 08:00。"
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23148/m14777/202609/991431.shtml"
+  - id: event-yuanxuan-huijuan-fukai
+    name: "「渊玄绘卷」限时复开（烟染梦魂）"
+    type: event
+    start: "2026-09-24T08:00:00+08:00"
+    end: "2026-09-30T23:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "官方公告「9月24日更新后—9月30日23:59」；start 取停服结束时刻 08:00。"
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23148/m14777/202609/991431.shtml"
+  - id: event-qijing-manyou-0929
+    name: "「绮境漫游」（灵感梦旅）"
+    type: event
+    start: "2026-09-29T05:00:00+08:00"
+    end: "2026-10-12T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23148/m14777/202609/991435.shtml"
+  - id: event-qiyuan-zhiyu-0929
+    name: "「奇渊之屿」充值馈赠（莲华妙舞/林风赴梦/馨花绽梦）"
+    type: event
+    start: "2026-09-29T05:00:00+08:00"
+    end: "2026-10-12T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23148/m14777/202609/991436.shtml"
