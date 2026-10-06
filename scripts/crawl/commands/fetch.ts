@@ -44,6 +44,14 @@ export interface FetchAdapter<TPage> {
   nextDetailUrl?: (sourceId: string, body: unknown) => string | undefined;
   /** Invoked for every detail-chain response before the final one; optional. */
   onDetailStep?: (sourceId: string, body: unknown) => void;
+  /**
+   * Extract a provisional publish date from an intermediate detail-chain body
+   * (e.g. a preview response). When `--since` filtering is active and this date
+   * falls before the window, the remaining chain requests are skipped entirely
+   * and the item is dropped — this is what keeps chained-detail adapters (e.g.
+   * postroom preview → content) from wasting a full second request per item.
+   */
+  detailPublishedAt?: (sourceId: string, body: unknown) => string | null | undefined;
 }
 
 export interface FetchCommandOptions<TPage> {
@@ -167,7 +175,18 @@ export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Pro
         // Note: nextDetailUrl is called exactly ONCE per response — it may have side
         // effects (caching intermediate metadata), so its return value is reused.
         if (options.adapter.nextDetailUrl) {
+          let skipItem = false;
           for (;;) {
+            if (sinceMs !== undefined && options.adapter.detailPublishedAt) {
+              const provisional = options.adapter.detailPublishedAt(item.sourceId, detailBody);
+              if (provisional !== null && provisional !== undefined) {
+                const timestamp = publishedTimestamp(provisional);
+                if (timestamp !== undefined && timestamp < sinceMs) {
+                  skipItem = true;
+                  break;
+                }
+              }
+            }
             const nextUrl = options.adapter.nextDetailUrl(item.sourceId, detailBody);
             if (nextUrl === undefined) break;
             const chainedResponse = await get(nextUrl, options.adapter.allowedHosts);
@@ -175,6 +194,7 @@ export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Pro
             options.adapter.onDetailStep?.(item.sourceId, detailBody);
             detailBody = options.adapter.decodeDetailResponse?.(chainedResponse) ?? decodeJson(chainedResponse);
           }
+          if (skipItem) continue;
         }
         const article = options.adapter.detail(item.sourceId, detailBody, fetchedAt(), item.publishedAt);
         if (article === null) continue; // adapter chose to skip this item (e.g. no inline content)

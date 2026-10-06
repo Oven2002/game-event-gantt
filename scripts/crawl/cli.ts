@@ -7,7 +7,7 @@ import { approveRun } from "./commands/approve.ts";
 import { createRun, artifactPath, assertRuntimeRootSafe, assertRunId } from "./common/run.ts";
 import { readJsonl } from "./common/files.ts";
 import { sha256Utf8 } from "./common/hash.ts";
-import { abortStateTransaction, beginStateTransaction, loadState, markStateTransactionPending, recoverStateTransactions, removeStateTransaction, stateTransactionPath, updateStateAtomic, withRunLock, writeStateAtomic, type CrawlerState } from "./common/state.ts";
+import { beginStateTransaction, markStateTransactionPending, recoverStateTransactions, removeStateTransaction, abortStateTransaction, loadState, updateStateAtomic, stateTransactionPath, withRunLock, lastSuccessDateCheckpoint, builtinCheckpointSchemas, type AdapterCheckpoint, type CrawlerState } from "./common/state.ts";
 import { RawArticleSchema, type Sha256 } from "./types.ts";
 import { buildHypergryphListRequest, displayTimeToBeijing, normalizeHypergryphContent, parseHypergryphDetail, parseHypergryphList, type HypergryphListPage } from "./adapters/hypergryph.ts";
 import { hypergryphGames } from "./hypergryph-config.ts";
@@ -16,7 +16,7 @@ import { mihoyoGames } from "./mihoyo-config.ts";
 import { normalizeContent as normalizeMihoyoContent } from "./common/content.ts";
 import { parseBluepochDetail, parseBluepochList, buildBluepochListRequest, buildBluepochDetailUrl, type BluepochListPage } from "./adapters/bluepoch.ts";
 import { bluepochGames } from "./bluepoch-config.ts";
-import { parsePostroomContent, parsePostroomList, parsePostroomPreview, buildPostroomListRequest, buildPostroomPreviewRequest, buildPostroomContentRequest, buildPostroomDetailPageUrl, type PostroomListPage } from "./adapters/postroom.ts";
+import { parsePostroomContent, parsePostroomList, parsePostroomPreview, publishDateToBeijing, buildPostroomListRequest, buildPostroomPreviewRequest, buildPostroomContentRequest, buildPostroomDetailPageUrl, type PostroomListPage } from "./adapters/postroom.ts";
 import { postroomGames } from "./postroom-config.ts";
 
 export type CrawlGame = "genshin-impact" | "honkai-star-rail" | "zenless-zone-zero" | "arknights" | "arknights-endfield" | "reverse-1999" | "light-and-night";
@@ -44,6 +44,24 @@ export function defaultLookbackSince(game: CrawlGame, now: Date): string {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(target);
   const values = Object.fromEntries(parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
   return `${values.year}-${values.month}-${values.day}`;
+}
+
+/** Beijing calendar date (YYYY-MM-DD) for a point in time, used as the checkpoint value. */
+export function beijingCalendarDate(now: Date): string {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now);
+  const values = Object.fromEntries(parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+/** Pick the default `--since` lower bound: the stored last-success-date when present, otherwise the configured lookback. */
+export function resolveDefaultSince(game: CrawlGame, state: CrawlerState, now: Date): string {
+  const checkpoint = state.games[game]?.checkpoint;
+  if (checkpoint?.kind === lastSuccessDateCheckpoint.kind) {
+    const value = checkpoint.value;
+    if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error(`invalid last-success-date checkpoint for ${game}: ${String(value)}`);
+    return value;
+  }
+  return defaultLookbackSince(game, now);
 }
 
 function valueAfter(argv: string[], index: number, flag: string): string {
@@ -195,6 +213,16 @@ function postroomAdapter(game: Extract<CrawlGame, "light-and-night">): AnyFetchA
       previewMeta.set(sourceId, { name: meta.name, publishedAt: meta.publishedAt });
       return buildPostroomContentRequest(sourceId).url;
     },
+    detailPublishedAt: (_sourceId, body) => {
+      // The preview response carries the publish date; expose it so the fetch
+      // loop can skip the content request for items outside the --since window.
+      if (typeof body !== "object" || body === null || !("publishDate" in body)) return null;
+      try {
+        return publishDateToBeijing((body as { publishDate: string }).publishDate);
+      } catch {
+        return null;
+      }
+    },
     detail: (sourceId, body, fetchedAt) => {
       const meta = previewMeta.get(sourceId);
       if (!meta) throw new Error(`postroom preview metadata is missing for ${sourceId}`);
@@ -212,22 +240,28 @@ export function createFetchAdapter(game: CrawlGame): AnyFetchAdapter {
 }
 
 export const checkpointKinds: Record<CrawlGame, string | null> = {
-  "genshin-impact": mihoyoGames["genshin-impact"].checkpoint.checkpointKind,
-  "honkai-star-rail": mihoyoGames["honkai-star-rail"].checkpoint.checkpointKind,
-  "zenless-zone-zero": mihoyoGames["zenless-zone-zero"].checkpoint.checkpointKind,
-  arknights: hypergryphGames.arknights.checkpoint.checkpointKind,
-  "arknights-endfield": hypergryphGames["arknights-endfield"].checkpoint.checkpointKind,
-  "reverse-1999": bluepochGames["reverse-1999"].checkpoint.checkpointKind,
-  "light-and-night": postroomGames["light-and-night"].checkpoint.checkpointKind,
+  "genshin-impact": "last-success-date",
+  "honkai-star-rail": "last-success-date",
+  "zenless-zone-zero": "last-success-date",
+  arknights: "last-success-date",
+  "arknights-endfield": "last-success-date",
+  "reverse-1999": "last-success-date",
+  "light-and-night": "last-success-date",
 };
+
+const runtimeCheckpointSchemas = { ...builtinCheckpointSchemas };
 
 export interface AdvanceStateOptions {
   runId?: string;
   transactionPath?: string;
   writeState?: typeof writeStateAtomic;
+  /** Beijing calendar date to record as the last-success checkpoint; defaults to the current date. */
+  successDate?: string;
+  /** Injectable clock for the default success date; tests pass the fetch's `now`. */
+  now?: () => Date;
 }
 
-export async function advanceState(runtimeRoot: string, game: CrawlGame, rawPath: string, state: CrawlerState, options: AdvanceStateOptions = {}): Promise<void> {
+export async function advanceState(runtimeRoot: string, game: CrawlGame, rawPath: string, state: CrawlerState, options: AdvanceStateOptions = {}): Promise<AdapterCheckpoint | null> {
   const rawSourceHashes: Record<string, Sha256> = {};
   try {
     for (const value of await readJsonl(rawPath)) {
@@ -237,36 +271,46 @@ export async function advanceState(runtimeRoot: string, game: CrawlGame, rawPath
       if (sha256Utf8(result.data.content) !== result.data.contentHash) throw new Error(`raw state update contentHash mismatch: ${result.data.sourceId}`);
       rawSourceHashes[result.data.sourceId] = result.data.contentHash;
     }
-    const buildNextState = (current: CrawlerState): CrawlerState => ({
-      schemaVersion: 1,
-      games: {
-        ...current.games,
-        [game]: {
-          checkpoint: null,
-          sourceHashes: { ...(current.games[game]?.sourceHashes ?? {}), ...rawSourceHashes },
+    const buildNextState = (current: CrawlerState): CrawlerState => {
+      const previous = current.games[game]?.checkpoint ?? null;
+      // Keep the newest success date: a full-history or older-clock fetch must never regress the cursor.
+      const nextCheckpoint = { kind: lastSuccessDateCheckpoint.kind, value: options.successDate ?? beijingCalendarDate((options.now ?? (() => new Date()))()) };
+      if (previous?.kind === lastSuccessDateCheckpoint.kind && typeof previous.value === "string" && previous.value > nextCheckpoint.value) {
+        nextCheckpoint.value = previous.value;
+      }
+      return {
+        schemaVersion: 1,
+        games: {
+          ...current.games,
+          [game]: {
+            checkpoint: nextCheckpoint,
+            sourceHashes: { ...(current.games[game]?.sourceHashes ?? {}), ...rawSourceHashes },
+          },
         },
-      },
-    });
+      };
+    };
     if (options.transactionPath) {
       if (!options.runId) throw new Error("state transaction requires runId");
       await markStateTransactionPending(runtimeRoot, options.transactionPath, options.runId, game, rawPath, rawSourceHashes);
     }
     if (options.writeState) {
       await options.writeState(join(runtimeRoot, "state.json"), buildNextState(state), {
-        checkpointSchemas: {},
+        checkpointSchemas: runtimeCheckpointSchemas,
         knownGames: checkpointKinds,
       });
     } else {
       await updateStateAtomic(join(runtimeRoot, "state.json"), state, buildNextState, {
-        checkpointSchemas: {},
+        checkpointSchemas: runtimeCheckpointSchemas,
         knownGames: checkpointKinds,
       });
     }
+    const nextState = buildNextState(state);
+    if (options.transactionPath) await removeStateTransaction(options.transactionPath).catch(() => undefined);
+    return nextState.games[game]?.checkpoint ?? null;
   } catch (error) {
     if (options.transactionPath) await abortStateTransaction(options.transactionPath, rawPath).catch(() => undefined);
     throw error;
   }
-  if (options.transactionPath) await removeStateTransaction(options.transactionPath).catch(() => undefined);
 }
 
 export interface RunCrawlCliOptions {
@@ -284,8 +328,8 @@ function errorText(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function printFetchResult(print: (line: string) => void, runId: string, result: FetchCommandResult): void {
-  print(`run=${runId} rawPath=${result.rawPath} count=${result.count} pages=${result.pages}`);
+function printFetchResult(print: (line: string) => void, runId: string, result: FetchCommandResult, checkpoint: string | null): void {
+  print(`run=${runId} rawPath=${result.rawPath} count=${result.count} pages=${result.pages} checkpoint=${checkpoint ?? "none"}`);
 }
 
 function printParseResult(print: (line: string) => void, result: ParseCommandResult): void {
@@ -306,7 +350,7 @@ export async function runCrawlCli(argv: string[], options: RunCrawlCliOptions = 
       const now = (options.now ?? (() => new Date()))();
       const runId = createRunId(now);
       await assertRuntimeRootSafe(runtimeRoot);
-      const state = await loadState(join(runtimeRoot, "state.json"), {}, checkpointKinds);
+      const state = await loadState(join(runtimeRoot, "state.json"), builtinCheckpointSchemas, checkpointKinds);
       await recoverStateTransactions(runtimeRoot, state, new Set(Object.keys(checkpointKinds)));
       await createRun(runtimeRoot, runId, args.game!);
       const rawPath = artifactPath(runtimeRoot, runId, "raw", "jsonl", args.game!);
@@ -319,7 +363,7 @@ export async function runCrawlCli(argv: string[], options: RunCrawlCliOptions = 
             runId,
             game: args.game!,
             pageSize: options.pageSize,
-            since: args.since ?? (args.full ? undefined : defaultLookbackSince(args.game!, now)),
+            since: args.since ?? (args.full ? undefined : resolveDefaultSince(args.game!, state, now)),
             adapter: createFetchAdapter(args.game!),
             fetcher: options.fetcher,
           });
@@ -327,8 +371,10 @@ export async function runCrawlCli(argv: string[], options: RunCrawlCliOptions = 
             runId,
             transactionPath,
             writeState: options.writeState,
+            now: () => now,
           });
-          printFetchResult(print, runId, result);
+          const checkpoint = await loadState(join(runtimeRoot, "state.json"), builtinCheckpointSchemas, checkpointKinds);
+          printFetchResult(print, runId, result, checkpoint.games[args.game!]?.checkpoint?.value as string | null ?? null);
           return 0;
         } catch (error) {
           await abortStateTransaction(transactionPath, rawPath).catch(() => undefined);

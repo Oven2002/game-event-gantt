@@ -12,7 +12,7 @@ describe("bluepoch game config (reverse-1999)", () => {
     expect(config.transport.method).toBe("POST");
     expect(config.articleHost).toBe("re.bluepoch.com");
     expect(config.officialHosts).toEqual(["re.bluepoch.com"]);
-    expect(config.checkpoint.checkpointKind).toBeNull();
+    expect(config.checkpoint.checkpointKind).toBe("last-success-date");
     expect(config.checkpoint.defaultLookbackDays).toBeGreaterThanOrEqual(1);
   });
 });
@@ -30,7 +30,7 @@ describe("postroom game config (light-and-night)", () => {
     expect(config.articleHost).toBe("love.qq.com");
     expect(config.officialHosts).toContain("love.qq.com");
     expect(config.officialHosts).toContain(config.transport.host);
-    expect(config.checkpoint.checkpointKind).toBeNull();
+    expect(config.checkpoint.checkpointKind).toBe("last-success-date");
     expect(config.checkpoint.defaultLookbackDays).toBeGreaterThanOrEqual(1);
   });
 });

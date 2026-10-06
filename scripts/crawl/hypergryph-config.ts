@@ -16,7 +16,7 @@ export const hypergryphGames: Record<HypergryphGameConfig["game"], HypergryphGam
     apiCode: "arknights",
     officialHost: "ak.hypergryph.com",
     supportsVersions: false,
-    checkpoint: { checkpointKind: null, defaultLookbackDays: 30 },
+    checkpoint: { checkpointKind: "last-success-date", defaultLookbackDays: 30 },
   },
   "arknights-endfield": {
     game: "arknights-endfield",
@@ -25,6 +25,6 @@ export const hypergryphGames: Record<HypergryphGameConfig["game"], HypergryphGam
     apiCode: "endfield_web",
     officialHost: "endfield.hypergryph.com",
     supportsVersions: true,
-    checkpoint: { checkpointKind: null, defaultLookbackDays: 30 },
+    checkpoint: { checkpointKind: "last-success-date", defaultLookbackDays: 30 },
   },
 };

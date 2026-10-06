@@ -31,6 +31,6 @@ export const postroomGames: Record<PostroomGameConfig["game"], PostroomGameConfi
     articleHost: "love.qq.com",
     officialHosts: ["press-static-love.aurora.qq.com", "love.qq.com"],
     supportsVersions: true,
-    checkpoint: { checkpointKind: null, defaultLookbackDays: 30 },
+    checkpoint: { checkpointKind: "last-success-date", defaultLookbackDays: 30 },
   },
 };

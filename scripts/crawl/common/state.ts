@@ -72,6 +72,17 @@ export interface CheckpointSchemaRegistryEntry {
 export type CheckpointSchemaRegistry = Record<string, CheckpointSchemaRegistryEntry>;
 export type KnownGameCheckpointKinds = Record<string, string | null>;
 
+/** Shared schema for the `last-success-date` checkpoint (a Beijing calendar date, inclusive lower bound). */
+export const lastSuccessDateCheckpoint = {
+  kind: "last-success-date",
+  schema: { safeParse: (value: unknown) => ({ success: typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value), data: value }) },
+} as const satisfies CheckpointSchemaRegistryEntry;
+
+/** Registry containing every built-in checkpoint schema; callers may spread extra entries. */
+export const builtinCheckpointSchemas: CheckpointSchemaRegistry = {
+  [lastSuccessDateCheckpoint.kind]: lastSuccessDateCheckpoint,
+};
+
 export class CrawlerStateError extends Error {
   public readonly code: "INVALID_STATE" | "INVALID_SCAN_MODE";
 

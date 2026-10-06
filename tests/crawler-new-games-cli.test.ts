@@ -17,8 +17,8 @@ describe("new game CLI registration", () => {
   });
 
   it("registers the new games in the state checkpoint registry", () => {
-    expect(checkpointKinds["reverse-1999"]).toBeNull();
-    expect(checkpointKinds["light-and-night"]).toBeNull();
+    expect(checkpointKinds["reverse-1999"]).toBe("last-success-date");
+    expect(checkpointKinds["light-and-night"]).toBe("last-success-date");
   });
 });
 

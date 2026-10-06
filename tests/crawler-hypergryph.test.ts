@@ -23,8 +23,8 @@ describe("Hypergryph configuration", () => {
     });
     expect(hypergryphGames.arknights.supportsVersions).toBe(false);
     expect(hypergryphGames["arknights-endfield"].supportsVersions).toBe(true);
-    expect(hypergryphGames.arknights.checkpoint.checkpointKind).toBe(null);
-    expect(hypergryphGames["arknights-endfield"].checkpoint.checkpointKind).toBe(null);
+    expect(hypergryphGames.arknights.checkpoint.checkpointKind).toBe("last-success-date");
+    expect(hypergryphGames["arknights-endfield"].checkpoint.checkpointKind).toBe("last-success-date");
   });
 });
 

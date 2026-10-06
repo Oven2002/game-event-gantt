@@ -27,6 +27,6 @@ export const bluepochGames: Record<BluepochGameConfig["game"], BluepochGameConfi
     articleHost: "re.bluepoch.com",
     officialHosts: ["re.bluepoch.com"],
     supportsVersions: true,
-    checkpoint: { checkpointKind: null, defaultLookbackDays: 30 },
+    checkpoint: { checkpointKind: "last-success-date", defaultLookbackDays: 30 },
   },
 };

@@ -29,7 +29,7 @@ export const mihoyoGames: Record<"genshin-impact" | "honkai-star-rail" | "zenles
     articleHost: "ys.mihoyo.com",
     officialHosts: ["act-api-takumi-static.mihoyo.com", "ys.mihoyo.com"],
     supportsVersions: true,
-    checkpoint: { checkpointKind: null, defaultLookbackDays: 30 },
+    checkpoint: { checkpointKind: "last-success-date", defaultLookbackDays: 30 },
   },
   "honkai-star-rail": {
     game: "honkai-star-rail",
@@ -42,7 +42,7 @@ export const mihoyoGames: Record<"genshin-impact" | "honkai-star-rail" | "zenles
     articleHost: "sr.mihoyo.com",
     officialHosts: ["act-api-takumi-static.mihoyo.com", "sr.mihoyo.com"],
     supportsVersions: true,
-    checkpoint: { checkpointKind: null, defaultLookbackDays: 30 },
+    checkpoint: { checkpointKind: "last-success-date", defaultLookbackDays: 30 },
   },
   "zenless-zone-zero": {
     game: "zenless-zone-zero",
@@ -55,6 +55,6 @@ export const mihoyoGames: Record<"genshin-impact" | "honkai-star-rail" | "zenles
     articleHost: "zzz.mihoyo.com",
     officialHosts: ["api-takumi-static.mihoyo.com", "zzz.mihoyo.com"],
     supportsVersions: true,
-    checkpoint: { checkpointKind: null, defaultLookbackDays: 30 },
+    checkpoint: { checkpointKind: "last-success-date", defaultLookbackDays: 30 },
   },
 };

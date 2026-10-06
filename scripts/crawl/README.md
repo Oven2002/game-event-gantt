@@ -23,13 +23,13 @@ CLI 的 `--game` 只接受下面七个 machine ID。米哈游三作使用 `mihoy
 
 | game | adapter | 官方文章 URL | 实测响应/字段 | supportsVersions | checkpoint kind | 已冻结 fixture 的 blocker |
 | --- | --- | --- | --- | --- | --- | --- |
-| `genshin-impact` | Mihoyo | `https://ys.mihoyo.com/main/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime/sChanId` | `true` | `null` | `null` |
-| `honkai-star-rail` | Mihoyo | `https://sr.mihoyo.com/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime/sChanId` | `true` | `null` | `null` |
-| `zenless-zone-zero` | Mihoyo | `https://zzz.mihoyo.com/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime/sChanId` | `true` | `null` | `null` |
-| `arknights` | Hypergryph | `https://ak.hypergryph.com/news/{cid}` | `code/data/list`; `cid/title/tab/displayTime/brief`; `total/current/pageSize` | `false` | `null` | `null` |
-| `arknights-endfield` | Hypergryph | `https://endfield.hypergryph.com/news/{cid}` | `code/data/list`; `cid/title/tab/displayTime/brief`; `total/current/pageSize` | `true` | `null` | `null` |
-| `reverse-1999` | Bluepoch | `https://re.bluepoch.com/home/detail.html#newsId?{id}` | `code/data.pageData`; `id/title/informationType/onlineTime/content`（content 内联全文，无逐条详情请求） | `true` | `null` | `null` |
-| `light-and-night` | Postroom | `https://love.qq.com/m/web202106/newsdetail.html?newsid={publishId}` | list 数组 `postPublishId`; preview `name/publishDate/tags/authorName`; content `content`（HTML） | `true` | `null` | `null` |
+| `genshin-impact` | Mihoyo | `https://ys.mihoyo.com/main/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime/sChanId` | `true` | `last-success-date` | `null` |
+| `honkai-star-rail` | Mihoyo | `https://sr.mihoyo.com/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime/sChanId` | `true` | `last-success-date` | `null` |
+| `zenless-zone-zero` | Mihoyo | `https://zzz.mihoyo.com/news/{iInfoId}` | `retcode/data/list/iTotal`; `iInfoId/sTitle/sContent/dtCreateTime/sChanId` | `true` | `last-success-date` | `null` |
+| `arknights` | Hypergryph | `https://ak.hypergryph.com/news/{cid}` | `code/data/list`; `cid/title/tab/displayTime/brief`; `total/current/pageSize` | `false` | `last-success-date` | `null` |
+| `arknights-endfield` | Hypergryph | `https://endfield.hypergryph.com/news/{cid}` | `code/data/list`; `cid/title/tab/displayTime/brief`; `total/current/pageSize` | `true` | `last-success-date` | `null` |
+| `reverse-1999` | Bluepoch | `https://re.bluepoch.com/home/detail.html#newsId?{id}` | `code/data.pageData`; `id/title/informationType/onlineTime/content`（content 内联全文，无逐条详情请求） | `true` | `last-success-date` | `null` |
+| `light-and-night` | Postroom | `https://love.qq.com/m/web202106/newsdetail.html?newsid={publishId}` | list 数组 `postPublishId`; preview `name/publishDate/tags/authorName`; content `content`（HTML） | `true` | `last-success-date` | `null` |
 
 上述 blocker 是已提交 sidecar 中的 endpoint blocker 记录；当前固定 fixture 均为 `null`，不表示未来 endpoint 永远不会变化。若实测接口需要认证、浏览器渲染或未在计划中允许的能力，应停止受影响的 adapter，记录脱敏 blocker，不得猜测替代接口。
 
@@ -117,18 +117,20 @@ body: {"informationType":"", "current": <page>, "pageSize": <pageSize>}
 七个游戏当前都记录：
 
 ```text
-checkpoint.kind = null
-checkpoint.reusable = false
-reason = No stable cross-run checkpoint was verified.
+checkpoint.kind = last-success-date
+checkpoint.reusable = true
+value = 成功写入当天的北京时间日期（YYYY-MM-DD）
 ```
+
+`last-success-date` 是唯一经过验证的 checkpoint：raw 与 state 都原子落盘后才写入，值为成功当天的北京日期。下次不带 `--since`/`--full` 时，默认从该日期 00:00（含当天）抓到最新；没有 checkpoint 的游戏回退 30 天；`--since` 与 `--full` 保留为手动覆盖，`--full` 成功后同样推进 checkpoint。checkpoint 只前进不回退（旧时钟或全量重抓不会把游标拉回过去）。
 
 因此不能把某个 API 的页码、文章 ID 或显示时间擅自当成持久 cursor。当前 state 的有效字段是：
 
 - `schemaVersion: 1`；
-- `games[game].checkpoint`，目前为 `null`；
+- `games[game].checkpoint`，`{ kind: "last-success-date", value: "YYYY-MM-DD" }`；
 - `games[game].sourceHashes[sourceId]`，用于跨运行记录已见内容 hash。
 
-未提供 `--since` 时，各游戏默认回看 30 天；`--full` 扫描全部分页；`--since` 与 `--full` 互斥。没有稳定 checkpoint 并不是失败，失败的是伪造一个未验证的 checkpoint。
+未提供 `--since` 时，有 checkpoint 的游戏从 checkpoint 日期（含当天）开始扫描，没有 checkpoint 的游戏默认回看 30 天；`--full` 扫描全部分页；`--since` 与 `--full` 互斥。
 
 ## 3. 运行位置与采集周期
 
@@ -138,9 +140,9 @@ crawler 的主要目的，是在收集公告时用确定性代码完成批量列
 
 Cloudflare Pages 只托管静态站点，不能作为 crawler 的运行环境。当前 `.github/workflows/ci.yml` 也只执行测试和 build，不执行实时官网请求。因此实际收集必须在本地或独立 runner（例如 NAS/Docker、服务器或专用 CI runner）执行，并为 `.runtime/crawl` 提供持久目录或上传运行 artifact。
 
-### 3.2 一次采集周期和五个游戏
+### 3.2 一次采集周期和七个游戏
 
-一次 `fetch` 只负责一个 `--game`，但会自动请求该游戏的全部列表分页和每条详情，不需要按页手动重复。五个游戏的一轮采集需要五次独立 `fetch`，每次有自己的 run ID：
+一次 `fetch` 只负责一个 `--game`，但会自动请求该游戏的全部列表分页和每条详情，不需要按页手动重复。七个游戏的一轮采集需要七次独立 `fetch`，每次有自己的 run ID：
 
 ```text
 fetch --game genshin-impact
@@ -148,18 +150,20 @@ fetch --game honkai-star-rail
 fetch --game zenless-zone-zero
 fetch --game arknights
 fetch --game arknights-endfield
+fetch --game reverse-1999
+fetch --game light-and-night
 ```
 
 随后每个 run 分别执行 `parse`、`review` 和（人工确认后）`approve`。某一个游戏失败时，只用新的 run ID 重跑该游戏；同一 run 的 artifact 不覆盖复用。
 
 ### 3.3 “全量”和“增量”的含义
 
-- **首次全历史采集**：五个游戏各运行一次 `fetch --full`。每次命令内部会遍历该游戏的全部分页。
-- **按时间获取增量**：五个游戏各运行一次 `fetch --since YYYY-MM-DD`（也可以带到分钟的北京时间），每次命令会抓取该时间点之后的列表项及其详情。
-- **默认日常窗口**：不提供 `--since` 或 `--full` 时，每个游戏默认回看最近 30 天。
+- **首次全历史采集**：各游戏运行一次 `fetch --full`。每次命令内部会遍历该游戏的全部分页。
+- **按时间获取增量**：各游戏运行一次 `fetch --since YYYY-MM-DD`（也可以带到分钟的北京时间），每次命令会抓取该时间点之后的列表项及其详情。
+- **默认日常窗口**：不提供 `--since` 或 `--full` 时，有 checkpoint 的游戏从 checkpoint 日期（含当天）抓到最新；没有 checkpoint 的游戏默认回看最近 30 天。
 - **单点前瞻时间**：前瞻类公告若正文明确写出唯一的“将于某日某时开启/开播”，可形成 `confirmed` 的 `start`；公告没有明确结束时间时不填 `end`，不做推算。
 
-当前五个游戏都没有经过验证的持久 cursor，`checkpoint.kind` 为 `null`。`state.json` 中的 `sourceHashes` 用于记录已经看到的内容和辅助变化比对，不是 API 页码游标。因此，“每个游戏运行一次”只表示**每一轮采集各运行一次**，不是首次运行后永久不再运行；日常增量仍需要下一轮再次运行五个游戏。为了捕捉公告修订，时间窗口可以保留适当重叠，再交给 hash/review 去识别新增和变化。
+七个游戏都使用 `last-success-date` checkpoint：每次 fetch 成功后把当天的北京日期写入 `state.json`，作为下一次默认扫描的起点（含当天）。checkpoint 只前进不回退。`state.json` 中的 `sourceHashes` 用于记录已经看到的内容和辅助变化比对，不是 API 页码游标。“每个游戏运行一次”只表示**每一轮采集各运行一次**，不是首次运行后永久不再运行；日常增量仍需要下一轮再次运行各游戏。checkpoint 日期本身已经提供一天重叠；如需更长重叠可用 `--since` 手动指定。
 
 ### 3.4 直接运行 CLI
 

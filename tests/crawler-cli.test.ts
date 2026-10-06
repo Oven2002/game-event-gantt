@@ -436,7 +436,7 @@ describe("crawler parse command", () => {
       expect(adapter.allowedDetailContentTypes).toEqual(item.game === "arknights" || item.game === "arknights-endfield" ? ["text/html"] : ["application/json"]);
       expect(output.join("\n")).toMatch(new RegExp(`run=20260801-000000.*rawPath=.*${item.game}\\.jsonl count=1 pages=2`));
       const state = JSON.parse(await readFile(join(root, "state.json"), "utf8"));
-      expect(state.games[item.game].checkpoint).toBe(null);
+      expect(state.games[item.game].checkpoint).toEqual({ kind: "last-success-date", value: "2026-08-01" });
       const sourceId = item.game === "genshin-impact" ? "165690"
         : item.game === "honkai-star-rail" ? "165883"
           : item.game === "zenless-zone-zero" ? "165853"

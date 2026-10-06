@@ -103,8 +103,8 @@ describe("crawler target map", () => {
   it("indexes every current formal data file", async () => {
     const index = await buildDataIndex("data");
     expect(index.files).toHaveLength(15);
-    // 443 baseline + 9 light-and-night approvals + September crawl additions + current increment + 2 reviewed Genshin events.
-    expect(index.targets.size).toBe(510);
+    // Includes the four October additions approved through the crawler gate.
+    expect(index.targets.size).toBe(627);
   });
 
   it("preserves a non-cn region instead of coercing it to cn", async () => {

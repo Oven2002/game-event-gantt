@@ -25,7 +25,7 @@ describe("Mihoyo game configuration", () => {
       expect(config.region).toBe("cn");
       expect(config.language).toBe("zh-cn");
       expect(config.supportsVersions).toBe(true);
-      expect(config.checkpoint.checkpointKind).toBe(null);
+      expect(config.checkpoint.checkpointKind).toBe("last-success-date");
       expect(config.checkpoint.defaultLookbackDays).toBeGreaterThan(0);
       expect(config.officialHosts.length).toBeGreaterThan(0);
       expect(config.apiHost).toBe(config.officialHosts[0]);
