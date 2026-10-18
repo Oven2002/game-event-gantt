@@ -506,3 +506,13 @@ events:
     note: "官方 4.6 版本说明给出 2026/10/21 12:00 起，截止 2026/11/11 03:59。"
     sources:
       - "https://sr.mihoyo.com/news/166489"
+  - id: event-weimian-fenli-2026-10
+    name: "「位面分裂」活动：位面饰品限时双倍掉落"
+    sources:
+      - "https://sr.mihoyo.com/news/166662"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    start: "2026-10-12T04:00:00+08:00"
+    type: event
+    end: "2026-10-25T03:59:00+08:00"

@@ -227,3 +227,55 @@ events:
     sources:
       - "https://world.qq.com/web202603/newsDetail.html?newsid=18891724"
     note: 官方商城上新公告：华翎扬旌上架时间 9/30 10:00 - 10/27 23:59，限时优惠至 10/13 23:59。
+  - id: maintenance-2026-10-15
+    name: "10月15日不停服维护"
+    type: maintenance
+    subtype: non_downtime
+    start: "2026-10-15T05:00:00+08:00"
+    end: "2026-10-15T06:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18916512"
+    note: "官方公告的维护计划窗口，适用于国服电脑版和手机版；另有多人玩法临时维护窗口。"
+  - id: event-jixia-baixiaosheng
+    name: "「稷下百晓生」活动"
+    type: event
+    subtype: main_event
+    start: "2026-10-15T10:00:00+08:00"
+    end: "2026-11-25T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18916398"
+    note: "官网10月15日版本公告长图与福利第四弹日历均明确10/15 10:00至11/25 23:59；收集图鉴可获时装【皓虎迅声】。"
+  - id: banner-shangwei-tianxin
+    name: "晶珀灵遇「赏味甜心」"
+    type: banner
+    subtype: outfit
+    start: "2026-10-15T10:00:00+08:00"
+    end: "2026-12-02T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18916398"
+    note: "官方公告配图明确新增晶珀灵遇时装【赏味甜心】的上下架时间；为外观奖池，非共鸣角色卡池。"
+  - id: event-shop-bailing-guixu-1015
+    name: "商城上新：鲁班大师武器皮肤「百翎归序」"
+    type: event
+    subtype: shop
+    start: "2026-10-15T10:00:00+08:00"
+    end: "2026-11-11T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s1"]
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18916398"
+    note: "官方配图明确上架10/15 10:00、下架11/11 23:59；限时优惠为10/15 10:00至10/28 23:59，优惠结束不等于商品下架。"

@@ -118,3 +118,56 @@ events:
     note: 官方活动一览：他的短信/市政贺礼 9月25日0:00~9月27日23:59；累计签到 即日起至10月1日上午4:59。
     sources:
       - "https://deepspace.papegames.com/news/84"
+  - id: banner-shenxinghui-yuandecishun
+    name: "限时卡池「沈星回·愿得此瞬」"
+    type: banner
+    start: "2026-10-11T05:00:00+08:00"
+    end: "2026-10-18T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://deepspace.papegames.com/news/85"
+    subtype: character
+    note: "沈星回2026生日限定五星思念；官网正文明确起止分钟，活动结束后暂无获取途径，不进入常驻许愿极空回响。"
+  - id: event-suiyuanyingxing-2026
+    name: "「岁愿萤星」沈星回生日庆祝主题活动"
+    type: event
+    start: "2026-10-11T05:00:00+08:00"
+    end: "2026-10-18T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://deepspace.papegames.com/news/85"
+    lifecycle: limited
+    cadence: one_off
+    subtype: main_event
+    note: "官网2026生日活动图明确活动窗口；星漾小铺兑换另至10月19日04:59，商店单独开始分钟未明确，不将商店截止混作主活动截止。"
+  - id: event-xingyuanzhili-birthday-login-2026
+    name: "「星愿之礼」沈星回生日十连福利"
+    type: event
+    start: "2026-10-11T05:00:00+08:00"
+    end: "2026-10-18T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://deepspace.papegames.com/news/85"
+    lifecycle: limited
+    cadence: one_off
+    subtype: login_reward
+    note: "活动期间登录游戏，可在邮箱免费领取深空许愿券·限时×10。"
+  - id: event-shenxinghui-birthday-interaction-2026
+    name: "沈星回生日视频电话与家园特别互动"
+    type: event
+    start: "2026-10-16T00:00:00+08:00"
+    end: "2026-10-18T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://deepspace.papegames.com/news/85"
+    lifecycle: limited
+    cadence: one_off
+    note: "两个互动窗口相同：登录接听生日视频电话；进入家园开启生日特别互动。"

@@ -402,3 +402,133 @@ events:
       end: confirmed
     sources:
       - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23148/m14777/202609/991436.shtml"
+  - id: event-damiao-shuangbei-2026-10-16
+    name: "大喵限时制衣·公主级双倍助力"
+    type: event
+    start: "2026-10-16T05:00:00+08:00"
+    end: "2026-10-18T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202609/991653.shtml"
+  - id: event-mystery-book-2026-10
+    name: "神秘藏书室·幽幽合唱团"
+    type: event
+    start: "2026-10-09T05:00:00+08:00"
+    end: "2026-10-18T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202609/991437.shtml"
+  - id: event-mystery-book-pack-2026-10
+    name: "神秘藏书室·神秘碎片礼包"
+    type: event
+    start: "2026-10-09T05:00:00+08:00"
+    end: "2026-10-18T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202609/991437.shtml"
+  - id: event-xunguang-miying-rerun-2026-10
+    name: "循光觅影限时复开"
+    type: event
+    start: "2026-10-09T05:00:00+08:00"
+    end: "2026-10-18T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202609/991655.shtml"
+  - id: event-damiao-jihua-2026-10
+    name: "大喵限时制衣·棘花瑰恋阶段任务"
+    type: event
+    start: "2026-10-18T05:00:00+08:00"
+    end: "2026-10-24T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992026.shtml"
+  - id: event-damiao-pack-2026-10
+    name: "大喵限时制衣·棘花瑰恋特惠礼包"
+    type: event
+    start: "2026-10-18T05:00:00+08:00"
+    end: "2026-10-22T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992026.shtml"
+  - id: event-damiao-shuangbei-2026-10-23
+    name: "大喵限时制衣·公主级双倍助力"
+    type: event
+    start: "2026-10-23T05:00:00+08:00"
+    end: "2026-10-25T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992026.shtml"
+  - id: event-shuanglu-yiyuangou-2026-10
+    name: "霜露一元购"
+    type: event
+    start: "2026-10-23T05:00:00+08:00"
+    end: "2026-11-10T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992026.shtml"
+  - id: event-yingguang-bixiaoyin-2026-10
+    name: "珍稀萤光之灵复刻·碧霄吟"
+    type: event
+    start: "2026-10-23T05:00:00+08:00"
+    end: "2026-10-25T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992026.shtml"
+  - id: event-qingxin-huiyi-2026-10
+    name: "倾心回忆·月光奏鸣曲/紫藤花誓言"
+    type: event
+    start: "2026-10-23T05:00:00+08:00"
+    end: "2026-10-29T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992026.shtml"
+  - id: event-mantian-fanxing-2026-10
+    name: "满天繁星·虚日鼠"
+    type: event
+    start: "2026-10-17T05:00:00+08:00"
+    end: "2026-10-23T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992037.shtml"
+  - id: event-mantian-fanxing-pack-2026-10
+    name: "满天繁星·星辰石礼包"
+    type: event
+    start: "2026-10-17T05:00:00+08:00"
+    end: "2026-10-23T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992037.shtml"
+  - id: event-qiyuan-zhiyu-2026-10
+    name: "奇渊之屿充值馈赠·寰宇哲思/岁月凝香/墨焰孤旅"
+    type: event
+    start: "2026-10-17T05:00:00+08:00"
+    end: "2026-10-23T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992130.shtml"

@@ -293,3 +293,33 @@ events:
     sources:
       - https://www.taptap.cn/moment/846848060746107324
       - https://www.taptap.cn/moment/850761243533774540
+  - id: event-qiu-fengshou-jiqiren-1001
+    name: "秋，丰收与机器人"
+    type: event
+    subtype: main_event
+    lifecycle: limited
+    cadence: one_off
+    start: "2026-10-01T04:00:00+08:00"
+    end: "2026-11-05T04:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s4"]
+    note: "完成每日、每周任务及剧情轶事「存档：一颗秋天」，收集「印着精灵的小卡」兑换羁绊奖励；官方9月7日已预告，该活动在10月18日仍处于公告窗口内。"
+    sources:
+      - "https://rocom.qq.com/web202507/sub/detail.html?newsid=18852676"
+  - id: event-s1-longxi-paer-return-1001
+    name: "S1传说精灵返场「龙息帕尔」限时奖励"
+    type: event
+    subtype: challenge
+    lifecycle: limited
+    cadence: one_off
+    start: "2026-10-01T04:00:00+08:00"
+    end: "2026-11-05T04:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related: ["s4"]
+    note: "捕捉龙息帕尔可领取小帕尔的蛋、小帕尔的记忆等奖励；11月5日04:00下架的是限时活动奖励，「传说精灵战—龙息帕尔」本体将常驻保留。"
+    sources:
+      - "https://rocom.qq.com/web202507/sub/detail.html?newsid=18852676"

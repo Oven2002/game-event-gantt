@@ -768,3 +768,175 @@ events:
     note: 官方公告「2026年10月7日 10:00 ~ 2026年10月17日 00:00」。
     sources:
       - https://dnabbs.yingxiong.com/pc/detail/876890907809416277
+  - id: preload-xing-yu-po-xiao
+    name: "行于破晓版本PC端预下载开启"
+    type: maintenance
+    subtype: preload
+    start: "2026-10-15T11:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+    note: "仅PC端预下载；公告未给出预下载结束分钟，按开启单点记录，不杜撰end。"
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/891748798257169532"
+  - id: maintenance-2026-10-20
+    name: "10月20日版本更新停服维护（行于破晓）"
+    type: maintenance
+    subtype: scheduled
+    start: "2026-10-20T08:00:00+08:00"
+    end: "2026-10-20T15:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: estimated
+    note: "官方计划维护08:00-15:00（UTC+8）；公告说明开服时间可能随维护进度提前或推迟。「行于破晓」version记录缺end，暂不填写无法解析的related。"
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
+  - id: event-shouhuori-oct-1
+    name: "收获日（第1期）"
+    type: event
+    start: "2026-10-29T10:00:00+08:00"
+    end: "2026-11-05T05:00:00+08:00"
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
+    note: "行于破晓版本活动；原文：活动时间：第一期 2026年10月29日 10:00 ~ 2026年11月5日 05:00（UTC+8）。新版本end未披露，暂不填写缺失版本ID的related。"
+  - id: event-shouhuori-oct-2
+    name: "收获日（第2期）"
+    type: event
+    start: "2026-11-12T10:00:00+08:00"
+    end: "2026-11-19T05:00:00+08:00"
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
+    note: "行于破晓版本活动；原文：活动时间：第二期 2026年11月12日 10:00 ~ 2026年11月19日 05:00（UTC+8）。新版本end未披露，暂不填写缺失版本ID的related。"
+  - id: event-xingyao-xunyou-oct
+    name: "星耀巡游"
+    type: event
+    start: "2026-10-29T10:00:00+08:00"
+    end: "2026-11-16T17:00:00+08:00"
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
+    note: "行于破晓版本活动；原文：活动时间：2026年10月29日 10:00 ~ 2026年11月16日 17:00（UTC+8）。新版本end未披露，暂不填写缺失版本ID的related。"
+  - id: event-yongheng-mengyan
+    name: "永恒梦魇"
+    type: event
+    start: "2026-11-02T10:00:00+08:00"
+    end: "2026-11-22T17:00:00+08:00"
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
+    subtype: challenge
+    note: "行于破晓版本活动；原文：活动时间：2026年11月2日 10:00 ~ 2026年11月22日 17:00（UTC+8）。新版本end未披露，暂不填写缺失版本ID的related。"
+  - id: event-xingyao-jinian-nov
+    name: "星耀纪念·Ⅱ"
+    type: event
+    start: "2026-11-05T10:00:00+08:00"
+    end: "2026-11-16T17:00:00+08:00"
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
+    note: "行于破晓版本活动；原文：活动时间：2026年11月5日 10:00 ~ 2026年11月16日 17:00（UTC+8）。新版本end未披露，暂不填写缺失版本ID的related。"
+  - id: shen-ru-shi-ju-lian-mei-nov
+    name: "沉浸式戏剧·联袂演绎"
+    type: event
+    start: "2026-11-06T10:00:00+08:00"
+    end: "2026-12-03T17:00:00+08:00"
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
+    subtype: challenge
+    note: "行于破晓版本活动；原文：活动时间：2026年11月6日 10:00 ~ 2026年12月3日 17:00（UTC+8）。新版本end未披露，暂不填写缺失版本ID的related。"
+  - id: event-chenjinshi-ju-wujie
+    name: "沉浸式戏剧（无解谜题设计稿）"
+    type: event
+    start: "2026-11-10T10:00:00+08:00"
+    end: "2026-11-30T17:00:00+08:00"
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
+    subtype: challenge
+    note: "行于破晓版本活动；原文：活动时间：2026年11月10日 10:00 ~ 2026年11月30日 17:00（UTC+8）。新版本end未披露，暂不填写缺失版本ID的related。"
+  - id: event-tangguo-menggongchang
+    name: "糖果梦工厂（莉兹贝尔&松露与榛子形象）"
+    type: event
+    start: "2026-11-10T10:00:00+08:00"
+    end: "2026-12-21T17:00:00+08:00"
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
+    subtype: outfit
+    note: "行于破晓版本活动；原文：活动时间：2026年11月10日 10:00 ~ 2026年12月21日 17:00（UTC+8）。新版本end未披露，暂不填写缺失版本ID的related。"
+  - id: event-wenming-boyi-nov
+    name: "文明博弈"
+    type: event
+    start: "2026-11-12T10:00:00+08:00"
+    end: "2026-11-23T17:00:00+08:00"
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
+    subtype: challenge
+    note: "行于破晓版本活动；原文：活动时间：2026年11月12日 10:00 ~ 2026年11月23日 17:00（UTC+8）。新版本end未披露，暂不填写缺失版本ID的related。"
+  - id: event-shouyue-renzhijie-nov
+    name: "狩月人之阶"
+    type: event
+    start: "2026-11-18T10:00:00+08:00"
+    end: "2026-12-05T05:00:00+08:00"
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
+    subtype: competition
+    note: "行于破晓版本活动；原文：活动时间：2026年11月18日 10:00 ~ 2026年12月5日 05:00（UTC+8）。新版本end未披露，暂不填写缺失版本ID的related。"
+  - id: event-wuyou-lvxian-qitan-nov
+    name: "无由履险奇谭"
+    type: event
+    start: "2026-11-19T10:00:00+08:00"
+    end: "2026-11-30T17:00:00+08:00"
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
+    subtype: challenge
+    note: "行于破晓版本活动；原文：活动时间：2026年11月19日 10:00 ~ 2026年11月30日 17:00（UTC+8）。新版本end未披露，暂不填写缺失版本ID的related。"

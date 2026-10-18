@@ -517,3 +517,13 @@ events:
       end: confirmed
     sources:
       - "https://ys.mihoyo.com/main/news/detail/166513"
+  - id: banner-7-1-phase2
+    name: "7.1版本活动祈愿预告第二期"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166763"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    start: "2026-10-13T18:00:00+08:00"
+    type: banner
+    end: "2026-11-03T14:59:00+08:00"

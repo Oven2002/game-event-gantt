@@ -395,14 +395,14 @@ events:
   - id: maintenance-1-4
     name: 1.4「祷歌为谁而诵」版本更新维护
     type: maintenance
-    start: "2026-09-30T06:00:00+08:00"
-    end: "2026-09-30T11:00:00+08:00"
+    start: "2026-09-24T06:00:00+08:00"
+    end: "2026-09-24T11:00:00+08:00"
     timeCertainty:
       start: confirmed
-      end: confirmed
-    note: "官方 1.4 更新公告：维护时间 2026年9月30日06:00 - 11:00（UTC+8），维护完成后开启 1.4 版本。"
+      end: estimated
+    note: "国服公告确认计划维护窗口为 2026年9月24日06:00 - 11:00；结束时刻可能按实际进度提前或延后。"
     sources:
-      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+      - "https://yh.wanmei.com/news/gamebroad/20260923/264278.html"
   - id: banner-1-4-yuyan-zhongmu
     name: "「预言终幕时」限定棋盘·黑羽（1.4 上半）"
     type: banner
@@ -474,43 +474,139 @@ events:
   - id: event-1-4-quanzhan-shenjing
     name: "「全站深境」限时活动"
     type: event
-    start: "2026-09-30T11:00:00+08:00"
-    end: "2026-11-11T05:59:00+08:00"
-    timeCertainty:
-      start: inferred
-      end: confirmed
-    note: "官方原文「9月30日版本更新后-11月11日05:59(UTC+8)」；start 按维护结束时刻推算。"
-    sources:
-      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
-  - id: event-1-4-tantuan-baocang
-    name: "「炭团的宝藏」限时活动"
-    type: event
-    start: "2026-10-08T10:00:00+08:00"
-    end: "2026-11-11T05:59:00+08:00"
+    start: "2026-09-28T05:00:00+08:00"
+    end: "2026-11-05T05:59:00+08:00"
     timeCertainty:
       start: confirmed
       end: confirmed
+    note: "已改用国服官网直接列出的活动时间；原不同中文站的“服务器时间”不作为国服证据。"
     sources:
-      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+      - "https://yh.wanmei.com/news/gamebroad/20260923/264278.html"
+  - id: event-1-4-tantuan-baocang
+    name: "「炭团的宝藏」限时活动"
+    type: event
+    start: "2026-09-30T10:00:00+08:00"
+    end: "2026-11-05T05:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "已改用国服官网直接列出的活动时间；原不同中文站的“服务器时间”不作为国服证据。"
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260923/264278.html"
   - id: event-1-4-huolineng
     name: "「活力焕能」限时活动"
     type: event
-    start: "2026-10-05T05:00:00+08:00"
+    start: "2026-09-28T05:00:00+08:00"
+    end: "2026-10-12T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "已改用国服官网直接列出的活动时间；原不同中文站的“服务器时间”不作为国服证据。"
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260923/264278.html"
+  - id: event-1-4-xiangsu-yichu
+    name: "「像素溢出」限时活动"
+    type: event
+    start: "2026-10-12T05:00:00+08:00"
     end: "2026-10-19T04:59:00+08:00"
     timeCertainty:
       start: confirmed
       end: confirmed
-    note: "官方原文标注为服务器时间。"
+    note: "已改用国服官网直接列出的活动时间；原不同中文站的“服务器时间”不作为国服证据。"
     sources:
-      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
-  - id: event-1-4-xiangsu-yichu
-    name: "「像素溢出」限时活动"
+      - "https://yh.wanmei.com/news/gamebroad/20260923/264278.html"
+  - id: maintenance-20261015
+    name: "10月15日停服维护"
+    type: maintenance
+    start: "2026-10-15T06:00:00+08:00"
+    end: "2026-10-15T11:00:00+08:00"
+    related: ["1.4"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20261014/264537.html"
+    subtype: scheduled
+    timeCertainty:
+      start: confirmed
+      end: estimated
+    note: "官方计划维护窗口 06:00-11:00；实际结束可能提前或延后。"
+  - id: maintenance-20261016
+    name: "10月16日不停服更新"
+    type: maintenance
+    start: "2026-10-16T02:00:00+08:00"
+    end: "2026-10-16T06:00:00+08:00"
+    related: ["1.4"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20261015/264630.html"
+    subtype: non_downtime
+    timeCertainty:
+      start: confirmed
+      end: estimated
+    note: "官方公告确认预计不停服更新窗口；具体结束时间可能随更新进度提前或延后，并非实际完成时间。"
+  - id: maintenance-20261017
+    name: "10月17日不停服更新"
+    type: maintenance
+    start: "2026-10-17T02:00:00+08:00"
+    end: "2026-10-17T06:00:00+08:00"
+    related: ["1.4"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20261016/264655.html"
+    subtype: non_downtime
+    timeCertainty:
+      start: confirmed
+      end: estimated
+    note: "官方公告确认预计不停服更新窗口；具体结束时间可能随更新进度提前或延后，并非实际完成时间。"
+  - id: event-1-4-puka-fanfanle
+    name: "「噗卡翻翻乐」限时活动"
     type: event
-    start: "2026-10-19T05:00:00+08:00"
-    end: "2026-10-26T04:59:00+08:00"
+    start: "2026-10-23T05:00:00+08:00"
+    end: "2026-11-05T05:59:00+08:00"
+    related: ["1.4"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20261014/264537.html"
+    lifecycle: limited
+    cadence: one_off
     timeCertainty:
       start: confirmed
       end: confirmed
-    note: "官方原文标注为服务器时间。"
+  - id: event-1-4-duojin-dazuozhan
+    name: "「夺金大作战」双倍方斯（1.4 下半）"
+    type: event
+    start: "2026-10-19T05:00:00+08:00"
+    end: "2026-11-02T04:59:00+08:00"
+    related: ["1.4"]
     sources:
-      - "https://nte.perfectworld.com/cn/article/news/gamenews/20260929/264407.html"
+      - "https://yh.wanmei.com/news/gamebroad/20261014/264537.html"
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+  - id: event-1-4-mingyinlin-quanjinshu-yaogun-discount
+    name: "明音凛时装「全金属摇滚」限时折扣"
+    type: event
+    start: "2026-10-22T06:30:00+08:00"
+    end: "2026-11-05T05:59:00+08:00"
+    related: ["1.4"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20261014/264537.html"
+    subtype: shop
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "本条仅表示折扣窗口；10/22 06:30 上架后永久在售，11/5 05:59 不是下架时间。"
+  - id: event-1-4-heiyu-muxingzhe-discount
+    name: "黑羽时装「牧星者」限时折扣"
+    type: event
+    start: "2026-10-01T06:30:00+08:00"
+    end: "2026-11-05T05:59:00+08:00"
+    related: ["1.4"]
+    sources:
+      - "https://yh.wanmei.com/news/gamebroad/20260923/264278.html"
+    subtype: shop
+    lifecycle: limited
+    cadence: one_off
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "仅表示折扣窗口，时装为永久在售；不把11/5 05:59写成下架时间。"
