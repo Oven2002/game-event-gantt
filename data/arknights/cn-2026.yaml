@@ -493,3 +493,350 @@ events:
     note: "该寻访为【标准寻访】类型；10月22日04:00后其余干员加入常驻标准寻访。"
     sources:
       - "https://ak.hypergryph.com/news/5101"
+  - id: story-time-forward
+    name: "SideStory「时间啊，向前！」活动关卡"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-22T03:59:00+08:00"
+    subtype: main_event
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "活动关卡分三段开放：残照终尽11/01 12:00、长冬初青11/08 16:00、世纪之春11/15 16:00，均于11/22 03:59关闭；兑换商店另至11/29 03:59。"
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: shop-time-forward
+    name: "「炮火所掩埋的」活动兑换商店"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-29T03:59:00+08:00"
+    subtype: exchange
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: banner-jiangxuetouhuo
+    name: "限定寻访「将雪投火」"
+    type: banner
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-15T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/4916"
+  - id: shop-jiangxuetouhuo
+    name: "「将雪投火」寻访数据契约交换所"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-18T03:59:00+08:00"
+    subtype: exchange
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/4916"
+  - id: login-gutu-xincheng
+    name: "感谢庆典特别登录（故土新程十连凭证）"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-15T03:59:00+08:00"
+    subtype: login_reward
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: event-thanks-daily-pull
+    name: "感谢庆典限定寻访每日赠送"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-15T03:59:00+08:00"
+    subtype: login_reward
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: event-thanks-recruit
+    name: "感谢庆典特别招募（预选期／招募期）"
+    type: event
+    start: "2026-10-24T21:30:00+08:00"
+    end: "2026-12-02T03:59:00+08:00"
+    periods:
+      - start: "2026-10-24T21:30:00+08:00"
+        end: "2026-11-01T06:59:00+08:00"
+      - start: "2026-11-01T12:00:00+08:00"
+        end: "2026-12-02T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "预选和招募之间存在间隙，正式应用时须保留 periods，不能当作连续窗口。"
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: login-thanks-preview
+    name: "感谢庆典前瞻签到"
+    type: event
+    start: "2026-10-24T21:30:00+08:00"
+    end: "2026-11-03T03:59:00+08:00"
+    subtype: login_reward
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: event-shixiang-evolution
+    name: "「视相博物馆：演化」活动关卡"
+    type: event
+    start: "2026-10-24T21:30:00+08:00"
+    end: "2026-11-07T03:59:00+08:00"
+    subtype: challenge
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: shop-shixiang-evolution
+    name: "「视相博物馆：演化」博物馆兑换台"
+    type: event
+    start: "2026-10-24T21:30:00+08:00"
+    end: "2026-11-10T03:59:00+08:00"
+    subtype: exchange
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: login-thanks-alanna
+    name: "感谢庆典限时签到（阿兰娜时装）"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-15T03:59:00+08:00"
+    subtype: login_reward
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: event-saimengke-wishwall
+    name: "「塞梦珂城许愿墙」"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-15T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: shop-thanks-outfits-2026
+    name: "感谢庆典新装限时上架"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-29T03:59:00+08:00"
+    subtype: shop
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "雪覆伦城／还愿礼／锋光初现／暖冬教室，按同一窗口汇总为一组。"
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: shop-xunyi-zhige-rerun
+    name: "新约能天使「寻翼之歌」时装复刻"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-29T03:59:00+08:00"
+    subtype: shop
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: shop-thanks-packs-2026
+    name: "感谢庆典组合包（11月29日截止批次）"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-29T03:59:00+08:00"
+    subtype: shop
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "同窗口的特训、调用凭证、物资与芯片等组合包汇总；非逐商品计数。"
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: shop-id-update-2026
+    name: "ID信息更新礼包（免费／付费）"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2027-05-01T11:59:00+08:00"
+    subtype: shop
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: shop-thanks-furniture-2026
+    name: "感谢庆典主题家具限时获取"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-29T03:59:00+08:00"
+    subtype: shop
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "并肩之人／行宫一隅同窗口，汇总为一组。"
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: event-scene-qingdian-rerun
+    name: "主题场景「庆典」复刻"
+    type: event
+    start: "2026-11-01T12:00:00+08:00"
+    end: "2026-11-29T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: banner-weishu-2026
+    name: "卫戍寻访"
+    type: banner
+    start: "2026-11-08T16:00:00+08:00"
+    end: "2026-12-02T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "按公告计划时间记录；同日16:00–17:00有停机维护，不擅自把该卡池起点改成17:00。"
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: event-weishu-outfit-review
+    name: "卫戍时装回顾展"
+    type: event
+    start: "2026-11-08T16:00:00+08:00"
+    end: "2026-11-22T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: shop-weishu-packs
+    name: "卫戍组合包（照片集／变格形象／全能开发者）"
+    type: event
+    start: "2026-11-08T16:00:00+08:00"
+    end: "2026-12-06T03:59:00+08:00"
+    subtype: shop
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: login-thanks-supply
+    name: "感谢庆典补给签到"
+    type: event
+    start: "2026-11-12T04:00:00+08:00"
+    end: "2026-11-22T03:59:00+08:00"
+    subtype: login_reward
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: banner-zhongjian-zhenxuan-202611
+    name: "中坚甄选"
+    type: banner
+    start: "2026-11-12T04:00:00+08:00"
+    end: "2026-11-26T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: banner-joint-action-202611
+    name: "联合行动特选干员定向寻访"
+    type: banner
+    start: "2026-11-15T16:00:00+08:00"
+    end: "2026-11-29T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: shop-shijunzhe-zhisong-rerun
+    name: "弑君者／止颂时装复刻"
+    type: event
+    start: "2026-11-16T16:00:00+08:00"
+    end: "2026-11-30T03:59:00+08:00"
+    subtype: shop
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: maintenance-2026-11-08
+    name: "11月8日服务器停机维护"
+    type: maintenance
+    start: "2026-11-08T16:00:00+08:00"
+    end: "2026-11-08T17:00:00+08:00"
+    subtype: scheduled
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/0787"
+  - id: web-dongtu-huozhong
+    name: "《冻土与火种》网页活动开启"
+    sources:
+      - "https://ak.hypergryph.com/news/7353"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    start: "2026-10-24T20:00:00+08:00"
+    type: event
+    end: "2026-11-24T03:59:00+08:00"
+  - id: maintenance-2026-11-01
+    name: "11月1日版本更新停机维护"
+    type: maintenance
+    start: "2026-11-01T06:00:00+08:00"
+    end: "2026-11-01T12:00:00+08:00"
+    subtype: scheduled
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/1440"
+  - id: maintenance-2026-10-24
+    name: "10月24日闪断更新"
+    type: maintenance
+    start: "2026-10-24T21:30:00+08:00"
+    end: "2026-10-24T21:40:00+08:00"
+    subtype: hotfix
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://ak.hypergryph.com/news/1441"
+  - id: event-annihilation-huishi-theatre
+    name: "剿灭委托轮换「灰石剧场」"
+    type: event
+    start: "2026-10-26T04:00:00+08:00"
+    end: "2027-01-25T03:59:00+08:00"
+    lifecycle: permanent
+    cadence: rotating
+    rotationGroup: annihilation
+    rotationLabel: "剿灭作战"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "这是常驻剿灭系统的当前轮换周期，不能因有截止时间将模式视为限时玩法。"
+    sources:
+      - "https://ak.hypergryph.com/news/1441"
+  - id: event-annihilation-all-open-202610
+    name: "剿灭全开（10月26日期）"
+    type: event
+    start: "2026-10-26T04:00:00+08:00"
+    end: "2026-11-23T03:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "剿灭系统的全开阶段，不是另一个永久玩法。"
+    sources:
+      - "https://ak.hypergryph.com/news/1441"

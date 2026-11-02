@@ -10,6 +10,17 @@ versions:
     sources:
       - "https://zzz.mihoyo.com/news/165415"
 
+  - id: "3.3"
+    name: "3.3 重返天空的旅程（版本）"
+    start: "2026-10-21T11:00:00+08:00"
+    end: "2026-12-02T06:00:00+08:00"
+    timeCertainty:
+      start: estimated
+      end: confirmed
+    note: "start=10月21日11:00按官方06:00起维护、预计5小时推算；公告只写版本更新后，实际开服分钟待确认。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166989"
+
 events:
   - id: preview-3-1
     name: 3.1 前瞻特别节目
@@ -350,3 +361,186 @@ events:
     note: "官方 3.2 内容一览（下期）配图标注的服务器时间。"
     sources:
       - "https://zzz.mihoyo.com/news/166549"
+  - id: event-3-3-guaiqi-guiwu
+    name: "主题活动「怪奇诡屋惊魂记」"
+    type: event
+    start: "2026-10-22T10:00:00+08:00"
+    end: "2026-11-30T03:59:00+08:00"
+    related:
+      - "3.3"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://zzz.mihoyo.com/news/166990"
+      - "https://zzz.mihoyo.com/news/166995"
+      - "https://zzz.mihoyo.com/news/166971"
+  - id: event-3-3-saibo-shengshou
+    name: "限时活动「赛博圣手，出诊！」"
+    type: event
+    start: "2026-10-28T10:00:00+08:00"
+    end: "2026-11-16T03:59:00+08:00"
+    related:
+      - "3.3"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://zzz.mihoyo.com/news/166990"
+      - "https://zzz.mihoyo.com/news/167045"
+  - id: event-3-3-xianqian-shangjin
+    name: "限时活动「先遣赏金-区域巡防」"
+    type: event
+    start: "2026-11-04T04:00:00+08:00"
+    end: "2026-11-09T03:59:00+08:00"
+    related:
+      - "3.3"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://zzz.mihoyo.com/news/166990"
+      - "https://zzz.mihoyo.com/news/166989"
+  - id: event-3-3-enne-congtianjiang
+    name: "签到活动「『嗯呢』从天降」（邦布券×10）"
+    type: event
+    start: "2026-11-11T10:00:00+08:00"
+    end: "2026-12-01T03:59:00+08:00"
+    related:
+      - "3.3"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://zzz.mihoyo.com/news/166989"
+  - id: event-3-3-bojiao-wuya
+    name: "限时活动「跛脚乌鸦奇踪记」"
+    type: event
+    start: "2026-11-11T10:00:00+08:00"
+    end: "2026-11-30T03:59:00+08:00"
+    related:
+      - "3.3"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://zzz.mihoyo.com/news/166989"
+  - id: event-3-3-xiufu-huaji
+    name: "限时活动「修复吧！漂流画集」"
+    type: event
+    start: "2026-11-16T10:00:00+08:00"
+    end: "2026-11-30T03:59:00+08:00"
+    related:
+      - "3.3"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://zzz.mihoyo.com/news/166989"
+  - id: event-3-3-shuju-xuanshang
+    name: "限时活动「数据悬赏-实战模拟」"
+    type: event
+    start: "2026-11-25T04:00:00+08:00"
+    end: "2026-11-30T03:59:00+08:00"
+    related:
+      - "3.3"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://zzz.mihoyo.com/news/166989"
+  - id: shop-3-3-suyi-wufan
+    name: "赛维里安时装「肃仪无犯」限时优惠"
+    type: event
+    start: "2026-11-11T12:00:00+08:00"
+    end: "2026-12-02T05:59:00+08:00"
+    related:
+      - "3.3"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://zzz.mihoyo.com/news/166989"
+  - id: banner-3-3-upper
+    name: "3.3上期限时频段（代理人／音擎）"
+    type: banner
+    start: "2026-10-21T11:00:00+08:00"
+    end: "2026-11-11T11:59:00+08:00"
+    related:
+      - "3.3"
+    timeCertainty:
+      start: estimated
+      end: confirmed
+    note: "start=10月21日11:00按官方06:00起维护、预计5小时推算；公告只写版本更新后，实际开服分钟待确认。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166922"
+      - "https://zzz.mihoyo.com/news/166990"
+  - id: story-3-3-return-to-sky
+    name: "主线第三季第四章「重返天空的旅程」"
+    type: event
+    start: "2026-10-21T11:00:00+08:00"
+    lifecycle: permanent
+    related:
+      - "3.3"
+    cadence: one_off
+    subtype: story
+    timeCertainty:
+      start: estimated
+    note: "start=10月21日11:00按官方06:00起维护、预计5小时推算；公告只写版本更新后，实际开服分钟待确认。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166990"
+      - "https://zzz.mihoyo.com/news/166989"
+  - id: login-3-3-quanxin-fangsong
+    name: "签到活动「全新放送」（累计登录7天赠加密母带×10）"
+    type: event
+    start: "2026-10-21T11:00:00+08:00"
+    end: "2026-12-01T03:59:00+08:00"
+    related:
+      - "3.3"
+    timeCertainty:
+      start: estimated
+      end: confirmed
+    note: "start=10月21日11:00按官方06:00起维护、预计5小时推算；公告只写版本更新后，实际开服分钟待确认。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166990"
+      - "https://zzz.mihoyo.com/news/166970"
+  - id: maintenance-2026-10-21
+    name: "3.3版本更新停机维护"
+    type: maintenance
+    start: "2026-10-21T06:00:00+08:00"
+    end: "2026-10-21T11:00:00+08:00"
+    subtype: scheduled
+    related:
+      - "3.3"
+    timeCertainty:
+      start: confirmed
+      end: estimated
+    note: "官方维护从10月21日06:00开始、预计5小时；end=11:00为官方工期推算，不是实际开服确认。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166989"
+  - id: event-3-3-lidu-chengmu
+    name: "3.3版本「丽都城募」"
+    type: event
+    start: "2026-10-21T11:00:00+08:00"
+    end: "2026-11-30T03:59:00+08:00"
+    related:
+      - "3.3"
+    timeCertainty:
+      start: estimated
+      end: confirmed
+    note: "start=10月21日11:00按官方06:00起维护、预计5小时推算；公告只写版本更新后，实际开服分钟待确认。 购买成长计划、典藏计划、计划升级于11月30日02:59关闭，活动任务与领奖另至03:59。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166969"
+  - id: shop-3-3-feiouni-outfits
+    name: "菲欧妮时装及「空白遐想」组合限时优惠"
+    type: event
+    start: "2026-10-21T11:00:00+08:00"
+    end: "2026-12-02T05:59:00+08:00"
+    related:
+      - "3.3"
+    timeCertainty:
+      start: estimated
+      end: confirmed
+    note: "start=10月21日11:00按官方06:00起维护、预计5小时推算；公告只写版本更新后，实际开服分钟待确认。"
+    sources:
+      - "https://zzz.mihoyo.com/news/166989"

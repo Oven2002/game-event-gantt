@@ -940,3 +940,39 @@ events:
       - "https://dnabbs.yingxiong.com/pc/detail/892126291510165810"
     subtype: challenge
     note: "行于破晓版本活动；原文：活动时间：2026年11月19日 10:00 ~ 2026年11月30日 17:00（UTC+8）。新版本end未披露，暂不填写缺失版本ID的related。"
+  - id: event-ta-jiang-chengwei-denghuo
+    name: "✦ 【她将成为灯火】活动（“行于破晓”系列任务）"
+    type: event
+    start: "2026-10-20T15:00:00+08:00"
+    end: "2026-11-30T17:00:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "公告写10月20日更新后开放；start按官方确认当日15:00完成版本更新推定，end为活动公告明确时刻。"
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/892881260353946405"
+      - "https://dnabbs.yingxiong.com/pc/detail/893923125740178979"
+  - id: login-mingri-jiangzhi
+    name: "✦ 【明日将至】累计签到（华彩沙漏×10）"
+    type: event
+    start: "2026-10-20T15:00:00+08:00"
+    end: "2026-11-30T17:00:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    note: "公告写10月20日更新后开放；start按官方确认当日15:00完成版本更新推定，end为活动公告明确时刻。"
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/893304046109068223"
+      - "https://dnabbs.yingxiong.com/pc/detail/893923125740178979"
+  - id: maintenance-2026-10-20-capacity
+    name: "10月20日停机维护升级（临时停服，服务器扩容）"
+    type: maintenance
+    start: "2026-10-20T22:30:00+08:00"
+    end: "2026-10-20T23:30:00+08:00"
+    subtype: scheduled
+    timeCertainty:
+      start: confirmed
+      end: estimated
+    note: "官方计划临时维护22:30–23:30，开服随维护进度调整；end为计划值，不是实际完成观测。"
+    sources:
+      - "https://dnabbs.yingxiong.com/pc/detail/893746983733298075"

@@ -28,17 +28,18 @@ versions:
       - https://www.bilibili.com/opus/1225261488451616775
 
   - id: s4
-    name: S4赛季「月涌狂想」
+    name: "S4赛季「月涌狂想」"
     start: "2026-09-10T10:00:00+08:00"
-    end: "2026-11-05T10:00:00+08:00"
+    end: "2026-11-05T00:00:00+08:00"
     timeCertainty:
       start: confirmed
-      end: estimated
-    note: 官网S4赛季预告图明确「9月10日✦正式开启」，start按S4停机维护窗口（9月10日00:00-10:00）结束开服时刻记录。end未官宣，按S2/S3两季各56天周期推算11-05 10:00，待官方公告修正。
+      end: confirmed
+    note: "官方10月29日公告明确11月5日00:00开始赛季更新维护，S4在该时刻进行段位结算；替换此前按56天周期推算的10:00结束。"
     sources:
-      - https://rocom.qq.com/main/index.html
-      - https://www.taptap.cn/moment/846771989690453365
-      - https://www.taptap.cn/moment/846848060746107324
+      - "https://rocom.qq.com/main/index.html"
+      - "https://www.taptap.cn/moment/846771989690453365"
+      - "https://www.taptap.cn/moment/846848060746107324"
+      - "https://www.bilibili.com/opus/1264225423188820003"
 
 events:
   - id: maintenance-s2
@@ -110,19 +111,13 @@ events:
     lifecycle: limited
     cadence: recurring
     start: "2026-08-10T04:00:00+08:00"
-    end: "2026-09-28T04:00:00+08:00"
-    periods:
-      - start: "2026-08-10T04:00:00+08:00"
-        end: "2026-08-17T04:00:00+08:00"
-      - start: "2026-08-17T04:00:00+08:00"
-        end: "2026-08-24T04:00:00+08:00"
-      - start: "2026-09-21T04:00:00+08:00"
-        end: "2026-09-28T04:00:00+08:00"
-    note: "每周轮换嘉宾；第一期时空摆渡人露西亚，第二期商会老资历博得；9月21日新期官方公告确认窗口。"
+    end: "2026-11-09T04:00:00+08:00"
+    note: "每周轮换嘉宾；第一期时空摆渡人露西亚，第二期商会老资历博得；9月21日新期官方公告确认窗口。 2026-11-02期官方确认 11/02 04:00–11/09 04:00、嘉宾露萌；每周04:00轮换。原 periods 只列零星周次，空档是未逐周补录而非停办，因此改以连续周赛区间表示，并在此列出已确认期次。"
     sources:
       - "https://www.bilibili.com/opus/1233054186949574713"
       - "https://www.taptap.cn/moment/838440123405175588"
       - "https://www.taptap.cn/moment/851131348063093138?group_id=228326"
+      - "https://www.bilibili.com/opus/1264225423188820003"
   - id: event-xiegei-xiangyu-de-shi
     name: 写给相遇的诗
     type: event
@@ -300,14 +295,16 @@ events:
     lifecycle: limited
     cadence: one_off
     start: "2026-10-01T04:00:00+08:00"
-    end: "2026-11-05T04:00:00+08:00"
+    end: "2026-11-06T04:00:00+08:00"
     timeCertainty:
       start: confirmed
       end: confirmed
-    related: ["s4"]
-    note: "完成每日、每周任务及剧情轶事「存档：一颗秋天」，收集「印着精灵的小卡」兑换羁绊奖励；官方9月7日已预告，该活动在10月18日仍处于公告窗口内。"
+    related:
+      - s4
+    note: "官方10月29日公告确认活动至2026年11月6日04:00，替换此前11月5日04:00。"
     sources:
       - "https://rocom.qq.com/web202507/sub/detail.html?newsid=18852676"
+      - "https://www.bilibili.com/opus/1264225423188820003"
   - id: event-s1-longxi-paer-return-1001
     name: "S1传说精灵返场「龙息帕尔」限时奖励"
     type: event
@@ -315,11 +312,110 @@ events:
     lifecycle: limited
     cadence: one_off
     start: "2026-10-01T04:00:00+08:00"
+    end: "2026-11-05T00:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    related:
+      - s4
+    note: "官方确认限时活动奖励与兑换于11月5日00:00随版本更新结束；「传说精灵战-龙息帕尔」玩法本体常驻保留。"
+    sources:
+      - "https://rocom.qq.com/web202507/sub/detail.html?newsid=18852676"
+      - "https://www.bilibili.com/opus/1264225423188820003"
+  - id: maintenance-s5
+    name: "11月5日S5赛季版本更新停机维护"
+    type: maintenance
+    start: "2026-11-05T00:00:00+08:00"
+    end: "2026-11-05T10:00:00+08:00"
+    subtype: scheduled
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方提示开服时间可能提前或延后。"
+    sources:
+      - "https://www.bilibili.com/opus/1264225423188820003"
+  - id: event-bugeitang-jiudaodan
+    name: "「不给糖，就捣蛋！」万圣节活动"
+    type: event
+    start: "2026-10-30T04:00:00+08:00"
+    end: "2026-11-06T04:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://www.bilibili.com/opus/1264225423188820003"
+  - id: event-jingling-baobao-20261030
+    name: "「精灵抱抱团」调皮捣蛋会"
+    type: event
+    start: "2026-10-30T04:00:00+08:00"
     end: "2026-11-05T04:00:00+08:00"
     timeCertainty:
       start: confirmed
       end: confirmed
-    related: ["s4"]
-    note: "捕捉龙息帕尔可领取小帕尔的蛋、小帕尔的记忆等奖励；11月5日04:00下架的是限时活动奖励，「传说精灵战—龙息帕尔」本体将常驻保留。"
     sources:
-      - "https://rocom.qq.com/web202507/sub/detail.html?newsid=18852676"
+      - "https://www.bilibili.com/opus/1264225423188820003"
+  - id: event-mimifu-chumo-20261030
+    name: "周末活动「觅觅蝠大量出没」"
+    type: event
+    start: "2026-10-30T04:00:00+08:00"
+    end: "2026-11-02T04:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://www.bilibili.com/opus/1264225423188820003"
+  - id: shop-yuanxing-shangren-20261030
+    name: "「远行商人上新」周末商店"
+    type: event
+    start: "2026-10-30T04:00:00+08:00"
+    end: "2026-11-02T00:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方写「11月01日 24:00」，等价 2026-11-02T00:00。 商人每日仅08:00–24:00现身，活动包络不是全天可购买。"
+    sources:
+      - "https://www.bilibili.com/opus/1264225423188820003"
+  - id: event-shanyao-weekend-20261030
+    name: "「闪耀周末」双倍胜场"
+    type: event
+    start: "2026-10-30T04:00:00+08:00"
+    end: "2026-11-02T04:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://www.bilibili.com/opus/1264225423188820003"
+  - id: preview-kuailuo-20261031
+    name: "「快洛惊喜日」官方直播（10月31日）"
+    type: preview
+    start: "2026-10-31T19:00:00+08:00"
+    end: "2026-10-31T23:00:00+08:00"
+    subtype: special_program
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方两晚各19:00–23:00；type: preview不接受periods，因此按两晚各列一条，不把中间空档连为28小时。"
+    sources:
+      - "https://www.bilibili.com/opus/1264225423188820003"
+  - id: preview-kuailuo-20261101
+    name: "「快洛惊喜日」官方直播（11月01日）"
+    type: preview
+    start: "2026-11-01T19:00:00+08:00"
+    end: "2026-11-01T23:00:00+08:00"
+    subtype: special_program
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方两晚各19:00–23:00；type: preview不接受periods，因此按两晚各列一条，不把中间空档连为28小时。"
+    sources:
+      - "https://www.bilibili.com/opus/1264225423188820003"
+  - id: event-hatching-500-20261030
+    name: "「500%孵蛋加速」周末加成"
+    type: event
+    start: "2026-10-30T04:00:00+08:00"
+    end: "2026-11-02T04:00:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://www.bilibili.com/opus/1264225423188820003"

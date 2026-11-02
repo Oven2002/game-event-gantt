@@ -21,11 +21,15 @@ versions:
   - id: "4.6"
     name: "4.6 暮色裹挟的秘辛"
     start: "2026-09-28T06:00:00+08:00"
-    end: "2026-11-09T06:00:00+08:00"
-    note: "start 为 4.6 维护开始时刻（官方维护预告 06:00 起、预计 5 小时）；end 官方未公布，按约 6 周版本周期推算 11-09 06:00 维护，待官方公告。"
+    end: "2026-11-11T06:00:00+08:00"
+    note: "4.7 于 2026/11/11 更新（官方只公布日期，未公布维护时刻）。原 11-09 06:00 是按 6 周周期推算，早于 4.6 卡池 11-10 15:00 与「花藏繁生」11-11 03:59，不能成立；end 按 4.6 维护 06:00 惯例估算，待 4.7 维护预告确认。"
     sources:
       - "https://sr.mihoyo.com/news/166487"
       - "https://sr.mihoyo.com/news/166489"
+      - "https://sr.mihoyo.com/news/167108"
+    timeCertainty:
+      start: confirmed
+      end: estimated
 
 events:
   - id: event-nameless-honor-4-5
@@ -516,3 +520,25 @@ events:
     start: "2026-10-12T04:00:00+08:00"
     type: event
     end: "2026-10-25T03:59:00+08:00"
+  - id: banner-4-6-woshenjiren
+    name: "「我身即刃」千冶·刃复刻 + 「溯回忆象·灼尽炼狱的新骸」光锥跃迁（4.6 其二）"
+    type: banner
+    start: "2026-10-21T12:00:00+08:00"
+    end: "2026-11-10T15:00:00+08:00"
+    related:
+      - "4.6"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://sr.mihoyo.com/news/166950"
+  - id: event-huazang-4-6
+    name: "「花藏繁生」活动：拟造花萼限时双倍掉落"
+    sources:
+      - "https://sr.mihoyo.com/news/167093"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    start: "2026-10-30T04:00:00+08:00"
+    type: event
+    end: "2026-11-11T03:59:00+08:00"

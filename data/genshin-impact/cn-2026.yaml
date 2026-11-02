@@ -527,3 +527,33 @@ events:
     start: "2026-10-13T18:00:00+08:00"
     type: banner
     end: "2026-11-03T14:59:00+08:00"
+  - id: event-7-1-wuyou-xuezhang
+    name: "「无忧无虑大雪仗」活动：趣味投掷挑战"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166932"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    start: "2026-10-21T10:00:00+08:00"
+    type: event
+    end: "2026-11-02T03:59:00+08:00"
+  - id: event-7-1-zhusheng-yiyong
+    name: "「祝圣移涌」活动：圣遗物双倍掉落"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/167040"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    start: "2026-10-26T04:00:00+08:00"
+    type: event
+    end: "2026-11-02T03:59:00+08:00"
+  - id: preview-7-2
+    name: "7.2「坏灭肇始之时」前瞻特别节目"
+    type: preview
+    start: "2026-10-23T20:00:00+08:00"
+    subtype: special_program
+    timeCertainty:
+      start: confirmed
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/166992"
+      - "https://ys.mihoyo.com/main/news/detail/167026"

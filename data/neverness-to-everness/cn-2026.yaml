@@ -610,3 +610,13 @@ events:
       start: confirmed
       end: confirmed
     note: "仅表示折扣窗口，时装为永久在售；不把11/5 05:59写成下架时间。"
+  - id: preview-1-5
+    name: "1.5 版本前瞻特别节目"
+    type: preview
+    start: "2026-10-28T19:30:00+08:00"
+    subtype: special_program
+    timeCertainty:
+      start: confirmed
+    sources:
+      - "https://www.bilibili.com/opus/1261954317481410582"
+      - "https://yh.wanmei.com/news/gamebroad/20261028/264788.html"

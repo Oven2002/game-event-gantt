@@ -279,3 +279,57 @@ events:
     sources:
       - "https://world.qq.com/web202603/newsDetail.html?newsid=18916398"
     note: "官方配图明确上架10/15 10:00、下架11/11 23:59；限时优惠为10/15 10:00至10/28 23:59，优惠结束不等于商品下架。"
+  - id: maintenance-2026-10-23
+    name: "10月23日不停服更新"
+    type: maintenance
+    start: "2026-10-23T05:00:00+08:00"
+    end: "2026-10-23T06:00:00+08:00"
+    subtype: non_downtime
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方明确为不停服更新，不是停机维护。"
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18929174"
+  - id: maintenance-2026-10-29
+    name: "10月29日不停服更新"
+    type: maintenance
+    start: "2026-10-29T05:00:00+08:00"
+    end: "2026-10-29T06:00:00+08:00"
+    subtype: non_downtime
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "官方明确为不停服更新，不是停机维护。"
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18934615"
+  - id: event-xiaowang-qingshengli
+    name: "「小王庆生礼」活动"
+    type: event
+    start: "2026-10-21T10:00:00+08:00"
+    end: "2026-10-26T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18925351"
+  - id: event-xunji-rujing
+    name: "「循迹入镜」活动"
+    type: event
+    start: "2026-10-23T10:00:00+08:00"
+    end: "2026-11-11T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18925351"
+  - id: shop-jincui-bengming
+    name: "商城上新：蒙犽武器皮肤「锦翠迸鸣」"
+    type: event
+    start: "2026-10-29T10:00:00+08:00"
+    end: "2026-11-25T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://world.qq.com/web202603/newsDetail.html?newsid=18934672"

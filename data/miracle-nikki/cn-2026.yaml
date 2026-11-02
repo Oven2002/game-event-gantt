@@ -532,3 +532,143 @@ events:
       end: confirmed
     sources:
       - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992130.shtml"
+  - id: event-jinqiu-shiyi-202610
+    name: "金秋拾忆（过关收集套装「暖秋拾忆」）"
+    type: event
+    start: "2026-10-23T05:00:00+08:00"
+    end: "2026-11-01T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992243.shtml"
+  - id: event-tonghua-mengxiang-rerun-202610
+    name: "复刻·童话梦乡 限时复开"
+    type: event
+    start: "2026-10-23T05:00:00+08:00"
+    end: "2026-10-29T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992313.shtml"
+  - id: event-damiao-qilian-rushi
+    name: "大喵限时制衣·阶段指引（套装「绮恋如诗」）"
+    type: event
+    start: "2026-10-25T05:00:00+08:00"
+    end: "2026-10-31T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992316.shtml"
+  - id: shop-damiao-qilian-rushi
+    name: "大喵限时制衣·特惠礼包（绮恋如诗）"
+    type: event
+    start: "2026-10-25T05:00:00+08:00"
+    end: "2026-10-29T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992316.shtml"
+  - id: event-princess-double-20261030
+    name: "公主级双倍助力（10/30—11/1）"
+    type: event
+    start: "2026-10-30T05:00:00+08:00"
+    end: "2026-11-01T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992316.shtml"
+  - id: event-starcoin-double-20261030
+    name: "星光币双倍（搭配竞技场，10/30—11/1）"
+    type: event
+    start: "2026-10-30T05:00:00+08:00"
+    end: "2026-11-01T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992316.shtml"
+  - id: event-heimao-fengrenpu
+    name: "黑猫缝纫铺（节日套装「幽魇怪谈」「绯影密契」）"
+    type: event
+    start: "2026-10-28T05:00:00+08:00"
+    end: "2026-11-06T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992396.shtml"
+  - id: shop-wuye-qiyu-202610
+    name: "联邦商贸·午夜奇遇礼包（黑猫缝纫铺配套）"
+    type: event
+    start: "2026-10-28T05:00:00+08:00"
+    end: "2026-11-06T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992396.shtml"
+  - id: event-qiyuan-zhiyu-20261028
+    name: "奇渊之屿 充值馈赠（绵绵莓之梦/蔷薇汀雨）"
+    type: event
+    start: "2026-10-28T05:00:00+08:00"
+    end: "2026-11-06T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992470.shtml"
+  - id: event-damiao-bohe-qiyu
+    name: "大喵限时制衣·阶段指引（套装「薄荷奇遇」）"
+    type: event
+    start: "2026-11-01T05:00:00+08:00"
+    end: "2026-11-10T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992662.shtml"
+  - id: shop-damiao-bohe-qiyu
+    name: "大喵限时制衣·特惠礼包（薄荷奇遇）"
+    type: event
+    start: "2026-11-01T05:00:00+08:00"
+    end: "2026-11-07T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992662.shtml"
+  - id: event-princess-double-20261106
+    name: "公主级双倍助力（11/6—11/8）"
+    type: event
+    start: "2026-11-06T05:00:00+08:00"
+    end: "2026-11-08T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992662.shtml"
+  - id: banner-kleier-xiaowu-202611
+    name: "复刻·克雷尔小屋（信鸽田园主题家具）"
+    type: banner
+    start: "2026-11-03T05:00:00+08:00"
+    end: "2026-11-09T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992662.shtml"
+  - id: event-changye-yishi-rerun-202611
+    name: "珍稀萤光之灵复刻·长夜伊始"
+    type: event
+    start: "2026-11-06T05:00:00+08:00"
+    end: "2026-11-09T23:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://qjnn.qq.com/webplat/info/news_version3/11785/23142/23143/23146/m14777/202610/992662.shtml"
