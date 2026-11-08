@@ -1,17 +1,42 @@
 #!/bin/sh
+# Resolve a Node that actually supports --experimental-strip-types (>=22).
+# The system node on some hosts is v18, which rejects the flag outright; the
+# previous version called bare `node` and failed silently for that reason.
 set -eu
 
-[ "${GAME_EVENT_GANTT_META_HOOK:-}" = "1" ] && exit 0
+resolve_node() {
+  if [ -n "${GAMEG_NODE:-}" ] && [ -x "${GAMEG_NODE}" ]; then
+    printf '%s\n' "${GAMEG_NODE}"
+    return 0
+  fi
+  for candidate in \
+    "$HOME/.local/opt/node-v22.23.2-linux-x64/bin/node" \
+    "$(command -v node 2>/dev/null || true)"
+  do
+    [ -n "$candidate" ] || continue
+    [ -x "$candidate" ] || continue
+    if "$candidate" --experimental-strip-types -e 'process.exit(0)' >/dev/null 2>&1; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
 
 repo_root=$(git rev-parse --show-toplevel 2>/dev/null || exit 0)
 cd "$repo_root"
+
+if ! NODE_BIN=$(resolve_node); then
+  echo "post-commit: no Node with --experimental-strip-types found; data metadata was not updated" >&2
+  exit 0
+fi
 
 if ! git diff --cached --quiet --; then
   echo "post-commit: staged changes remain; data metadata was not auto-committed" >&2
   exit 0
 fi
 
-node --experimental-strip-types scripts/update-data-meta.ts
+"$NODE_BIN" --experimental-strip-types scripts/update-data-meta.ts
 if git diff --quiet -- data/meta.yaml; then
   exit 0
 fi

@@ -1,12 +1,43 @@
 #!/bin/sh
 # Gate every push on a full build: validate:data -> site-meta -> astro check -> astro build.
 # Catches type/import breakage (e.g. missing imports) that vitest alone does not.
+#
+# The build's npm scripts call bare `node`, so we resolve a Node that supports
+# --experimental-strip-types (>=22) and put it first on PATH. On hosts where
+# /usr/bin/node is v18 this used to abort the push with "bad option".
 set -eu
+
+resolve_node() {
+  if [ -n "${GAMEG_NODE:-}" ] && [ -x "${GAMEG_NODE}" ]; then
+    printf '%s\n' "${GAMEG_NODE}"
+    return 0
+  fi
+  for candidate in \
+    "$HOME/.local/opt/node-v22.23.2-linux-x64/bin/node" \
+    "$(command -v node 2>/dev/null || true)"
+  do
+    [ -n "$candidate" ] || continue
+    [ -x "$candidate" ] || continue
+    if "$candidate" --experimental-strip-types -e 'process.exit(0)' >/dev/null 2>&1; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
 
 repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
 cd "$repo_root"
 
-echo "pre-push: full build (validate:data + astro check + astro build)..."
+if ! NODE_BIN=$(resolve_node); then
+  echo "pre-push: no Node with --experimental-strip-types found — push aborted." >&2
+  echo "pre-push: install Node >=22 or set GAMEG_NODE=/path/to/node" >&2
+  exit 1
+fi
+PATH="$(dirname "$NODE_BIN"):$PATH"
+export PATH
+
+echo "pre-push: full build (validate:data + astro check + astro build) using $NODE_BIN..."
 if ! npm run --silent build > /tmp/gameg-pre-push-build.log 2>&1; then
   echo "pre-push: BUILD FAILED — push aborted. Log:" >&2
   tail -40 /tmp/gameg-pre-push-build.log >&2
