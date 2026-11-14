@@ -206,6 +206,7 @@ function postroomAdapter(game: Extract<CrawlGame, "light-and-night">): AnyFetchA
       publishedAt: null,
     })),
     decodeDetailResponse: (response) => JSON.parse(response.body),
+    listsNewestFirst: true,
     nextDetailUrl: (sourceId, body) => {
       if (previewMeta.has(sourceId)) return undefined;
       // First response is the preview: cache metadata, request the content next.

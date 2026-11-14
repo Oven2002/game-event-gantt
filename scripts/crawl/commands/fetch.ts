@@ -13,6 +13,13 @@ export interface FetchListItem {
   publishedAt?: string | null;
 }
 
+/**
+ * How many consecutive out-of-window items a newest-first list must yield before the
+ * fetch loop concludes that everything below is older too. 20 is deliberately loose:
+ * it absorbs occasional back-dated announcements without paying for the whole archive.
+ */
+const EARLY_STOP_STREAK = 20;
+
 export interface FetchAdapter<TPage> {
   list(page: number, pageSize: number, body: unknown): TPage;
   listItems(page: TPage): FetchListItem[];
@@ -52,6 +59,15 @@ export interface FetchAdapter<TPage> {
    * postroom preview → content) from wasting a full second request per item.
    */
   detailPublishedAt?: (sourceId: string, body: unknown) => string | null | undefined;
+  /**
+   * The list endpoint is sorted strictly newest-first (e.g. postroom's single-page
+   * `latest.list.json`, which carries ids only and needs a preview request per item
+   * to learn its date). When true, the fetch loop stops after
+   * EARLY_STOP_STREAK consecutive items whose provisional date falls before `--since`,
+   * because every remaining item in the list is older still. Without this, a
+   * 1400-item list costs 1400 preview requests on every run.
+   */
+  listsNewestFirst?: boolean;
 }
 
 export interface FetchCommandOptions<TPage> {
@@ -157,6 +173,8 @@ export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Pro
           return timestamp === undefined || timestamp >= sinceMs;
         });
       const inlineBodies = options.adapter.inlineDetailBodies?.(parsed);
+      let staleStreak = 0;
+      let stoppedEarly = false;
       for (const item of items) {
         let detailBody: unknown;
         if (inlineBodies) {
@@ -194,7 +212,16 @@ export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Pro
             options.adapter.onDetailStep?.(item.sourceId, detailBody);
             detailBody = options.adapter.decodeDetailResponse?.(chainedResponse) ?? decodeJson(chainedResponse);
           }
-          if (skipItem) continue;
+          if (skipItem) {
+            if (options.adapter.listsNewestFirst) {
+              staleStreak += 1;
+              if (staleStreak >= EARLY_STOP_STREAK) {
+                stoppedEarly = true;
+                break;
+              }
+            }
+            continue;
+          }
         }
         const article = options.adapter.detail(item.sourceId, detailBody, fetchedAt(), item.publishedAt);
         if (article === null) continue; // adapter chose to skip this item (e.g. no inline content)
@@ -207,6 +234,11 @@ export async function fetchGame<TPage>(options: FetchCommandOptions<TPage>): Pro
         }
         if (checked.data.game !== options.game) throw new Error(`RawArticle game does not match fetch game: ${checked.data.game}`);
         if (await writeRaw(checked.data as RawArticle)) count += 1;
+        staleStreak = 0;
+      }
+      if (stoppedEarly) {
+        paginationComplete = true;
+        break;
       }
       const pageBeforeSince = sinceMs !== undefined && listedItems.every((item) => {
         const timestamp = publishedTimestamp(item.publishedAt);
