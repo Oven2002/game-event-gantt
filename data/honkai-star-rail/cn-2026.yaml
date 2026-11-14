@@ -29,7 +29,18 @@ versions:
       - "https://sr.mihoyo.com/news/167108"
     timeCertainty:
       start: confirmed
-      end: estimated
+      end: confirmed
+  - id: "4.7"
+    name: "4.7 此刻，将群星付之一笑"
+    start: "2026-11-11T06:00:00+08:00"
+    end: "2026-12-23T06:00:00+08:00"
+    note: "start 取官方维护预告的 2026/11/11 06:00；end 为 4.7 更新说明中写明的下次维护时刻 2026/12/23 06:00，两处均已确认。"
+    sources:
+      - "https://sr.mihoyo.com/news/167296"
+      - "https://sr.mihoyo.com/news/167300"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
 
 events:
   - id: event-nameless-honor-4-5
@@ -542,3 +553,51 @@ events:
     start: "2026-10-30T04:00:00+08:00"
     type: event
     end: "2026-11-11T03:59:00+08:00"
+  - id: event-xingji-heping-shengdian
+    name: "「星际和平盛典：成名之路」"
+    type: event
+    start: "2026-11-11T06:00:00+08:00"
+    end: "2026-12-23T03:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    related: ["4.7"]
+    note: "官方原文「2026/11/11 4.7版本更新后 - 2026/12/23 03:59」；start 取 4.7 维护开始时刻 06:00 作锚点。"
+    sources:
+      - "https://sr.mihoyo.com/news/167298"
+  - id: event-rongronghao-4-7
+    name: "「剧场版绒绒号：欢闹厨房」"
+    type: event
+    start: "2026-11-11T06:00:00+08:00"
+    end: "2026-12-23T03:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    related: ["4.7"]
+    note: "官方原文「2026/11/11 4.7版本更新后 - 2026/12/23 03:59」；start 按维护开始时刻推算。"
+    sources:
+      - "https://sr.mihoyo.com/news/167297"
+  - id: event-qiku-xunyi
+    name: "「奇库寻遗」"
+    type: event
+    start: "2026-11-11T06:00:00+08:00"
+    end: "2026-12-23T03:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    related: ["4.7"]
+    note: "官方原文「2026/11/11 4.7版本更新后 - 2026/12/23 03:59」；start 按维护开始时刻推算。"
+    sources:
+      - "https://sr.mihoyo.com/news/167295"
+  - id: banner-4-7-phase1
+    name: "4.7 活动跃迁（其一）"
+    type: banner
+    start: "2026-11-11T06:00:00+08:00"
+    end: "2026-12-22T15:00:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    related: ["4.7"]
+    note: "官方原文主卡池「2026/11/11 4.7版本更新后 - 2026/12/22 15:00」，其中「当她决定看见」返场池至 2026/12/02 11:59 为止，两段不可混同。"
+    sources:
+      - "https://sr.mihoyo.com/news/167299"
