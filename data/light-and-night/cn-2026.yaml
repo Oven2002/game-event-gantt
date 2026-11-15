@@ -310,3 +310,57 @@ events:
       end: confirmed
     sources:
       - "https://love.qq.com/m/web202106/newsdetail.html?newsid=5b444805-40b5-4348-8b42-dce55051afc0"
+  - id: event-yue-gui-hui-guang-jie
+    name: "「月桂辉光节」农场季节活动"
+    type: event
+    subtype: season
+    start: "2026-11-01T05:00:00+08:00"
+    end: "2026-12-01T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=65a751a9-c836-47a5-8ff2-e0aa48a91f5e"
+  - id: event-ju-hui-jia-nian-hua-2026
+    name: "「钜惠嘉年华2026」限时特惠"
+    type: event
+    subtype: shop
+    start: "2026-11-01T05:00:00+08:00"
+    end: "2026-11-19T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    note: "主档期 11/1 05:00–11/19 04:59；其中六元礼包仅至 11/6 04:59，陪伴商店 11/6 05:00 起上架，截止同为 11/19 04:59。"
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=07498d38-be3e-4be3-8bf5-77723b317e62"
+  - id: banner-ni-meng-ban-tian-guang
+    name: "限定收信「旎梦伴天光」复刻Ⅰ"
+    type: banner
+    start: "2026-11-01T05:00:00+08:00"
+    end: "2026-11-08T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=6fc5089b-f69d-4ec6-a64b-27de7fa1eab0"
+  - id: banner-qi-ju-xin-ying
+    name: "限定收信「漆炬新影」"
+    type: banner
+    start: "2026-11-08T05:00:00+08:00"
+    end: "2026-11-19T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=247bbd2e-3d4d-4ecb-83a1-7beb688be745"
+  - id: event-fei-xi-qi-yu
+    name: "「扉隙奇遇」超值特惠"
+    type: event
+    subtype: shop
+    start: "2026-10-24T05:00:00+08:00"
+    end: "2026-11-01T04:59:00+08:00"
+    timeCertainty:
+      start: confirmed
+      end: confirmed
+    sources:
+      - "https://love.qq.com/m/web202106/newsdetail.html?newsid=f55bcfa4-4849-406d-8826-3de336e193bd"
