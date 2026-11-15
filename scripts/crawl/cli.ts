@@ -53,13 +53,27 @@ export function beijingCalendarDate(now: Date): string {
   return `${values.year}-${values.month}-${values.day}`;
 }
 
+/**
+ * Days re-scanned before the stored checkpoint. Sources announce late in the evening and
+ * sometimes back-date a post, so a strict ">= checkpoint" window can miss items that
+ * appear after the previous run while carrying an earlier timestamp.
+ */
+const SINCE_LOOKBACK_DAYS = 2;
+
+function shiftCalendarDate(value: string, days: number): string {
+  const [year, month, day] = value.split("-").map(Number);
+  const shifted = new Date(Date.UTC(year, month - 1, day + days));
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}`;
+}
+
 /** Pick the default `--since` lower bound: the stored last-success-date when present, otherwise the configured lookback. */
 export function resolveDefaultSince(game: CrawlGame, state: CrawlerState, now: Date): string {
   const checkpoint = state.games[game]?.checkpoint;
   if (checkpoint?.kind === lastSuccessDateCheckpoint.kind) {
     const value = checkpoint.value;
     if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error(`invalid last-success-date checkpoint for ${game}: ${String(value)}`);
-    return value;
+    return shiftCalendarDate(value, -SINCE_LOOKBACK_DAYS);
   }
   return defaultLookbackSince(game, now);
 }
@@ -264,6 +278,11 @@ export interface AdvanceStateOptions {
 
 export async function advanceState(runtimeRoot: string, game: CrawlGame, rawPath: string, state: CrawlerState, options: AdvanceStateOptions = {}): Promise<AdapterCheckpoint | null> {
   const rawSourceHashes: Record<string, Sha256> = {};
+  // Newest publish date actually observed in this run's raw output. Using this as the
+  // checkpoint (instead of the calendar date) keeps back-dated or late-published
+  // announcements inside the next window; a source can publish at 20:51 on the 9th
+  // while the crawler ran at 06:00, and a date cursor of "today" would drop it.
+  let observedLatest = "";
   try {
     for (const value of await readJsonl(rawPath)) {
       const result = RawArticleSchema.safeParse(value);
@@ -271,11 +290,16 @@ export async function advanceState(runtimeRoot: string, game: CrawlGame, rawPath
       if (result.data.game !== game) throw new Error(`raw state update game mismatch: ${result.data.game}`);
       if (sha256Utf8(result.data.content) !== result.data.contentHash) throw new Error(`raw state update contentHash mismatch: ${result.data.sourceId}`);
       rawSourceHashes[result.data.sourceId] = result.data.contentHash;
+      const published = result.data.publishedAt;
+      if (typeof published === "string") {
+        const datePart = published.slice(0, 10);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(datePart) && datePart > observedLatest) observedLatest = datePart;
+      }
     }
     const buildNextState = (current: CrawlerState): CrawlerState => {
       const previous = current.games[game]?.checkpoint ?? null;
       // Keep the newest success date: a full-history or older-clock fetch must never regress the cursor.
-      const nextCheckpoint = { kind: lastSuccessDateCheckpoint.kind, value: options.successDate ?? beijingCalendarDate((options.now ?? (() => new Date()))()) };
+      const nextCheckpoint = { kind: lastSuccessDateCheckpoint.kind, value: options.successDate ?? (observedLatest || beijingCalendarDate((options.now ?? (() => new Date()))())) };
       if (previous?.kind === lastSuccessDateCheckpoint.kind && typeof previous.value === "string" && previous.value > nextCheckpoint.value) {
         nextCheckpoint.value = previous.value;
       }

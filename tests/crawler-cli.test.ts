@@ -436,7 +436,18 @@ describe("crawler parse command", () => {
       expect(adapter.allowedDetailContentTypes).toEqual(item.game === "arknights" || item.game === "arknights-endfield" ? ["text/html"] : ["application/json"]);
       expect(output.join("\n")).toMatch(new RegExp(`run=20260801-000000.*rawPath=.*${item.game}\\.jsonl count=1 pages=2`));
       const state = JSON.parse(await readFile(join(root, "state.json"), "utf8"));
-      expect(state.games[item.game].checkpoint).toEqual({ kind: "last-success-date", value: "2026-08-01" });
+      // The checkpoint follows the newest publish date actually fetched, not the clock:
+      // a date cursor of "today" would drop announcements posted later in the day.
+      const rawRows = (await readFile(artifactPath(root, "20260801-000000", "raw", "jsonl", item.game), "utf8"))
+        .trim().split("\n")
+        .map((line) => JSON.parse(line) as { publishedAt: string | null });
+      const newest = rawRows
+        .map((row) => (row.publishedAt ?? "").slice(0, 10))
+        .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date))
+        .sort()
+        .at(-1);
+      expect(newest).toBeTruthy();
+      expect(state.games[item.game].checkpoint).toEqual({ kind: "last-success-date", value: newest });
       const sourceId = item.game === "genshin-impact" ? "165690"
         : item.game === "honkai-star-rail" ? "165883"
           : item.game === "zenless-zone-zero" ? "165853"
