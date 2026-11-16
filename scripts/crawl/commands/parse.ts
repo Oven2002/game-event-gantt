@@ -13,6 +13,31 @@ import { normalizeHypergryphContent } from "../adapters/hypergryph.ts";
 import { bluepochGames } from "../bluepoch-config.ts";
 import { postroomGames } from "../postroom-config.ts";
 import { classifyArticleScope } from "../common/article-scope.ts";
+import { parse as parseYaml } from "yaml";
+
+/**
+ * Version windows from the tracked data files, used to resolve "X.Y版本更新后" wording.
+ * Cached per game: the parse loop revisits the same file for every article.
+ */
+const versionAnchorCache = new Map<string, Map<string, { start: string; end?: string }>>();
+async function loadVersionAnchors(game: string): Promise<Map<string, { start: string; end?: string }>> {
+  const cached = versionAnchorCache.get(game);
+  if (cached) return cached;
+  const anchors = new Map<string, { start: string; end?: string }>();
+  try {
+    const parsed = parseYaml(await readFile(resolve(process.cwd(), "data", game, "cn-2026.yaml"), "utf8")) as {
+      versions?: Array<{ id?: unknown; start?: unknown; end?: unknown }>;
+    };
+    for (const version of parsed?.versions ?? []) {
+      if (typeof version?.id !== "string" || typeof version?.start !== "string") continue;
+      anchors.set(version.id, { start: version.start, ...(typeof version.end === "string" ? { end: version.end } : {}) });
+    }
+  } catch {
+    // No data file yet (first run for a new game): relative windows stay unresolved.
+  }
+  versionAnchorCache.set(game, anchors);
+  return anchors;
+}
 
 const configuredGames = {
   ...mihoyoGames,
@@ -161,7 +186,7 @@ async function parseRawFile(rawPath: string, options: ParseCommandOptions, event
       continue;
     }
     try {
-      const candidate = parseArticleCandidate(raw, options.runId, "primary");
+      const candidate = parseArticleCandidate(raw, options.runId, "primary", { versions: await loadVersionAnchors(game) });
       const validation = validateCandidate(candidate, { supportsVersions, eventTypeIds, rawArticle: raw });
       if (!validation.ok) {
         rejections.push(checkedRejection(validation.rejection));

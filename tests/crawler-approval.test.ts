@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { eventSchema, versionSchema } from "../src/lib/data.ts";
 import { approveRun, readApprovedManifest } from "../scripts/crawl/common/approval.ts";
 import { mergeSources } from "../scripts/crawl/common/sources.ts";
-import { parseArticleCandidate } from "../scripts/crawl/parsers/article.ts";
+import { parseArticleCandidate, parseArticleCandidates } from "../scripts/crawl/parsers/article.ts";
 import { artifactPath, createRun } from "../scripts/crawl/common/run.ts";
 import { candidateHashProjection, hashCanonicalJson, oldValueHashProjection, proposalHashProjection, sha256Utf8 } from "../scripts/crawl/common/hash.ts";
 import { ApprovalSelectionSchema, ApprovedManifestEntrySchema, ApprovedManifestSchema, type CandidateItem, type RawArticle, type Sha256 } from "../scripts/crawl/types.ts";
@@ -302,5 +302,27 @@ describe("crawler approval manifest", () => {
     expect(ApprovedManifestEntrySchema.safeParse(updateEntry).success).toBe(true);
     expect(ApprovedManifestEntrySchema.safeParse({ ...updateEntry, oldValue: { ...value, name: "被篡改" } }).success).toBe(false);
     expect(ApprovedManifestSchema.safeParse({ schemaVersion: 1, runId: "20260827-000001", generatedAt: "not-an-audit-time", entries: [] }).success).toBe(false);
+  });
+});
+
+describe("version-anchored activity windows", () => {
+  const versions = new Map([["7.2", { start: "2026-11-04T06:00:00+08:00", end: "2026-12-16T06:00:00+08:00" }]]);
+
+  it("resolves 「7.2版本更新后 ~ <time>」 against the tracked version start", () => {
+    const parsed = parseArticleCandidates(
+      { title: "「全域镇卫」活动介绍", content: "〓活动时间〓 7.2版本更新后 ~ 2026/12/20 03:59 〓参与条件〓", publishedAt: "2026-11-02 11:04:50" },
+      { versions },
+    );
+    expect(parsed.status).toBe("ready");
+    expect(parsed.start).toBe("2026-11-04T06:00:00+08:00");
+    expect(parsed.end).toBe("2026-12-20T03:59:00+08:00");
+  });
+
+  it("leaves unknown versions for review instead of guessing", () => {
+    const parsed = parseArticleCandidates(
+      { title: "「某活动」活动介绍", content: "〓活动时间〓 9.9版本更新后 ~ 2027/01/01 03:59", publishedAt: "2026-11-02 11:04:50" },
+      { versions },
+    );
+    expect(parsed.status).toBe("needs_review");
   });
 });

@@ -13,8 +13,20 @@ export interface ParsedArticleCandidate {
   start?: string;
   end?: string;
   certainty?: "confirmed" | "inferred";
+  endCertainty?: "confirmed" | "estimated";
   note?: string;
   reason?: string;
+}
+
+/** A version's known window, used to resolve "X.Y版本更新后" style relative wording. */
+export interface VersionAnchor {
+  start: string;
+  end?: string;
+}
+
+export interface ArticleParseOptions {
+  /** Map of version id ("7.2") to its known window, taken from the tracked data files. */
+  versions?: ReadonlyMap<string, VersionAnchor>;
 }
 
 type ArticleClassification = { kind: "version" } | { kind: "event"; type: "event" | "banner" | "preview" | "maintenance" };
@@ -52,7 +64,61 @@ function parseRelativeVersionInterval(content: string, referenceYear?: number): 
   return end.status === "confirmed" ? { end: end.value } : undefined;
 }
 
-export function parseArticleCandidates(article: { title: string; content: string; publishedAt?: string | null; imageUrls?: readonly string[] }): ParsedArticleCandidate {
+const DATE_TOKEN = "(?:\\d{4}[年/-]\\d{1,2}[月/-]\\d{1,2}(?:日)?|\\d{1,2}月\\d{1,2}日|\\d{1,2}\\/\\d{1,2})";
+
+interface ResolvedVersionWindow {
+  start: string;
+  end?: string;
+  endCertainty?: "confirmed" | "estimated";
+  note: string;
+}
+
+/**
+ * Resolve wording that only names a version instead of a timestamp
+ * ("7.2版本更新后 ~ 2026/11/24 17:59", "7.2版本期间持续开放") against the version
+ * windows already tracked in data/. Without this every Genshin activity lands in
+ * needs_review and never reaches the timeline.
+ */
+function resolveVersionWindow(
+  content: string,
+  versions: ReadonlyMap<string, VersionAnchor> | undefined,
+  referenceYear?: number,
+): ResolvedVersionWindow | undefined {
+  if (!versions || versions.size === 0) return undefined;
+  const closed = new RegExp(`(\\d+(?:\\.\\d+)+)\\s*版本更新后\\s*(?:至|到|—|–|~|～)\\s*(${DATE_TOKEN})\\s*(\\d{1,2}):(\\d{2})`).exec(content);
+  if (closed) {
+    const anchor = versions.get(closed[1]);
+    if (anchor) {
+      const parsedEnd = parseDateTimeText(`${closed[2]} ${closed[3]}:${closed[4]}`, referenceYear);
+      if (parsedEnd.status === "confirmed") {
+        return {
+          start: anchor.start,
+          end: parsedEnd.value,
+          endCertainty: "confirmed",
+          note: `官方原文「${closed[1]}版本更新后 ~ ${closed[2]} ${closed[3]}:${closed[4]}」；start 取该版本维护开始时刻。`,
+        };
+      }
+    }
+  }
+  const during = new RegExp(`(\\d+(?:\\.\\d+)+)\\s*版本(?:期间)?(?:持续)?(?:开放|开启)`).exec(content);
+  if (during) {
+    const anchor = versions.get(during[1]);
+    if (anchor?.end) {
+      return {
+        start: anchor.start,
+        end: anchor.end,
+        endCertainty: "estimated",
+        note: `官方原文「${during[1]}版本期间持续开放」，未给具体时刻；起止按该版本边界记。`,
+      };
+    }
+  }
+  return undefined;
+}
+
+export function parseArticleCandidates(
+  article: { title: string; content: string; publishedAt?: string | null; imageUrls?: readonly string[] },
+  options: ArticleParseOptions = {},
+): ParsedArticleCandidate {
   const classification = classify(article.title);
   if (!classification) return { status: "needs_review", reason: "article kind is not deterministically classified" };
   const base = classification.kind === "event" ? classification : { kind: classification.kind };
@@ -61,6 +127,22 @@ export function parseArticleCandidates(article: { title: string; content: string
   const intervalPattern = /(?:\d{4}[年/-]\d{1,2}[月/-]\d{1,2}(?:日)?|\d{1,2}月\d{1,2}日)\s*\d{1,2}:\d{2}\s*(?:至|到|—|–|~|～|-)\s*(?:\d{4}[年/-]\d{1,2}[月/-]\d{1,2}(?:日)?|\d{1,2}月\d{1,2}日|\d{1,2}\/\d{1,2})?\s*\d{1,2}:\d{2}/g;
   const intervals = [...new Set([...article.content.matchAll(intervalPattern)].map((match) => match[0]))];
   const referenceYear = article.publishedAt && /^(\d{4})-/.exec(article.publishedAt)?.[1];
+  // Activities often say "7.2版本更新后 ~ …" instead of a timestamp; resolve against the
+  // tracked version windows, but never for version-notes themselves (they carry their own).
+  if (classification.kind === "event") {
+    const resolvedVersion = resolveVersionWindow(article.content, options.versions, referenceYear ? Number(referenceYear) : undefined);
+    if (resolvedVersion) {
+      return {
+        ...base,
+        status: "ready",
+        name: article.title,
+        start: resolvedVersion.start,
+        ...(resolvedVersion.end ? { end: resolvedVersion.end, endCertainty: resolvedVersion.endCertainty } : {}),
+        certainty: "inferred",
+        note: resolvedVersion.note,
+      };
+    }
+  }
   const relativeVersionInterval = parseRelativeVersionInterval(article.content, referenceYear ? Number(referenceYear) : undefined);
   if (relativeVersionInterval) return { ...base, status: "needs_review", end: relativeVersionInterval.end, reason: "relative version start after update requires version start" };
   if (intervals.length === 0 && classification.kind === "event" && classification.type === "preview") {
@@ -91,9 +173,9 @@ export function parseArticleCandidates(article: { title: string; content: string
   }
 }
 
-export function parseArticleCandidate(raw: RawArticle, runId: string, semanticSlot: string): CandidateItem {
+export function parseArticleCandidate(raw: RawArticle, runId: string, semanticSlot: string, options: ArticleParseOptions = {}): CandidateItem {
   if (!semanticSlot || semanticSlot.includes("/")) throw new Error("semanticSlot must not contain slash");
-  const parsed = parseArticleCandidates(raw);
+  const parsed = parseArticleCandidates(raw, options);
   const candidateKey = `${raw.game}/${raw.sourceId}/${semanticSlot}`;
   const sourceHash = hashCanonicalJson(sourceHashProjection(raw)) as Sha256;
   const base = {
@@ -109,7 +191,7 @@ export function parseArticleCandidate(raw: RawArticle, runId: string, semanticSl
   const candidate = parsed.status === "ready" && parsed.kind && parsed.start
     ? parsed.kind === "version"
       ? { ...base, kind: "version" as const, review: "ready" as const, start: parsed.start, end: parsed.end!, ...(parsed.note ? { note: parsed.note } : {}), timeCertainty: { start: parsed.certainty ?? "confirmed", end: "confirmed" as const } }
-      : { ...base, kind: "event" as const, review: "ready" as const, type: parsed.type ?? "event", start: parsed.start, ...(parsed.end ? { end: parsed.end } : {}), ...(parsed.note ? { note: parsed.note } : {}), timeCertainty: { start: parsed.certainty ?? "confirmed", ...(parsed.end ? { end: "confirmed" as const } : {}) } }
+      : { ...base, kind: "event" as const, review: "ready" as const, type: parsed.type ?? "event", start: parsed.start, ...(parsed.end ? { end: parsed.end } : {}), ...(parsed.note ? { note: parsed.note } : {}), timeCertainty: { start: parsed.certainty ?? "confirmed", ...(parsed.end ? { end: parsed.endCertainty ?? "confirmed" as const } : {}) } }
     : { ...base, kind: parsed.kind ?? "unknown" as const, ...(parsed.kind === "event" ? { type: parsed.type ?? "event" } : {}), review: "needs_review" as const };
   const withHash = { ...candidate, candidateHash: hashCanonicalJson(candidateHashProjection(candidate)) as Sha256 };
   try {
