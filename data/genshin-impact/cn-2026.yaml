@@ -40,10 +40,22 @@ versions:
     name: "7.1 往冥府的安魂歌"
     start: "2026-09-23T06:00:00+08:00"
     end: "2026-11-04T06:00:00+08:00"
-    note: "维护窗口 09-23 06:00 起预计 5 小时（官方维护预告确认）；end 官方未公布，按 42 天版本周期推算 11-04 06:00 维护，待官方公告。"
+    note: "维护窗口 09-23 06:00 起预计 5 小时（官方维护预告确认）；end 由 7.2 维护预告确认的 11-04 06:00 反证，已非推算。"
     sources:
       - "https://ys.mihoyo.com/main/news/detail/166385"
       - "https://ys.mihoyo.com/main/news/detail/166259"
+      - "https://ys.mihoyo.com/main/news/detail/167159"
+  - id: "7.2"
+    name: "7.2 坏灭肇始之时"
+    start: "2026-11-04T06:00:00+08:00"
+    end: "2026-12-16T06:00:00+08:00"
+    note: "start 为官方维护预告的 2026/11/04 06:00（预计 5 小时）；end 官方只写「版本结束前」，按 42 天版本周期推算 12-16 06:00，待 7.3 维护预告确认。"
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/167159"
+      - "https://ys.mihoyo.com/main/news/detail/167205"
+    timeCertainty:
+      start: confirmed
+      end: estimated
 
 events:
   # 前瞻直播
@@ -569,3 +581,64 @@ events:
     note: 微博超话签到/互动领礼包码，角色冒险等阶≥10级可兑换；兑换码同截止时间。
     sources:
       - "https://ys.mihoyo.com/main/news/detail/167214"
+  - id: banner-7-2-phase1
+    name: 7.2 活动祈愿第一期（米提亚・芙宁娜）
+    type: banner
+    start: "2026-11-04T06:00:00+08:00"
+    end: "2026-11-24T17:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    related: ["7.2"]
+    note: 官方原文「2026/11/04 7.2版本更新后 ~ 2026/11/24 17:59」；start 取维护开始时刻 06:00 作锚点。
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/167191"
+  - id: event-7-2-quanyu-zhenwei
+    name: 「全域镇卫·逆捍谬罚」活动（自选邀请 4 星角色）
+    type: event
+    start: "2026-11-04T06:00:00+08:00"
+    end: "2026-12-16T06:00:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: estimated
+    related: ["7.2"]
+    note: 官方原文「7.2版本期间持续开放」，未给具体时刻；起止均按版本边界。
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/167168"
+      - "https://ys.mihoyo.com/main/news/detail/167154"
+  - id: event-7-2-xunli-xuejing
+    name: 「巡历雪境，凝铸锋锐」新手自选常驻 5 星
+    type: event
+    start: "2026-11-04T06:00:00+08:00"
+    end: "2026-12-16T06:00:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: estimated
+    related: ["7.2"]
+    note: 官方原文「7.2版本更新后至7.x版本结束前」，注册后 42 天内开放；全服时间轴按版本边界记，个人窗口因人而异。
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/167167"
+  - id: event-7-2-moshen-renwu
+    name: 7.2 魔神任务限时奖励
+    type: event
+    start: "2026-11-04T06:00:00+08:00"
+    end: "2026-12-15T14:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    related: ["7.2"]
+    note: 官方原文「7.2版本更新后 ~ 2026/12/15 14:59」；start 按版本更新时间推算。
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/167169"
+  - id: event-7-2-jingshi-rulin
+    name: 「晶石如林生长之地」探索任务奖励
+    type: event
+    start: "2026-11-04T06:00:00+08:00"
+    end: "2027-01-26T14:59:00+08:00"
+    timeCertainty:
+      start: inferred
+      end: confirmed
+    related: ["7.2"]
+    note: 官方原文「7.2版本更新后 ~ 2027/01/26 14:59」；start 按版本更新时间推算。
+    sources:
+      - "https://ys.mihoyo.com/main/news/detail/167170"
